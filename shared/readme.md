@@ -1,0 +1,1 @@
+This is the shared library that will host everything that will be used by the client and the server

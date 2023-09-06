@@ -1,0 +1,1 @@
+This is the server, it will host the conectiion between clients and the global logic

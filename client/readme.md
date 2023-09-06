@@ -1,0 +1,1 @@
+This is the client, the application that the user launches and sees
