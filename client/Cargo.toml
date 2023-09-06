@@ -11,6 +11,7 @@ path = "src/main.rs"
 
 
 [dependencies]
+shared = {path = "../shared"}
 chrono = "0.4.29"
 fern = { version = "0.6.2", features = ["colored"] }
 ggez = "0.9.3"
