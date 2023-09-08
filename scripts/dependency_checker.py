@@ -1,6 +1,8 @@
 """
-   
-    This script ensure that: (global dependency = the ones in root/cargo.toml)
+    global dependency = the ones in root/cargo.toml
+    conflict = a global dependecy that is also imported specificly by a package  
+
+    This script ensure that: 
         Every dependecy used by 2 or more packages are a global dependencies
         There is not unused global dependencies
         Every dependecy of every package is used at least one time
@@ -99,12 +101,20 @@ def check_conflict(check_name, l1, l2):
 
 
 def ensure_global_used(global_dependencies, module_dependencies):
-    ununsed = []
-    for dep in global_dependencies:
-        if dep not in module_dependencies:
-            ununsed.append(dep)
+    threshold = 1
+    unused = []
+    for gdep in global_dependencies:
+        count = 0
+        for mdep in module_dependencies:
+            if mdep == gdep:
+                count += 1
+        if count < threshold:
+            unused.append(gdep)
 
-    return ununsed
+    if len(unused) != 0:
+        print(f"The global dependecies {unused} are used less than {threshold} times".replace("'", ""))
+    else:
+        print(f"Every global dependecy is used at least {threshold} time{'s'if threshold > 1 else ''}")
 
 
 def display(txt, l):
@@ -156,13 +166,8 @@ else:
 
 
 # ensure that all gloal dependencies are used at least one time
-unused = ensure_global_used(global_dependencies.get_specifics(),
-                            client_dependencies.get_globals()+lib_dependencies.get_globals()+server_dependencies.get_globals())
-
-if len(unused) != 0:
-    print(f"The unused dependecies are: {unused}".replace("'", "").replace("[", "").replace("]", ""))
-else:
-    print("No unused global dependecies")
+ensure_global_used(global_dependencies.get_specifics(),
+                   client_dependencies.get_globals()+lib_dependencies.get_globals()+server_dependencies.get_globals())
 
 
 check_unused_dependency(client_dependencies)
