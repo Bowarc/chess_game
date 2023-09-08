@@ -10,7 +10,9 @@ name = "server"
 path = "src/main.rs"
 
 [dependencies]
-ctrlc = "3.4.1"
 shared = {path = "../shared"}
+ctrlc = "3.4.1"
 spin_sleep = "1.1.1"
+log.workspace = true
+
 

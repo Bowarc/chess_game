@@ -1,12 +1,14 @@
-pub struct Channel<T> {
-    sender: std::sync::mpsc::Sender<T>,
-    receiver: std::sync::mpsc::Receiver<T>,
+pub struct Channel<R, W> {
+    receiver: std::sync::mpsc::Receiver<R>,
+    sender: std::sync::mpsc::Sender<W>,
 }
 
-impl<T: std::cmp::PartialEq> Channel<T> {
-    pub fn new_pair() -> (Channel<T>, Channel<T>) {
-        let (sender1, receiver1) = std::sync::mpsc::channel::<T>();
-        let (sender2, receiver2) = std::sync::mpsc::channel::<T>();
+impl<R, W> Channel<R, W> {
+    // i don't rly like how Read and Write have no meaning here (as you have a Sender<R> and a Receiver<W>)
+    // But having the function outside the
+    pub fn new_pair() -> (Channel<W, R>, Channel<R, W>) {
+        let (sender1, receiver1) = std::sync::mpsc::channel::<R>();
+        let (sender2, receiver2) = std::sync::mpsc::channel::<W>();
 
         let com1 = Channel {
             sender: sender1,
@@ -18,8 +20,10 @@ impl<T: std::cmp::PartialEq> Channel<T> {
         };
         (com1, com2)
     }
+}
 
-    pub fn wait_for(&self, waited_message: T) {
+impl<R: std::cmp::PartialEq, W: std::cmp::PartialEq> Channel<R, W> {
+    pub fn wait_for(&self, waited_message: R) {
         loop {
             let message = self.receiver.recv().unwrap();
             if message == waited_message {
@@ -29,7 +33,7 @@ impl<T: std::cmp::PartialEq> Channel<T> {
     }
     pub fn wait_for_or_timeout(
         &self,
-        waited_message: T,
+        waited_message: R,
         timeout: std::time::Duration,
     ) -> Result<(), std::sync::mpsc::RecvTimeoutError> {
         let start_time = std::time::Instant::now();
@@ -49,25 +53,31 @@ impl<T: std::cmp::PartialEq> Channel<T> {
         }
         Err(std::sync::mpsc::RecvTimeoutError::Timeout)
     }
-    pub fn send(&self, t: T) -> Result<(), std::sync::mpsc::SendError<T>> {
+    pub fn send(&self, t: W) -> Result<(), std::sync::mpsc::SendError<W>> {
         self.sender.send(t)
     }
-    pub fn iter(&self) -> std::sync::mpsc::Iter<'_, T> {
+    pub fn iter(&self) -> std::sync::mpsc::Iter<'_, R> {
         self.receiver.iter()
     }
-    pub fn try_iter(&self) -> std::sync::mpsc::TryIter<'_, T> {
+    pub fn try_iter(&self) -> std::sync::mpsc::TryIter<'_, R> {
         self.receiver.try_iter()
     }
-    pub fn recv(&self) -> Result<T, std::sync::mpsc::RecvError> {
+    pub fn recv(&self) -> Result<R, std::sync::mpsc::RecvError> {
         self.receiver.recv()
     }
-    pub fn try_recv(&self) -> Result<T, std::sync::mpsc::TryRecvError> {
+    pub fn try_recv(&self) -> Result<R, std::sync::mpsc::TryRecvError> {
         self.receiver.try_recv()
     }
     pub fn recv_timeout(
         &self,
         timeout: std::time::Duration,
-    ) -> Result<T, std::sync::mpsc::RecvTimeoutError> {
+    ) -> Result<R, std::sync::mpsc::RecvTimeoutError> {
         self.receiver.recv_timeout(timeout)
     }
+}
+
+#[test]
+fn testing() {
+    let (server, client) =
+        Channel::<crate::networking::ServerMessage, crate::networking::ClientMessage>::new_pair();
 }

@@ -1,4 +1,5 @@
-use shared::prelude::*;
+#[macro_use]
+extern crate log;
 pub mod utils;
 
 const TARGET_TPS: f32 = 10.;
