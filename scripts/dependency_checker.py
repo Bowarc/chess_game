@@ -98,8 +98,7 @@ def check_unused_dependency(dep_lst):
 
         threads.append(t)
 
-    for thread in threads:
-        thread.join()
+    return threads
 
 
 def check_conflict(check_name, l1, l2):
@@ -182,6 +181,6 @@ ensure_global_used(global_dependencies.get_specifics(),
                    client_dependencies.get_globals()+lib_dependencies.get_globals()+server_dependencies.get_globals())
 
 
-check_unused_dependency(client_dependencies)
-check_unused_dependency(lib_dependencies)
-check_unused_dependency(server_dependencies)
+for thread in check_unused_dependency(client_dependencies)+check_unused_dependency(
+        lib_dependencies)+check_unused_dependency(server_dependencies):
+    thread.join()
