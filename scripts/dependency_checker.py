@@ -1,8 +1,8 @@
 """
     global dependency = the ones in root/cargo.toml
-    conflict = a global dependecy that is also imported specificly by a package  
+    conflict = a global dependecy that is also imported specificly by a package
 
-    This script ensure that: 
+    This script ensure that:
         Every dependecy used by 2 or more packages are a global dependencies
         There is not unused global dependencies
         Every dependecy of every package is used at least one time
@@ -77,17 +77,29 @@ def get_dependencies(package):
 
 
 def check_unused_dependency(dep_lst):
-    for dep in dep_lst.get_specifics() + dep_lst.get_globals():
+    import threading
+
+    def check_unused_dependency_inner(dep, package):
         dep = dep.replace("-", "_")
 
         s1 = f"{dep}::"
         s2 = f"use {dep}"
         s3 = f"extern crate {dep}"
 
-        if os.popen(f'rg "{s1}|{s2}|{s3}" {dep_lst.package}\\src\\').read() != "":
-            continue
-
+        if os.popen(f'rg "{s1}|{s2}|{s3}" {package}\\src\\').read() != "":
+            return
         print(f"{dep_lst.package} appear to not use the {dep} dependecy")
+
+    threads = []
+    for dep in dep_lst.get_specifics() + dep_lst.get_globals():
+        t = threading.Thread(target=check_unused_dependency_inner,
+                             args=(dep, dep_lst.package))
+        t.start()
+
+        threads.append(t)
+
+    for thread in threads:
+        thread.join()
 
 
 def check_conflict(check_name, l1, l2):

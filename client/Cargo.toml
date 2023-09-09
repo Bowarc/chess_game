@@ -19,3 +19,4 @@ serde.workspace = true
 hashbrown.workspace = true
 ron.workspace = true
 log.workspace = true
+spin_sleep.workspace = true

@@ -1,11 +1,8 @@
-// use rust_embed::{EmbeddedFile, Metadata, RustEmbed};
-use crate::time;
-
 #[derive(rust_embed::RustEmbed)]
 #[folder = "$CARGO_MANIFEST_DIR\\..\\resources\\internal\\"]
 struct Resolver;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum FileSystem {
     Internal,
     External,
@@ -24,17 +21,26 @@ pub struct ConsPath {
 }
 
 impl Path {
-    pub fn new(fs: FileSystem, p: &'static str) -> Self {
-        Self {
-            fs,
-            p: p.to_string(),
-        }
+    pub fn new(fs: FileSystem, p: String) -> Self {
+        Self { fs, p }
+    }
+    pub fn fs(&self) -> FileSystem {
+        self.fs
+    }
+    pub fn p(&self) -> String {
+        self.p.clone()
     }
 }
 
 impl ConsPath {
     pub const fn new(fs: FileSystem, p: &'static str) -> Self {
         Self { fs, p }
+    }
+    pub fn fs(&self) -> FileSystem {
+        self.fs
+    }
+    pub fn p(&self) -> &'static str {
+        self.p
     }
 }
 
@@ -59,7 +65,7 @@ impl std::ops::Add<&str> for Path {
 }
 
 pub fn try_bytes(path: Path) -> Result<std::borrow::Cow<'static, [u8]>, std::io::Error> {
-    let stopwatch = time::Stopwatch::start_new();
+    let stopwatch = crate::time::Stopwatch::start_new();
     let start_info_message = format!("Loading {:?} {}", path.fs, path.p);
     match path.fs {
         FileSystem::Internal => match Resolver::get(&path.p) {

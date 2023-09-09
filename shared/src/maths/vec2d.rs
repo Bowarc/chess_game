@@ -1,16 +1,19 @@
 use crate::maths;
-
-// for mental comprehension
 /*
-[
-    [], // this is a row
-    [],
-    [],
-    [],
-    [],
-    [],
-]
+    for mental comprehension
+    it can be visualized like that (numbers are indexes)
+    [
+        [0 , 1 , 2 , 3 ], // this is a row
+        [4 , 5 , 6 , 7 ],
+        [8 , 9 , 10, 11],
+        [12, 13, 14, 15],
+        [16, 17, 18, 19],
+        [20, 21, 22, 23],
+    ]
+
 */
+pub struct IndexOutOfBoundsError;
+
 // + making a list of columns doesn't make any sense
 #[derive(Debug)]
 pub struct Vec2D<T> {
@@ -116,14 +119,18 @@ impl<T> Vec2D<T> {
     }
     // returns Ok(T) if it succesfully replaced an item
     // return Err(()) if it failled to place the item in the elems list
-    pub fn set(&mut self, pt: impl Into<maths::Point>, elem: T) -> Result<T, ()> {
+    pub fn set(
+        &mut self,
+        pt: impl Into<maths::Point>,
+        elem: T,
+    ) -> Result<T, IndexOutOfBoundsError> {
         let pt = pt.into();
         if self.contains_point(pt) {
             let index = self.index_from_point(pt);
 
             Ok(std::mem::replace(self.elems.get_mut(index).unwrap(), elem))
         } else {
-            Err(())
+            Err(IndexOutOfBoundsError)
         }
     }
     pub fn iter(&self) -> Vec2DIterator {
