@@ -28,7 +28,7 @@ pub enum SocketError {
     Deserialization(bincode::Error),
     #[error("Error when writing to stream: {0}")]
     StreamWrite(std::io::Error),
-    #[error("Error when ready the stream: {0}")]
+    #[error("Error when reading the stream: {0}")]
     StreamRead(std::io::Error),
     // #[error("Error when peeking into stream: {0}")]
     // StreamPeek(std::io::Error),
