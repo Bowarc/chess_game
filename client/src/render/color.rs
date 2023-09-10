@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize, Hash)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, serde::Serialize, serde::Deserialize, Hash)]
 pub struct Color(u8, u8, u8, u8); // 0 - 255
 
 impl Color {

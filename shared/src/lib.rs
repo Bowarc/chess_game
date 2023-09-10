@@ -1,7 +1,9 @@
 #[macro_use]
 extern crate log;
 
+pub mod chess;
 pub mod file;
+pub mod id;
 pub mod logger;
 pub mod maths;
 pub mod networking;

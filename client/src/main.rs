@@ -2,30 +2,37 @@
 #![allow(unused_variables)]
 
 #[macro_use]
-extern crate derivative;
-#[macro_use]
 extern crate log;
-#[macro_use]
-extern crate serde;
 
 mod assets;
 mod config;
 mod game;
+mod networking;
 mod render;
+mod utils;
 
 struct Chess {
+    cfg: config::Config,
     renderer: render::Renderer,
     asset_mgr: assets::AssetManager,
+    frame_stats: utils::framestats::FrameStats,
+    client: networking::Client,
 }
 
 impl Chess {
     fn new(ctx: &mut ggez::Context, cfg: config::Config) -> ggez::GameResult<Self> {
+        let mut client = networking::Client::new(shared::networking::DEFAULT_ADDRESS)?;
+        client.request_ping();
         let renderer = render::Renderer::new();
+
         let asset_mgr = assets::AssetManager::new();
 
         Ok(Self {
+            cfg,
             renderer,
             asset_mgr,
+            frame_stats: utils::framestats::FrameStats::new(),
+            client,
         })
     }
 }
@@ -34,18 +41,20 @@ impl ggez::event::EventHandler for Chess {
     /// Called upon each logic update to the game.
     /// This should be where the game's logic takes place.
     fn update(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
-        // self.frame_stats.end_frame();
-        // self.frame_stats.begin_frame();
-        // self.frame_stats.begin_update();
+        self.frame_stats.end_frame();
+        self.frame_stats.begin_frame();
+        self.frame_stats.begin_update();
 
         let dt: f64 = ctx.time.delta().as_secs_f64();
+
+        self.client.update()?;
 
         // self.gui_menu
         //     .update(ctx, &mut self.config, &self.game.entities.world)?;
 
         // self.assets.update(ctx, &self.config, &self.game);
 
-        // self.frame_stats.end_update();
+        self.frame_stats.end_update();
         Ok(())
     }
 
@@ -54,13 +63,36 @@ impl ggez::event::EventHandler for Chess {
     /// with [`graphics::present()`](../graphics/fn.present.html) and
     /// maybe [`timer::yield_now()`](../timer/fn.yield_now.html).
     fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
-        // self.frame_stats.begin_draw();
+        self.frame_stats.begin_draw();
         let dt: f64 = ctx.time.delta().as_secs_f64();
+        let window_size: shared::maths::Vec2 = ctx.gfx.drawable_size().into();
         ggez::graphics::Canvas::from_frame(ctx, Some(render::Color::BLACK.into())).finish(ctx)?;
 
-        // self.frame_stats.set_render_log(render_log);
+        let render_request = self.renderer.render_request();
 
-        // self.frame_stats.end_draw();
+        self.frame_stats.draw(
+            shared::maths::Point::ZERO,
+            ctx,
+            render_request,
+            self.asset_mgr.loader().ongoing_requests(),
+        )?;
+
+        let mesh = ggez::graphics::Mesh::new_circle(
+            ctx,
+            ggez::graphics::DrawMode::fill(),
+            shared::maths::Point::new(window_size.x / 2., window_size.y / 2.),
+            100.,
+            0.1,
+            render::Color::WHITE.into(),
+        )?;
+
+        render_request.add(mesh, render::DrawParam::new(), render::Layer::Game);
+
+        let render_log = self.renderer.run(ctx)?;
+
+        self.frame_stats.set_render_log(render_log);
+
+        self.frame_stats.end_draw();
 
         Ok(())
         // Err(ggez::error::GameError::CustomError("This is a test".into()))
@@ -74,6 +106,7 @@ impl ggez::event::EventHandler for Chess {
         _x: f32,
         _y: f32,
     ) -> std::result::Result<(), ggez::GameError> {
+        self.client.request_ping();
         Ok(())
     }
 
@@ -225,6 +258,10 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
     ) -> std::result::Result<bool, ggez::GameError> {
         debug!("See you next time. . .");
+        self.client.shutdown();
+
+        spin_sleep::sleep(std::time::Duration::from_millis(100));
+
         Ok(false)
     }
 
@@ -248,7 +285,9 @@ impl ggez::event::EventHandler for Chess {
         e: ggez::GameError,
     ) -> bool {
         error!("{e}");
-        false
+        // for testing
+        error!("Unexpected error, exiting...");
+        true
     }
 }
 

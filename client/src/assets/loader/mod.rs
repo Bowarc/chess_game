@@ -2,6 +2,7 @@ mod handle;
 mod loaded_data;
 mod request;
 mod resolver;
+mod targets;
 
 pub use handle::Handle;
 pub use loaded_data::RawLoadedData;

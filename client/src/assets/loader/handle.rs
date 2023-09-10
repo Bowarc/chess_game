@@ -1,7 +1,7 @@
 pub struct Handle {
     // This struct is used to make requests to the loader thead
     channel: shared::threading::Channel<super::RawLoadedData, super::Request>,
-    pub ongoing: Vec<super::Request>,
+    ongoing: Vec<super::Request>,
     received_data: hashbrown::HashMap<super::TargetId, Vec<super::RawLoadedData>>,
 }
 
@@ -12,6 +12,9 @@ impl Handle {
             ongoing: Vec::new(),
             received_data: hashbrown::HashMap::new(),
         }
+    }
+    pub fn ongoing_requests(&self) -> &[super::Request] {
+        &self.ongoing
     }
     pub fn request(&mut self, req: super::Request) {
         if self.ongoing.contains(&req) {
@@ -73,17 +76,17 @@ impl Handle {
         }
     }
     pub fn retrieve_data(&mut self, target: super::TargetId) -> Option<super::RawLoadedData> {
-        if let Some(vec_data) = self.received_data.get_mut(&target) {
-            if vec_data.is_empty() {
-                return None;
-            };
-            // This is used to try to eliminate a specific case where asset are loaded multiple times
-            let data = vec_data.remove(0);
-            let req = data.request;
-            self.remove_ongoing(&req);
-            Some(data)
-        } else {
-            None
-        }
+        let Some(vec_data) = self.received_data.get_mut(&target) else{
+            return None;
+        };
+
+        let Some(data) = vec_data.pop() else{
+            return None;
+        };
+
+        // This is used to try to eliminate a specific case where asset are loaded multiple times
+        self.remove_ongoing(&data.request);
+
+        Some(data)
     }
 }

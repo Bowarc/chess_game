@@ -5,7 +5,7 @@ const USER_CONFIG_FILE: shared::file::ConsPath = shared::file::ConsPath::new(
     "config\\globalConfig.ron",
 );
 
-#[derive(Derivative, Deserialize, Debug, Clone)]
+#[derive(derivative::Derivative, serde::Deserialize, Debug, Clone)]
 #[serde(default)]
 #[derivative(Default)]
 pub struct Config {
@@ -25,7 +25,7 @@ pub struct Config {
     pub optimisation: OptimisationConfig, // threading: ThreadingConfig?
 }
 
-#[derive(Derivative, Deserialize, Debug, Clone)]
+#[derive(derivative::Derivative, serde::Deserialize, Debug, Clone)]
 #[serde(default)]
 #[derivative(Default)]
 pub struct UserConfig {
@@ -33,7 +33,7 @@ pub struct UserConfig {
     // pub input_binds: hashbrown::HashMap<action::Action, input::Input>,
 }
 
-#[derive(Derivative, Deserialize, Debug, Clone, Copy)]
+#[derive(derivative::Derivative, serde::Deserialize, Debug, Clone, Copy)]
 #[serde(default)]
 #[derivative(Default)]
 pub struct WindowConfig {
@@ -48,12 +48,12 @@ pub struct WindowConfig {
     #[derivative(Default(value = "true"))]
     pub srgb: bool,
 }
-#[derive(Derivative, Deserialize, Debug, Clone, Copy)]
+#[derive(derivative::Derivative, serde::Deserialize, Debug, Clone, Copy)]
 #[serde(default)]
 #[derivative(Default)]
 pub struct RenderConfig {}
 
-#[derive(Derivative, Deserialize, Debug, Clone, Copy)]
+#[derive(derivative::Derivative, serde::Deserialize, Debug, Clone, Copy)]
 #[serde(default)]
 #[derivative(Default)]
 pub struct AudioConfig {
@@ -67,7 +67,7 @@ pub struct AudioConfig {
     pub gameplay_vol: f64,
 }
 
-#[derive(Derivative, Deserialize, Debug, Clone, Copy)]
+#[derive(derivative::Derivative, serde::Deserialize, Debug, Clone, Copy)]
 #[serde(default)]
 #[derivative(Default)]
 pub struct GUIConfig {
@@ -75,7 +75,7 @@ pub struct GUIConfig {
     pub scale: f64,
 }
 
-#[derive(Derivative, Deserialize, Debug, Clone, Copy)]
+#[derive(derivative::Derivative, serde::Deserialize, Debug, Clone, Copy)]
 #[serde(default)]
 #[derivative(Default)]
 pub struct OptimisationConfig {}
@@ -98,7 +98,7 @@ pub fn load() -> Config {
     config
 }
 
-#[derive(Default, Debug, PartialEq, Eq, Deserialize, Clone, Copy)]
+#[derive(Default, Debug, PartialEq, Eq, serde::Deserialize, Clone, Copy)]
 pub enum DashDirectionMethod {
     #[default]
     Movement,

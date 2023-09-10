@@ -1,8 +1,8 @@
 pub use shared::file;
-mod font;
-mod loader;
-mod sound;
-mod sprite;
+pub mod font;
+pub mod loader;
+pub mod sound;
+pub mod sprite;
 
 pub trait Bank<In, Out> {
     fn update(&mut self);
@@ -29,5 +29,8 @@ impl AssetManager {
             sound_bank,
             loader_handle,
         }
+    }
+    pub fn loader(&self) -> &loader::Handle {
+        &self.loader_handle
     }
 }

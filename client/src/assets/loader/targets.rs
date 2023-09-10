@@ -2,4 +2,5 @@
 pub enum TargetId {
     Sound,
     Sprite,
+    Font,
 }

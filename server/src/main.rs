@@ -1,11 +1,15 @@
 #[macro_use]
 extern crate log;
-pub mod utils;
-
+mod game;
+mod networking;
+mod utils;
 const TARGET_TPS: f32 = 10.;
 
 fn main() {
-    shared::logger::init(Some("server.log"));
+    let config = shared::logger::LoggerConfig::default();
+
+    shared::logger::init(config, Some("server.log"));
+
     let stopwatch = shared::time::Stopwatch::start_new();
 
     let mut loop_helper = spin_sleep::LoopHelper::builder()
@@ -13,11 +17,14 @@ fn main() {
         .build_with_target_rate(TARGET_TPS);
 
     let running = utils::set_up_ctrlc();
+    let mut server = networking::Server::start_new(shared::networking::DEFAULT_ADDRESS);
 
     debug!("Starting loop with {TARGET_TPS}TPS");
 
     while running.load(std::sync::atomic::Ordering::SeqCst) {
         loop_helper.loop_start();
+
+        server.update();
 
         loop_helper.loop_sleep();
     }

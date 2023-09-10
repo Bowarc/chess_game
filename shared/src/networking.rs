@@ -39,10 +39,14 @@ pub enum SocketError {
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub enum ClientMessage {
     Text(String),
+    Ping,
+    Pong,
 }
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub enum ServerMessage {
     Text(String),
+    Ping,
+    Pong,
 }
 
 impl Header {
@@ -89,7 +93,7 @@ impl<R: serde::de::DeserializeOwned + std::fmt::Debug, W: serde::Serialize + std
 
         Ok(())
     }
-    pub fn recv(&mut self) -> Result<R, SocketError> {
+    pub fn try_recv(&mut self) -> Result<R, SocketError> {
         // debug!("recv");
 
         // well, this method doesn't fix the problem
@@ -137,8 +141,10 @@ impl<R: serde::de::DeserializeOwned + std::fmt::Debug, W: serde::Serialize + std
             if read_len != 0 {
                 warn!("Read {} but was waiting for {}", read_len, target_size);
             }
+
+            //very experimental
             return Err(SocketError::StreamRead(std::io::Error::new(
-                std::io::ErrorKind::WouldBlock,
+                std::io::ErrorKind::Interrupted,
                 "",
             )));
         }
