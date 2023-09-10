@@ -36,13 +36,13 @@ pub enum SocketError {
     // WouldBlock,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq)]
 pub enum ClientMessage {
     Text(String),
     Ping,
     Pong,
 }
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq)]
 pub enum ServerMessage {
     Text(String),
     Ping,
@@ -141,10 +141,8 @@ impl<R: serde::de::DeserializeOwned + std::fmt::Debug, W: serde::Serialize + std
             if read_len != 0 {
                 warn!("Read {} but was waiting for {}", read_len, target_size);
             }
-
-            //very experimental
             return Err(SocketError::StreamRead(std::io::Error::new(
-                std::io::ErrorKind::Interrupted,
+                std::io::ErrorKind::WouldBlock,
                 "",
             )));
         }
@@ -165,6 +163,7 @@ impl<R: serde::de::DeserializeOwned + std::fmt::Debug, W: serde::Serialize + std
     pub fn local_addr(&self) -> std::net::SocketAddr {
         self.stream.local_addr().unwrap()
     }
+
     pub fn remote_addr(&self) -> std::net::SocketAddr {
         self.stream.peer_addr().unwrap()
     }

@@ -21,8 +21,8 @@ struct Chess {
 
 impl Chess {
     fn new(ctx: &mut ggez::Context, cfg: config::Config) -> ggez::GameResult<Self> {
-        let mut client = networking::Client::new(shared::networking::DEFAULT_ADDRESS)?;
-        client.request_ping();
+        let mut client = networking::Client::new(shared::networking::DEFAULT_ADDRESS);
+        client.request_ping().unwrap();
         let renderer = render::Renderer::new();
 
         let asset_mgr = assets::AssetManager::new();
@@ -47,7 +47,7 @@ impl ggez::event::EventHandler for Chess {
 
         let dt: f64 = ctx.time.delta().as_secs_f64();
 
-        self.client.update()?;
+        self.client.update();
 
         // self.gui_menu
         //     .update(ctx, &mut self.config, &self.game.entities.world)?;
@@ -106,7 +106,7 @@ impl ggez::event::EventHandler for Chess {
         _x: f32,
         _y: f32,
     ) -> std::result::Result<(), ggez::GameError> {
-        self.client.request_ping();
+        // self.client.request_ping();
         Ok(())
     }
 
@@ -258,7 +258,7 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
     ) -> std::result::Result<bool, ggez::GameError> {
         debug!("See you next time. . .");
-        self.client.shutdown();
+        // self.client.shutdown();
 
         spin_sleep::sleep(std::time::Duration::from_millis(100));
 

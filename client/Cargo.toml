@@ -20,3 +20,4 @@ hashbrown.workspace = true
 ron.workspace = true
 log.workspace = true
 spin_sleep.workspace = true
+thiserror.workspace = true

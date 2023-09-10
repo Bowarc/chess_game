@@ -1,98 +1,86 @@
+#[derive(PartialEq)]
+enum Message {
+    Text(String),
+}
+
 pub struct Client {
-    socket: shared::networking::Socket<
+    proxy: shared::threading::Channel<
         shared::networking::ServerMessage,
         shared::networking::ClientMessage,
     >,
+    pub ip: std::net::SocketAddr,
+    running: std::sync::Arc<std::sync::atomic::AtomicBool>,
     ping_request_stopwatch: Option<shared::time::Stopwatch>,
     stats: super::NetworkStats,
-    connected: bool,
 }
 
 impl Client {
-    pub fn new(addr: std::net::SocketAddr) -> ggez::GameResult<Self> {
-        let stream = std::net::TcpStream::connect(addr).unwrap();
+    pub fn new(addr: std::net::SocketAddr) -> Self {
+        let stream = std::net::TcpStream::connect(shared::networking::DEFAULT_ADDRESS).unwrap();
         stream.set_nonblocking(true).unwrap();
-        let socket = shared::networking::Socket::<
+
+        let (server, proxy) = shared::threading::Channel::<
             shared::networking::ServerMessage,
             shared::networking::ClientMessage,
-        >::new(stream);
+        >::new_pair();
 
-        Ok(Self {
-            socket,
+        let running = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
+
+        let running_thread = running.clone();
+        std::thread::spawn(move || {
+            super::proxy::ClientProxy::new(stream, server, running_thread).run();
+        });
+
+        Self {
+            proxy,
+            ip: addr,
+            running,
             ping_request_stopwatch: None,
             stats: super::NetworkStats::new(),
-            connected: true,
-        })
-    }
-
-    pub fn request_ping(&mut self) {
-        self.socket
-            .send(shared::networking::ClientMessage::Ping)
-            .unwrap();
-        self.ping_request_stopwatch = Some(shared::time::Stopwatch::start_new())
-    }
-
-    fn listen_server(&mut self) -> ggez::GameResult {
-        if !self.connected {
-            return Err(ggez::GameError::CustomError(
-                "Disconnected from server".to_string(),
-            ));
         }
-        match self.socket.try_recv() {
-            Ok(msg) => match msg {
-                shared::networking::ServerMessage::Text(txt) => {
-                    debug!("Server sent '{txt}'")
-                }
-                shared::networking::ServerMessage::Ping => {
-                    self.socket
-                        .send(shared::networking::ClientMessage::Pong)
-                        .unwrap();
-                }
+    }
+
+    pub fn update(&mut self) -> Result<(), String> {
+        if !self.is_connected() {
+            return Err("Proxy is disconnected".to_string());
+        }
+
+        if !self.stats.has_rtt() {
+            self.request_ping().unwrap();
+        }
+
+        while let Ok(msg) = self.proxy.try_recv() {
+            match msg {
                 shared::networking::ServerMessage::Pong => {
                     if let Some(stopwatch) = &self.ping_request_stopwatch {
-                        let dur = stopwatch.read();
-
-                        debug!("RTT: {}", shared::time::display_duration(dur, ""));
-                        self.stats.set_rtt(dur);
-                        self.ping_request_stopwatch = None;
+                        self.stats.set_rtt(stopwatch.read());
+                        self.ping_request_stopwatch = None
                     }
                 }
-            },
-            Err(e) => {
-                let is_would_block =
-                    if let shared::networking::SocketError::StreamRead(ref io_e) = e {
-                        io_e.kind() == std::io::ErrorKind::WouldBlock
-                    } else {
-                        // matches!(e, shared::networking::SocketError::WouldBlock)
-                        false
-                    };
-
-                if is_would_block {
-                    // Not critical error
-                    // warn!("Would block");
-                } else {
-                    error!("Client encountered an error: {e:?}");
-                    self.socket.shutdown();
-                    self.connected = false;
+                _ => {
+                    warn!("Unhandled server message: {msg:?}");
                 }
             }
+
+            // self.proxy
+            //     .send(shared::networking::ClientMessafge::Text(
+            //         "Test message".to_string(),
+            //     ))
+            //     .map_err(|e| format!("{e:?}"))?;
         }
 
         Ok(())
     }
 
-    pub fn update(&mut self) -> ggez::GameResult {
-        self.listen_server()?;
-
-        if !self.stats.has_rtt() && self.ping_request_stopwatch.is_none() {
-            debug!("Requested ping");
-            self.request_ping();
-        }
-
-        Ok(())
+    pub fn is_connected(&self) -> bool {
+        self.running.load(std::sync::atomic::Ordering::Relaxed)
     }
 
-    pub fn shutdown(&mut self) {
-        self.socket.shutdown()
+    pub fn request_ping(
+        &mut self,
+    ) -> Result<(), std::sync::mpsc::SendError<shared::networking::ClientMessage>> {
+        self.proxy.send(shared::networking::ClientMessage::Ping)?;
+        self.ping_request_stopwatch = Some(shared::time::Stopwatch::start_new());
+        Ok(())
     }
 }

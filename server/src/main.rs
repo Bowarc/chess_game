@@ -17,7 +17,7 @@ fn main() {
         .build_with_target_rate(TARGET_TPS);
 
     let running = utils::set_up_ctrlc();
-    let mut server = networking::Server::start_new(shared::networking::DEFAULT_ADDRESS);
+    let mut server = networking::Server::new(shared::networking::DEFAULT_ADDRESS);
 
     debug!("Starting loop with {TARGET_TPS}TPS");
 
