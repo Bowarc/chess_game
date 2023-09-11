@@ -47,7 +47,7 @@ impl ggez::event::EventHandler for Chess {
 
         let dt: f64 = ctx.time.delta().as_secs_f64();
 
-        self.client.update();
+        self.client.update().unwrap();
 
         // self.gui_menu
         //     .update(ctx, &mut self.config, &self.game.entities.world)?;
@@ -75,6 +75,7 @@ impl ggez::event::EventHandler for Chess {
             ctx,
             render_request,
             self.asset_mgr.loader().ongoing_requests(),
+            self.client.stats(),
         )?;
 
         let mesh = ggez::graphics::Mesh::new_circle(

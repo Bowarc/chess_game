@@ -480,6 +480,7 @@ dependencies = [
  "shared",
  "spin_sleep",
  "thiserror",
+ "triple_buffer",
 ]
 
 [[package]]
@@ -2780,6 +2781,14 @@ dependencies = [
  "indexmap 2.0.0",
  "toml_datetime",
  "winnow",
+]
+
+[[package]]
+name = "triple_buffer"
+version = "6.2.0"
+source = "git+https://github.com/Bowarc/triple-buffer#5e4e13d64ee2181e66ce32ecd6ff03e9604642c0"
+dependencies = [
+ "crossbeam-utils",
 ]
 
 [[package]]

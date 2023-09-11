@@ -20,7 +20,7 @@ impl Server {
         // );
 
         self.clients.retain_mut(|handle| {
-            trace!("updating ({})", handle.ip);
+            // trace!("updating ({})", handle.ip);
             if let Err(e) = handle.update() {
                 error!(
                     "An error occured while updating client handle ({}) {e}, closing the handle",

@@ -10,8 +10,7 @@ pub struct Client {
     >,
     pub ip: std::net::SocketAddr,
     running: std::sync::Arc<std::sync::atomic::AtomicBool>,
-    ping_request_stopwatch: Option<shared::time::Stopwatch>,
-    stats: super::NetworkStats,
+    stats: triple_buffer::Output<super::NetworkStats>,
 }
 
 impl Client {
@@ -24,20 +23,26 @@ impl Client {
             shared::networking::ClientMessage,
         >::new_pair();
 
+        let (stats_in, stats_out) = triple_buffer::triple_buffer(&super::NetworkStats::new());
+
         let running = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
 
         let running_thread = running.clone();
         std::thread::spawn(move || {
-            super::proxy::ClientProxy::new(stream, server, running_thread).run();
+            super::proxy::ClientProxy::new(stream, server, running_thread, stats_in).run();
         });
 
         Self {
             proxy,
             ip: addr,
             running,
-            ping_request_stopwatch: None,
-            stats: super::NetworkStats::new(),
+            stats: stats_out,
         }
+    }
+
+    pub fn stats(&mut self) -> &super::NetworkStats {
+        // needs mutable as it updates before reading
+        self.stats.read()
     }
 
     pub fn update(&mut self) -> Result<(), String> {
@@ -45,42 +50,31 @@ impl Client {
             return Err("Proxy is disconnected".to_string());
         }
 
-        if !self.stats.has_rtt() {
-            self.request_ping().unwrap();
-        }
-
         while let Ok(msg) = self.proxy.try_recv() {
-            match msg {
-                shared::networking::ServerMessage::Pong => {
-                    if let Some(stopwatch) = &self.ping_request_stopwatch {
-                        self.stats.set_rtt(stopwatch.read());
-                        self.ping_request_stopwatch = None
-                    }
-                }
+            match &msg {
                 _ => {
                     warn!("Unhandled server message: {msg:?}");
                 }
             }
-
-            // self.proxy
-            //     .send(shared::networking::ClientMessafge::Text(
-            //         "Test message".to_string(),
-            //     ))
-            //     .map_err(|e| format!("{e:?}"))?;
         }
-
         Ok(())
+    }
+
+    pub fn send(
+        &mut self,
+        msg: shared::networking::ClientMessage,
+    ) -> Result<(), super::NetworkError> {
+        self.proxy
+            .send(msg)
+            .map_err(|e| super::NetworkError::ChannelSend(format!("{e:?}")))
     }
 
     pub fn is_connected(&self) -> bool {
         self.running.load(std::sync::atomic::Ordering::Relaxed)
     }
 
-    pub fn request_ping(
-        &mut self,
-    ) -> Result<(), std::sync::mpsc::SendError<shared::networking::ClientMessage>> {
-        self.proxy.send(shared::networking::ClientMessage::Ping)?;
-        self.ping_request_stopwatch = Some(shared::time::Stopwatch::start_new());
+    pub fn request_ping(&mut self) -> Result<(), super::NetworkError> {
+        self.send(shared::networking::ClientMessage::Ping)?;
         Ok(())
     }
 }

@@ -56,7 +56,7 @@ impl From<f64> for DTDelay {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Measure the time between the .start and .stop functions, can be read later
 pub enum Stopwatch {
     // Ps i used an enum as it best fits the use to me, + it's globally smaller as it re-uses the memory if the other state for the curent one
@@ -114,7 +114,7 @@ impl Stopwatch {
 
 impl std::fmt::Display for Stopwatch {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", display_duration(self.read(), ""))
+        write!(f, "{}", display_duration(self.read()))
     }
 }
 
@@ -179,25 +179,55 @@ impl From<u128> for SystemTimeDelay {
     }
 }
 
-pub fn display_duration(d: std::time::Duration, separator: &str) -> String {
-    let mut value: f64 = d.as_nanos() as f64;
-    // debug!("d:{:?}", d);
-    // if nanos == 0 {}
-    // debug!("nbr: {}", nbr);
+// pub fn display_duration(d: std::time::Duration, separator: &str) -> String {
+//     let mut value: f64 = d.as_nanos() as f64;
+//     // debug!("d:{:?}", d);
+//     // if nanos == 0 {}
+//     // debug!("nbr: {}", nbr);
 
-    let units: Vec<&str> = vec!["ns", "µs", "ms", "s"];
-    let mut name_index = 0;
+//     let units: Vec<&str> = vec!["ns", "µs", "ms", "s"];
+//     let mut name_index = 0;
 
-    while value >= 1_000. {
-        if name_index < units.len() - 1 {
-            value /= 1_000.;
-            name_index += 1
+//     while value >= 1_000. {
+//         if name_index < units.len() - 1 {
+//             value /= 1_000.;
+//             name_index += 1
+//         } else {
+//             break;
+//         }
+//     }
+
+//     format!("{:.2}{}{}", value, separator, units[name_index])
+// }
+
+pub fn display_duration(duration: std::time::Duration) -> String {
+    let secs = duration.as_secs();
+    let nanos = duration.subsec_nanos();
+
+    if secs == 0 {
+        if nanos < 1_000 {
+            return format!("{}ns", nanos);
+        } else if nanos < 1_000_000 {
+            return format!("{:.2}µs", nanos as f64 / 1_000.0);
         } else {
-            break;
+            return format!("{:.2}ms", nanos as f64 / 1_000_000.0);
         }
     }
 
-    format!("{:.2}{}{}", value, separator, units[name_index])
+    if secs < 60 {
+        format!("{secs}s")
+    } else if secs < 3_600 {
+        let minutes = secs / 60;
+        let seconds = secs % 60;
+        format!("{minutes}m {seconds}s")
+    } else if secs < 86_400 {
+        let hours = secs / 3_600;
+        let minutes = (secs % 3_600) / 60;
+        format!("{hours}h {minutes}m")
+    } else {
+        let days = secs / 86_400;
+        format!("{days}days")
+    }
 }
 
 pub fn timeit<F: Fn() -> T, T>(f: F) -> (T, std::time::Duration) {

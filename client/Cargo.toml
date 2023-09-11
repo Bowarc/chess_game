@@ -13,6 +13,7 @@ path = "src/main.rs"
 [dependencies]
 shared = {path = "../shared"}
 ggegui = {git = "https://github.com/Bowarc/ggegui"}
+triple_buffer = {git = "https://github.com/Bowarc/triple-buffer"}
 ggez.workspace = true
 derivative.workspace = true
 serde.workspace = true

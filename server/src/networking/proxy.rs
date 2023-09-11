@@ -32,7 +32,7 @@ impl ClientProxy {
     pub fn run(&mut self) {
         let mut loop_helper = spin_sleep::LoopHelper::builder()
             .report_interval_s(0.5)
-            .build_with_target_rate(10.);
+            .build_with_target_rate(10000.);
 
         while self.running.load(std::sync::atomic::Ordering::Relaxed) {
             loop_helper.loop_start();
@@ -76,9 +76,9 @@ impl ClientProxy {
     fn handle_client(&mut self) -> Result<(), super::error::NetworkError> {
         // here you receive message sent by the client
         match self.client.try_recv() {
-            Ok(msg) => {
+            Ok((r_header, msg)) => {
                 if let shared::networking::ClientMessage::Ping = msg {
-                    self.client.send(shared::networking::ServerMessage::Pong)?
+                    let s_header = self.client.send(shared::networking::ServerMessage::Pong)?;
                 }
 
                 // Forward the message to the server

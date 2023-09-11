@@ -8,6 +8,7 @@ pub struct ClientProxy {
         shared::networking::ServerMessage,
     >,
     running: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    stats: triple_buffer::Input<super::NetworkStats>,
 }
 
 impl ClientProxy {
@@ -18,6 +19,7 @@ impl ClientProxy {
             shared::networking::ServerMessage,
         >,
         running: std::sync::Arc<std::sync::atomic::AtomicBool>,
+        stats: triple_buffer::Input<super::NetworkStats>,
     ) -> Self {
         Self {
             server: shared::networking::Socket::<
@@ -26,28 +28,34 @@ impl ClientProxy {
             >::new(stream),
             client,
             running,
+            stats,
         }
     }
 
     pub fn run(&mut self) {
         let mut loop_helper = spin_sleep::LoopHelper::builder()
             .report_interval_s(0.5)
-            .build_with_target_rate(10.);
+            .build_with_target_rate(10000.);
 
         while self.running.load(std::sync::atomic::Ordering::Relaxed) {
             loop_helper.loop_start();
 
-            if let Err(e) = self.handle_client() {
+            let mut stats = self.stats.read().clone();
+            stats.update(&mut self.client, &mut self.server);
+
+            if let Err(e) = self.handle_client(&mut stats) {
                 warn!("Proxy encountered an error while handling client {e:?}");
                 self.running
                     .store(false, std::sync::atomic::Ordering::Relaxed);
             }
 
-            if let Err(e) = self.handle_server() {
+            if let Err(e) = self.handle_server(&mut stats) {
                 warn!("Proxy encountered an error while handling server {e:?}");
                 self.running
                     .store(false, std::sync::atomic::Ordering::Relaxed);
             }
+
+            self.stats.write(stats);
 
             loop_helper.loop_sleep();
         }
@@ -61,29 +69,44 @@ impl ClientProxy {
             self.server.remote_addr()
         );
     }
-    fn handle_client(&mut self) -> Result<(), super::NetworkError> {
+    fn handle_client(
+        &mut self,
+        stats: &mut super::NetworkStats,
+    ) -> Result<(), super::NetworkError> {
         // here you receive the message sent by the client
 
         if let Ok(msg) = self.client.try_recv() {
-            if let Err(e) = self.server.send(msg) {
-                error!(
-                    "Proxy encountered an error while forwarding a message to the server: {e:?}"
-                );
-                Err(e).map_err(|e| super::NetworkError::ChannelSend(format!("{e:?}")))?
+            stats.on_msg_send(&msg);
+            match self.server.send(msg) {
+                Ok(header) => {
+                    // Do something with the number of bytes sent in the stats
+                    stats.on_bytes_send(&header);
+                }
+                Err(e) => {
+                    error!(
+                        "Proxy encountered an error while forwarding a message to the server: {e:?}"
+                    );
+                    Err(e).map_err(|e| super::NetworkError::ChannelSend(format!("{e:?}")))?
+                }
             }
         }
 
         Ok(())
     }
 
-    fn handle_server(&mut self) -> Result<(), super::NetworkError> {
+    fn handle_server(
+        &mut self,
+        stats: &mut super::NetworkStats,
+    ) -> Result<(), super::NetworkError> {
         // here you receive message sent by the client
         match self.server.try_recv() {
-            Ok(msg) => {
-                //
+            Ok((header, msg)) => {
+                stats.on_msg_recv(&msg);
+                stats.on_bytes_recv(&header);
+
                 self.client
                     .send(msg)
-                    .map_err(|e| super::NetworkError::ChannelSend(format!("{e:?}")))?
+                    .map_err(|e| super::NetworkError::ChannelSend(format!("{e:?}")))?;
             }
             Err(e) => {
                 // Check if the error is from the fact that the proxy's stream is non_bocking

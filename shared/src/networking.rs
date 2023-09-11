@@ -1,13 +1,13 @@
 pub const HEADER_SIZE: usize = std::mem::size_of::<Header>();
 
 pub const DEFAULT_ADDRESS: std::net::SocketAddr = std::net::SocketAddr::V4(
-    std::net::SocketAddrV4::new(std::net::Ipv4Addr::new(127, 0, 0, 1), 19864),
+    std::net::SocketAddrV4::new(std::net::Ipv4Addr::new(192, 168, 1, 39), 19864),
 );
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy)]
 // ofc don't use type that can change size (such as Vec) so the size of the struct stays the same as the constant
 pub struct Header {
-    size: usize,
+    pub size: usize,
 }
 
 // I don't like how streams work so i'll make a simple socket-like, packet-based struct wrapper
@@ -36,13 +36,13 @@ pub enum SocketError {
     // WouldBlock,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
 pub enum ClientMessage {
     Text(String),
     Ping,
     Pong,
 }
-#[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
 pub enum ServerMessage {
     Text(String),
     Ping,
@@ -66,7 +66,7 @@ impl<R: serde::de::DeserializeOwned + std::fmt::Debug, W: serde::Serialize + std
             last_header: None,
         }
     }
-    pub fn send(&mut self, message: W) -> Result<(), SocketError> {
+    pub fn send(&mut self, message: W) -> Result<Header, SocketError> {
         use std::io::Write as _;
 
         let message_bytes = bincode::serialize(&message).map_err(SocketError::Serialization)?;
@@ -91,9 +91,9 @@ impl<R: serde::de::DeserializeOwned + std::fmt::Debug, W: serde::Serialize + std
             .map_err(SocketError::StreamWrite)?;
         trace!("Sending {:?}:  {:?}", message, message_bytes);
 
-        Ok(())
+        Ok(header)
     }
-    pub fn try_recv(&mut self) -> Result<R, SocketError> {
+    pub fn try_recv(&mut self) -> Result<(Header, R), SocketError> {
         // debug!("recv");
 
         // well, this method doesn't fix the problem
@@ -114,7 +114,7 @@ impl<R: serde::de::DeserializeOwned + std::fmt::Debug, W: serde::Serialize + std
 
         self.last_header = None;
 
-        Ok(message)
+        Ok((header, message))
     }
 
     fn try_get<T: serde::de::DeserializeOwned + std::fmt::Debug>(

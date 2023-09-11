@@ -33,6 +33,6 @@ fn main() {
 
     debug!(
         "Stopping loop. The server ran {}",
-        shared::time::display_duration(stopwatch.read(), "")
+        shared::time::display_duration(stopwatch.read())
     );
 }

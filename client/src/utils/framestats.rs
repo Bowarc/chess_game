@@ -1,10 +1,6 @@
-// use {
-//     crate::{assets, maths, render, utils::time},
-//     ggez::{
-//         graphics::{self, Drawable},
-//         Context, GameResult,
-//     },
-// };
+const SPACING: &str = " ";
+const BACKGROUND_MIN_WIDTH: f32 = 272.;
+
 pub struct FrameStats {
     update_time: shared::time::Stopwatch,
     draw_time: shared::time::Stopwatch,
@@ -62,43 +58,17 @@ impl FrameStats {
         ctx: &mut ggez::Context,
         render_request: &mut crate::render::RenderRequest,
         in_loading_requests: &[crate::assets::loader::Request],
+        network_stats: &crate::networking::NetworkStats,
     ) -> ggez::GameResult {
         use ggez::graphics::Drawable as _;
 
-        let spacing = " ";
-        let background_min_width = 272.;
-
-        let time_frag = ggez::graphics::TextFragment::new(format!(
-            "Time mesurements:\n{spacing}Fps        : {:.2}\n{spacing}Frame time : {}\n{spacing}Update time: {}\n{spacing}Draw time  : {}\n",
-            // 1./ctx.time.delta().as_secs_f64(),
-            ctx.time.fps(), // ctx.time.fps(), the first one is updating A LOT but is accurate, the latter is averaged over last 100 frames
-            shared::time::display_duration(self.frame_time(), ""),
-            shared::time::display_duration(self.update_time(), ""),
-            shared::time::display_duration(self.draw_time(), ""),
-        ))
-        .color(ggez::graphics::Color::from_rgb(0, 150, 150));
-
-        let mut asset_loading_debug_text = vec![];
-
-        for req in in_loading_requests {
-            asset_loading_debug_text.push(format!("{:?}", req))
-        }
-        let asset_loading_debug_text =
-            format!("{asset_loading_debug_text:#?}").replace([',', '[', ']', '"'], "");
-
-        let render_frag = ggez::graphics::TextFragment::new(format!(
-            "Render:\n{spacing}Elements  : {}\n{spacing}Sprites   : {}\n{spacing}Sprite not found: {}\n{spacing}Meshes    : {}\n{spacing}Texts     : {}\n{spacing}Draw calls: {}\n{spacing}In loading assets: {}",
-            self.render_log.elements(),
-            self.render_log.sprites(),
-            self.render_log.sprites_not_found(),
-            self.render_log.meshes(),
-            self.render_log.texts(),
-            self.render_log.draw_calls(),
-            asset_loading_debug_text,
-        )).color(ggez::graphics::Color::from_rgb(150,150,0));
+        let time_frag = self.draw_time_measurements(ctx);
+        let render_frag = self.draw_render_stats(in_loading_requests);
+        let network_frag = self.draw_network(network_stats);
 
         let mut total_text = ggez::graphics::Text::new(time_frag);
         total_text.add(render_frag);
+        total_text.add(network_frag);
 
         total_text.set_layout(ggez::graphics::TextLayout::top_left());
 
@@ -115,7 +85,7 @@ impl FrameStats {
                 ggez::graphics::DrawMode::fill(),
                 shared::maths::Rect::new(
                     shared::maths::Point::new(ttd.x as f64, ttd.y as f64),
-                    shared::maths::Vec2::new(ttd.w.max(background_min_width) as f64, ttd.h as f64),
+                    shared::maths::Vec2::new(ttd.w.max(BACKGROUND_MIN_WIDTH) as f64, ttd.h as f64),
                     0.,
                 )
                 .into(),
@@ -125,5 +95,58 @@ impl FrameStats {
             crate::render::Layer::UiBackground,
         );
         Ok(())
+    }
+
+    fn draw_render_stats(
+        &self,
+        in_loading_requests: &[crate::assets::loader::Request],
+    ) -> ggez::graphics::TextFragment {
+        let mut asset_loading_debug_text = vec![];
+
+        for req in in_loading_requests {
+            asset_loading_debug_text.push(format!("{:?}", req))
+        }
+        let asset_loading_debug_text =
+            format!("{asset_loading_debug_text:#?}").replace([',', '[', ']', '"'], "");
+
+        ggez::graphics::TextFragment::new(format!(
+            "Render:\n{SPACING}Elements  : {elements}\n{SPACING}Sprites   : {sprites}\n{SPACING}Sprite not found: {sprites_not_found}\n{SPACING}Meshes    : {meshes}\n{SPACING}Texts     : {texts}\n{SPACING}Draw calls: {draw_calls}\n{SPACING}In loading assets: {in_loading_assets}\n",
+            elements = self.render_log.elements(),
+            sprites = self.render_log.sprites(),
+            sprites_not_found = self.render_log.sprites_not_found(),
+            meshes = self.render_log.meshes(),
+            texts= self.render_log.texts(),
+            draw_calls= self.render_log.draw_calls(),
+            in_loading_assets= asset_loading_debug_text,
+        )).color(ggez::graphics::Color::from_rgb(150,150,0))
+    }
+
+    fn draw_time_measurements(&self, ctx: &ggez::Context) -> ggez::graphics::TextFragment {
+        ggez::graphics::TextFragment::new(format!(
+            "Time mesurements:\n{SPACING}Fps        : {fps:.2}\n{SPACING}Frame time : {frame_time}\n{SPACING}Update time: {update_time}\n{SPACING}Draw time  : {draw_time}\n",
+            // 1./ctx.time.delta().as_secs_f64(),
+            fps = ctx.time.fps(), // ctx.time.fps(), the first one is updating A LOT but is accurate, the latter is averaged over last 100 frames
+            frame_time = shared::time::display_duration(self.frame_time()),
+            update_time = shared::time::display_duration(self.update_time()),
+            draw_time = shared::time::display_duration(self.draw_time()),
+        ))
+        .color(ggez::graphics::Color::from_rgb(0, 150, 150))
+    }
+
+    fn draw_network(
+        &self,
+        network_stats: &crate::networking::NetworkStats,
+    ) -> ggez::graphics::TextFragment {
+        ggez::graphics::TextFragment::new(format!(
+            "Networking:\n{SPACING}RTT: {rtt}\n{SPACING}I/O: {i}/{o}\n{SPACING}I/O (10s): {i10s}/{o10s}\n{SPACING}IOPS {ips}/{ops}",
+            rtt = shared::time::display_duration(network_stats.get_rtt()),
+            i = shared::mem::display_bytes(network_stats.total_received()),
+            o = shared::mem::display_bytes(network_stats.total_sent()),
+            i10s = shared::mem::display_bytes(network_stats.received_last_10_sec()),
+            o10s = shared::mem::display_bytes(network_stats.sent_last_10_sec()),
+            ips = shared::mem::display_bytes(network_stats.bps_received_last_10_sec()),
+            ops = shared::mem::display_bytes(network_stats.bps_sent_last_10_sec()),
+        ))
+        .color(ggez::graphics::Color::from_rgb(0, 150, 0))
     }
 }
