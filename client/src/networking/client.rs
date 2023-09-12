@@ -3,33 +3,28 @@ enum Message {
     Text(String),
 }
 
-pub struct Client {
-    proxy: shared::threading::Channel<
-        shared::networking::ServerMessage,
-        shared::networking::ClientMessage,
-    >,
+pub struct Client<R: networking::Message, W: networking::Message> {
+    proxy: threading::Channel<R, W>,
     pub ip: std::net::SocketAddr,
     running: std::sync::Arc<std::sync::atomic::AtomicBool>,
-    stats: triple_buffer::Output<super::NetworkStats>,
+    stats: triple_buffer::Output<networking::NetworkStats<R, W>>,
 }
 
-impl Client {
+impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<R, W> {
     pub fn new(addr: std::net::SocketAddr) -> Self {
-        let stream = std::net::TcpStream::connect(shared::networking::DEFAULT_ADDRESS).unwrap();
+        let stream = std::net::TcpStream::connect(shared::DEFAULT_ADDRESS).unwrap();
         stream.set_nonblocking(true).unwrap();
 
-        let (server, proxy) = shared::threading::Channel::<
-            shared::networking::ServerMessage,
-            shared::networking::ClientMessage,
-        >::new_pair();
+        let (server, proxy) = threading::Channel::<R, W>::new_pair();
 
-        let (stats_in, stats_out) = triple_buffer::triple_buffer(&super::NetworkStats::new());
+        let s = networking::NetworkStats::<R, W>::default();
+        let (stats_in, stats_out) = triple_buffer::triple_buffer(&s);
 
         let running = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
 
         let running_thread = running.clone();
         std::thread::spawn(move || {
-            super::proxy::ClientProxy::new(stream, server, running_thread, stats_in).run();
+            networking::Proxy::new(stream, server, running_thread, stats_in).run();
         });
 
         Self {
@@ -40,7 +35,7 @@ impl Client {
         }
     }
 
-    pub fn stats(&mut self) -> &super::NetworkStats {
+    pub fn stats(&mut self) -> &networking::NetworkStats<R, W> {
         // needs mutable as it updates before reading
         self.stats.read()
     }
@@ -60,21 +55,16 @@ impl Client {
         Ok(())
     }
 
-    pub fn send(
-        &mut self,
-        msg: shared::networking::ClientMessage,
-    ) -> Result<(), super::NetworkError> {
-        self.proxy
-            .send(msg)
-            .map_err(|e| super::NetworkError::ChannelSend(format!("{e:?}")))
+    pub fn send(&mut self, msg: W) -> Result<(), std::sync::mpsc::SendError<W>> {
+        self.proxy.send(msg)
     }
 
     pub fn is_connected(&self) -> bool {
         self.running.load(std::sync::atomic::Ordering::Relaxed)
     }
 
-    pub fn request_ping(&mut self) -> Result<(), super::NetworkError> {
-        self.send(shared::networking::ClientMessage::Ping)?;
+    pub fn request_ping(&mut self) -> Result<(), std::sync::mpsc::SendError<W>> {
+        self.send(W::default_ping())?;
         Ok(())
     }
 }

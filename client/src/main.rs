@@ -16,12 +16,12 @@ struct Chess {
     renderer: render::Renderer,
     asset_mgr: assets::AssetManager,
     frame_stats: utils::framestats::FrameStats,
-    client: networking::Client,
+    client: networking::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
 }
 
 impl Chess {
     fn new(ctx: &mut ggez::Context, cfg: config::Config) -> ggez::GameResult<Self> {
-        let mut client = networking::Client::new(shared::networking::DEFAULT_ADDRESS);
+        let mut client = networking::Client::new(shared::DEFAULT_ADDRESS);
         client.request_ping().unwrap();
         let renderer = render::Renderer::new();
 
@@ -293,13 +293,13 @@ impl ggez::event::EventHandler for Chess {
 }
 
 fn main() -> ggez::GameResult {
-    let logger_config = shared::logger::LoggerConfig::new()
+    let logger_config = logger::LoggerConfig::new()
         .set_level(log::LevelFilter::Trace)
         .add_filter("wgpu_core", log::LevelFilter::Warn)
         .add_filter("wgpu_hal", log::LevelFilter::Error)
         .add_filter("naga", log::LevelFilter::Warn);
-    shared::logger::init(logger_config, Some("Client.log"));
-    shared::logger::test();
+    logger::init(logger_config, Some("Client.log"));
+    logger::test();
 
     debug!("Testing!!!");
 

@@ -11,14 +11,14 @@ pub use resolver::ResolverManager;
 pub use targets::TargetId;
 
 pub struct Loader {
-    channel: shared::threading::Channel<Request, RawLoadedData>,
+    channel: threading::Channel<Request, RawLoadedData>,
     cooldown: std::time::Duration,
 
     resolvers: ResolverManager<super::sprite::SpriteId, super::sound::SoundId, super::font::FontId>,
 }
 
 impl Loader {
-    pub fn new(channel: shared::threading::Channel<Request, RawLoadedData>) -> Self {
+    pub fn new(channel: threading::Channel<Request, RawLoadedData>) -> Self {
         Self {
             channel,
             cooldown: std::time::Duration::from_millis(10),
@@ -76,8 +76,7 @@ impl Loader {
 
 pub fn init() -> Handle {
     // loader pair
-    let (handle_channel, loader_channel) =
-        shared::threading::Channel::<Request, RawLoadedData>::new_pair();
+    let (handle_channel, loader_channel) = threading::Channel::<Request, RawLoadedData>::new_pair();
 
     let loader = Loader::new(loader_channel);
 

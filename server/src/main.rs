@@ -6,18 +6,21 @@ mod utils;
 const TARGET_TPS: f32 = 10.;
 
 fn main() {
-    let config = shared::logger::LoggerConfig::default();
+    let config = logger::LoggerConfig::default();
 
-    shared::logger::init(config, Some("server.log"));
+    logger::init(config, Some("server.log"));
 
-    let stopwatch = shared::time::Stopwatch::start_new();
+    let stopwatch = time::Stopwatch::start_new();
 
     let mut loop_helper = spin_sleep::LoopHelper::builder()
         .report_interval_s(0.5)
         .build_with_target_rate(TARGET_TPS);
 
     let running = utils::set_up_ctrlc();
-    let mut server = networking::Server::new(shared::networking::DEFAULT_ADDRESS);
+    let mut server = networking::Server::<
+        shared::message::ClientMessage,
+        shared::message::ServerMessage,
+    >::new(shared::DEFAULT_ADDRESS);
 
     debug!("Starting loop with {TARGET_TPS}TPS");
 
@@ -33,6 +36,6 @@ fn main() {
 
     debug!(
         "Stopping loop. The server ran {}",
-        shared::time::display_duration(stopwatch.read())
+        time::display_duration(stopwatch.read())
     );
 }

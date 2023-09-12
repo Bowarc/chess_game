@@ -19,18 +19,18 @@ impl Color {
     }
     pub fn random_rgb() -> Self {
         Self(
-            shared::random::get_inc(0u8, 255u8),
-            shared::random::get_inc(0u8, 255u8),
-            shared::random::get_inc(0u8, 255u8),
+            random::get_inc(0u8, 255u8),
+            random::get_inc(0u8, 255u8),
+            random::get_inc(0u8, 255u8),
             255,
         )
     }
     pub fn random_rgba() -> Self {
         Self(
-            shared::random::get_inc(0u8, 255u8),
-            shared::random::get_inc(0u8, 255u8),
-            shared::random::get_inc(0u8, 255u8),
-            shared::random::get_inc(0u8, 255u8),
+            random::get_inc(0u8, 255u8),
+            random::get_inc(0u8, 255u8),
+            random::get_inc(0u8, 255u8),
+            random::get_inc(0u8, 255u8),
         )
     }
 

@@ -1,9 +1,9 @@
-pub struct Server {
-    clients: Vec<super::Client>,
+pub struct Server<R: networking::Message, W: networking::Message> {
+    clients: Vec<super::Client<R, W>>,
     listener: std::net::TcpListener,
 }
 
-impl Server {
+impl<R: networking::Message + 'static, W: networking::Message + 'static> Server<R, W> {
     pub fn new(addr: std::net::SocketAddr) -> Self {
         let listener = std::net::TcpListener::bind(addr).unwrap();
         listener.set_nonblocking(true).unwrap();

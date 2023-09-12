@@ -1,13 +1,12 @@
 #[macro_use]
 extern crate log;
 
+pub const DEFAULT_ADDRESS: std::net::SocketAddr = std::net::SocketAddr::V4(
+    std::net::SocketAddrV4::new(std::net::Ipv4Addr::new(192, 168, 1, 39), 19864),
+);
+
 pub mod chess;
 pub mod file;
 pub mod id;
-pub mod logger;
 pub mod maths;
-pub mod mem;
-pub mod networking;
-pub mod random;
-pub mod threading;
-pub mod time;
+pub mod message;

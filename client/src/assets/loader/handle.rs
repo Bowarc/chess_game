@@ -1,12 +1,12 @@
 pub struct Handle {
     // This struct is used to make requests to the loader thead
-    channel: shared::threading::Channel<super::RawLoadedData, super::Request>,
+    channel: threading::Channel<super::RawLoadedData, super::Request>,
     ongoing: Vec<super::Request>,
     received_data: hashbrown::HashMap<super::TargetId, Vec<super::RawLoadedData>>,
 }
 
 impl Handle {
-    pub fn new(channel: shared::threading::Channel<super::RawLoadedData, super::Request>) -> Self {
+    pub fn new(channel: threading::Channel<super::RawLoadedData, super::Request>) -> Self {
         Self {
             channel,
             ongoing: Vec::new(),

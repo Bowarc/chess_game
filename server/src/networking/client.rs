@@ -1,27 +1,30 @@
-pub struct Client {
-    proxy: shared::threading::Channel<
-        shared::networking::ClientMessage,
-        shared::networking::ServerMessage,
-    >,
+pub struct Client<R: networking::Message, W: networking::Message> {
+    proxy: threading::Channel<R, W>,
     pub ip: std::net::SocketAddr,
     running: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    stats: triple_buffer::Output<networking::NetworkStats<R, W>>,
 }
 
-impl Client {
+impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<R, W> {
     pub fn new(stream: std::net::TcpStream, ip: std::net::SocketAddr) -> Self {
-        let (server, proxy) = shared::threading::Channel::<
-            shared::networking::ClientMessage,
-            shared::networking::ServerMessage,
-        >::new_pair();
+        let (server, proxy) = threading::Channel::<R, W>::new_pair();
 
         let running = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
 
+        let (mut input, mut output) =
+            triple_buffer::TripleBuffer::new(&networking::NetworkStats::<R, W>::default()).split();
+
         let running_thread = running.clone();
         std::thread::spawn(move || {
-            super::proxy::ClientProxy::new(stream, server, running_thread).run();
+            networking::Proxy::new(stream, server, running_thread, input).run();
         });
 
-        Self { proxy, ip, running }
+        Self {
+            proxy,
+            ip,
+            running,
+            stats: output,
+        }
     }
 
     pub fn update(&mut self) -> Result<(), String> {
@@ -33,7 +36,7 @@ impl Client {
             // Received messages from the player's client
 
             // self.proxy
-            //     .send(shared::networking::ServerMessage::Text(
+            //     .send(shared::message::ServerMessage::Text(
             //         "Test message".to_string(),
             //     ))
             //     .map_err(|e| format!("{e:?}"))?;

@@ -2,9 +2,9 @@ const SPACING: &str = " ";
 const BACKGROUND_MIN_WIDTH: f32 = 272.;
 
 pub struct FrameStats {
-    update_time: shared::time::Stopwatch,
-    draw_time: shared::time::Stopwatch,
-    frame_time: shared::time::Stopwatch,
+    update_time: time::Stopwatch,
+    draw_time: time::Stopwatch,
+    frame_time: time::Stopwatch,
     render_log: crate::render::RenderLog,
     // particles_log: (usize, usize), // number of sources, total number of particles
 }
@@ -12,9 +12,9 @@ pub struct FrameStats {
 impl FrameStats {
     pub fn new() -> Self {
         Self {
-            update_time: shared::time::Stopwatch::new(),
-            draw_time: shared::time::Stopwatch::new(),
-            frame_time: shared::time::Stopwatch::new(),
+            update_time: time::Stopwatch::new(),
+            draw_time: time::Stopwatch::new(),
+            frame_time: time::Stopwatch::new(),
             render_log: crate::render::RenderLog::new(),
         }
     }
@@ -58,7 +58,10 @@ impl FrameStats {
         ctx: &mut ggez::Context,
         render_request: &mut crate::render::RenderRequest,
         in_loading_requests: &[crate::assets::loader::Request],
-        network_stats: &crate::networking::NetworkStats,
+        network_stats: &networking::NetworkStats<
+            shared::message::ServerMessage,
+            shared::message::ClientMessage,
+        >,
     ) -> ggez::GameResult {
         use ggez::graphics::Drawable as _;
 
@@ -126,26 +129,29 @@ impl FrameStats {
             "Time mesurements:\n{SPACING}Fps        : {fps:.2}\n{SPACING}Frame time : {frame_time}\n{SPACING}Update time: {update_time}\n{SPACING}Draw time  : {draw_time}\n",
             // 1./ctx.time.delta().as_secs_f64(),
             fps = ctx.time.fps(), // ctx.time.fps(), the first one is updating A LOT but is accurate, the latter is averaged over last 100 frames
-            frame_time = shared::time::display_duration(self.frame_time()),
-            update_time = shared::time::display_duration(self.update_time()),
-            draw_time = shared::time::display_duration(self.draw_time()),
+            frame_time = time::display_duration(self.frame_time()),
+            update_time = time::display_duration(self.update_time()),
+            draw_time = time::display_duration(self.draw_time()),
         ))
         .color(ggez::graphics::Color::from_rgb(0, 150, 150))
     }
 
     fn draw_network(
         &self,
-        network_stats: &crate::networking::NetworkStats,
+        network_stats: &networking::NetworkStats<
+            shared::message::ServerMessage,
+            shared::message::ClientMessage,
+        >,
     ) -> ggez::graphics::TextFragment {
         ggez::graphics::TextFragment::new(format!(
             "Networking:\n{SPACING}RTT: {rtt}\n{SPACING}I/O: {i}/{o}\n{SPACING}I/O (10s): {i10s}/{o10s}\n{SPACING}IOPS {ips}/{ops}",
-            rtt = shared::time::display_duration(network_stats.get_rtt()),
-            i = shared::mem::display_bytes(network_stats.total_received()),
-            o = shared::mem::display_bytes(network_stats.total_sent()),
-            i10s = shared::mem::display_bytes(network_stats.received_last_10_sec()),
-            o10s = shared::mem::display_bytes(network_stats.sent_last_10_sec()),
-            ips = shared::mem::display_bytes(network_stats.bps_received_last_10_sec()),
-            ops = shared::mem::display_bytes(network_stats.bps_sent_last_10_sec()),
+            rtt = time::display_duration(network_stats.get_rtt()),
+            i = mem::display_bytes(network_stats.total_received()),
+            o = mem::display_bytes(network_stats.total_sent()),
+            i10s = mem::display_bytes(network_stats.received_last_10_sec()),
+            o10s = mem::display_bytes(network_stats.sent_last_10_sec()),
+            ips = mem::display_bytes(network_stats.bps_received_last_10_sec()),
+            ops = mem::display_bytes(network_stats.bps_sent_last_10_sec()),
         ))
         .color(ggez::graphics::Color::from_rgb(0, 150, 0))
     }
