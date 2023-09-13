@@ -1,8 +1,3 @@
-#[derive(PartialEq)]
-enum Message {
-    Text(String),
-}
-
 pub struct Client<R: networking::Message, W: networking::Message> {
     proxy: threading::Channel<R, W>,
     pub ip: std::net::SocketAddr,

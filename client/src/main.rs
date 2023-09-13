@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+// #![allow(dead_code)]
 #![allow(unused_variables)]
 
 #[macro_use]
@@ -298,7 +298,7 @@ fn main() -> ggez::GameResult {
         .add_filter("wgpu_core", log::LevelFilter::Warn)
         .add_filter("wgpu_hal", log::LevelFilter::Error)
         .add_filter("naga", log::LevelFilter::Warn);
-    logger::init(logger_config, Some("Client.log"));
+    logger::init(logger_config, Some("client.log"));
     logger::test();
 
     debug!("Testing!!!");
