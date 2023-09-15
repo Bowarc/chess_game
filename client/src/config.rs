@@ -29,8 +29,10 @@ pub struct Config {
 #[serde(default)]
 #[derivative(Default)]
 pub struct UserConfig {
-    // #[derivative(Default(value = "hashbrown::HashMap::new()"))]
-    // pub input_binds: hashbrown::HashMap<action::Action, input::Input>,
+    #[derivative(Default(value = "[
+            (crate::action::Action::UiPauseMenuOpen, crate::input::Input::KeyboardEscape)
+            ].iter().cloned().collect()"))]
+    pub input_binds: std::collections::HashMap<crate::action::Action, crate::input::Input>,
 }
 
 #[derive(derivative::Derivative, serde::Deserialize, Debug, Clone, Copy)]
@@ -71,7 +73,7 @@ pub struct AudioConfig {
 #[serde(default)]
 #[derivative(Default)]
 pub struct GUIConfig {
-    #[derivative(Default(value = "1."))]
+    #[derivative(Default(value = "3."))]
     pub scale: f64,
 }
 

@@ -4,9 +4,12 @@
 #[macro_use]
 extern crate log;
 
+mod action;
 mod assets;
 mod config;
 mod game;
+mod gui;
+mod input;
 mod networking;
 mod render;
 mod utils;
@@ -17,13 +20,15 @@ struct Chess {
     asset_mgr: assets::AssetManager,
     frame_stats: utils::framestats::FrameStats,
     client: networking::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
+    gui_menu: gui::Gui,
 }
 
 impl Chess {
-    fn new(ctx: &mut ggez::Context, cfg: config::Config) -> ggez::GameResult<Self> {
+    fn new(ctx: &mut ggez::Context, mut cfg: config::Config) -> ggez::GameResult<Self> {
         let mut client = networking::Client::new(shared::DEFAULT_ADDRESS);
         client.request_ping().unwrap();
         let renderer = render::Renderer::new();
+        let gui_menu = gui::Gui::new(ctx, &mut cfg)?;
 
         let asset_mgr = assets::AssetManager::new();
 
@@ -33,6 +38,7 @@ impl Chess {
             asset_mgr,
             frame_stats: utils::framestats::FrameStats::new(),
             client,
+            gui_menu,
         })
     }
 }
@@ -49,8 +55,7 @@ impl ggez::event::EventHandler for Chess {
 
         self.client.update().unwrap();
 
-        // self.gui_menu
-        //     .update(ctx, &mut self.config, &self.game.entities.world)?;
+        self.gui_menu.update(ctx, &mut self.cfg)?;
 
         // self.assets.update(ctx, &self.config, &self.game);
 
@@ -77,6 +82,7 @@ impl ggez::event::EventHandler for Chess {
             self.asset_mgr.loader().ongoing_requests(),
             self.client.stats(),
         )?;
+        self.gui_menu.draw(ctx, render_request)?;
 
         let mesh = ggez::graphics::Mesh::new_circle(
             ctx,
@@ -89,7 +95,7 @@ impl ggez::event::EventHandler for Chess {
 
         render_request.add(mesh, render::DrawParam::new(), render::Layer::Game);
 
-        let render_log = self.renderer.run(ctx)?;
+        let render_log = self.renderer.run(ctx, self.gui_menu.backend_mut())?;
 
         self.frame_stats.set_render_log(render_log);
 
@@ -107,7 +113,6 @@ impl ggez::event::EventHandler for Chess {
         _x: f32,
         _y: f32,
     ) -> std::result::Result<(), ggez::GameError> {
-        // self.client.request_ping();
         Ok(())
     }
 
@@ -152,10 +157,10 @@ impl ggez::event::EventHandler for Chess {
         x: f32,
         y: f32,
     ) -> std::result::Result<(), ggez::GameError> {
-        // self.gui_menu
-        //     .backend
-        //     .input
-        //     .mouse_wheel_event(x * 10., y * 10.);
+        self.gui_menu
+            .backend_mut()
+            .input
+            .mouse_wheel_event(x * 10., y * 10.);
         Ok(())
     }
 
@@ -189,7 +194,10 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
         character: char,
     ) -> std::result::Result<(), ggez::GameError> {
-        // self.gui_menu.backend.input.text_input_event(character);
+        self.gui_menu
+            .backend_mut()
+            .input
+            .text_input_event(character);
         Ok(())
     }
 
@@ -259,9 +267,6 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
     ) -> std::result::Result<bool, ggez::GameError> {
         debug!("See you next time. . .");
-        // self.client.shutdown();
-
-        spin_sleep::sleep(std::time::Duration::from_millis(100));
 
         Ok(false)
     }
@@ -286,8 +291,7 @@ impl ggez::event::EventHandler for Chess {
         e: ggez::GameError,
     ) -> bool {
         error!("{e}");
-        // for testing
-        error!("Unexpected error, exiting...");
+
         true
     }
 }
@@ -297,11 +301,12 @@ fn main() -> ggez::GameResult {
         .set_level(log::LevelFilter::Trace)
         .add_filter("wgpu_core", log::LevelFilter::Warn)
         .add_filter("wgpu_hal", log::LevelFilter::Error)
-        .add_filter("naga", log::LevelFilter::Warn);
+        .add_filter("naga", log::LevelFilter::Warn)
+        .add_filter("networking", log::LevelFilter::Warn);
     logger::init(logger_config, Some("client.log"));
     logger::test();
 
-    debug!("Testing!!!");
+    shared::file::list();
 
     let config: config::Config = config::load();
 

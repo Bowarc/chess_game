@@ -1,0 +1,35 @@
+Architecture(
+    uis:[
+        ArchitectureBit(
+            me: MainMenu,
+            parent: MainMenu,
+            childs: [NewOrContinueMenu, GameSettingsMenu, Credits, PlayerStats],
+        ),
+        ArchitectureBit(
+            me: NewOrContinueMenu,
+            parent: MainMenu,
+            childs: [CreateNewGameMenu, ],// TheActualGame
+        ),
+        ArchitectureBit(
+            me: CreateNewGameMenu,
+            parent: NewOrContinueMenu,
+            childs: [TheActualGame]
+        ),
+        ArchitectureBit(
+            me: GameSettingsMenu,
+            parent: MainMenu,
+            childs: []
+        ),
+        ArchitectureBit(
+            me: Credits,
+            parent: MainMenu,
+            childs: []
+        ),
+        ArchitectureBit(
+            me: PlayerStats,
+            parent: MainMenu,
+            childs: []
+        ),
+    ],
+    actual: MainMenu,
+)

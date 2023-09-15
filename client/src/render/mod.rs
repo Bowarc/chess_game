@@ -31,7 +31,11 @@ impl Renderer {
     }
 
     // Sprite rendering is not done atm
-    pub fn run(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult<RenderLog> {
+    pub fn run(
+        &mut self,
+        ctx: &mut ggez::Context,
+        menu_backend: &mut ggegui::EguiBackend,
+    ) -> ggez::GameResult<RenderLog> {
         let mut layer_index = 0;
         let mut global_log = RenderLog::new();
 
@@ -43,7 +47,7 @@ impl Renderer {
 
             let mut canvas = ggez::graphics::Canvas::from_frame(ctx, None);
 
-            global_log += Self::_run(ctx, &mut canvas, bits);
+            global_log += Self::_run(ctx, &mut canvas, bits, menu_backend);
 
             canvas.finish(ctx)?;
         }
@@ -56,6 +60,7 @@ impl Renderer {
         ctx: &mut ggez::Context,
         canvas: &mut ggez::graphics::Canvas,
         bits: &mut [(render_request::RenderRequestBit, DrawParam)],
+        menu_backend: &mut ggegui::EguiBackend,
     ) -> RenderLog {
         // 'log' is already taken by the log crate, fuck you
         let mut log = RenderLog::new();
@@ -65,6 +70,7 @@ impl Renderer {
         for (bit, dp) in bits {
             match bit {
                 RenderRequestBit::Sprite(id) => {
+                    todo!();
                     log.on_sprite();
                     sprites_used.push(*id)
                 }
@@ -86,7 +92,11 @@ impl Renderer {
                     log.on_text();
                     log.on_draw_call();
                 }
-                RenderRequestBit::EguiWindow => todo!(),
+                RenderRequestBit::EguiWindow => {
+                    // In the ggegui implementation, the drawparam is discarded
+                    canvas.draw(menu_backend, dp.to_ggez_unscaled());
+                    log.on_draw_call();
+                }
             }
         }
 

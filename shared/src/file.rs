@@ -64,6 +64,12 @@ impl std::ops::Add<&str> for Path {
     }
 }
 
+pub fn list() {
+    for p in Resolver::iter() {
+        debug!("{p:?}");
+    }
+}
+
 pub fn try_bytes(path: Path) -> Result<std::borrow::Cow<'static, [u8]>, std::io::Error> {
     let stopwatch = time::Stopwatch::start_new();
     let start_info_message = format!("Loading {:?} {}", path.fs, path.p);

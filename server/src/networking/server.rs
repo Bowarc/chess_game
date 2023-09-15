@@ -14,11 +14,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Server<
         }
     }
     pub fn update(&mut self) {
-        // debug!(
-        //     "Connected accounts: {:?}",
-        //     self.account_manager.connected_accounts
-        // );
-
+        let old_client_len = self.clients.len();
         self.clients.retain_mut(|handle| {
             // trace!("updating ({})", handle.ip);
             if let Err(e) = handle.update() {
@@ -31,6 +27,10 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Server<
                 true
             }
         });
+
+        if self.clients.len() != old_client_len {
+            debug!("Currently connected to {} clients", self.clients.len());
+        }
 
         match self.listener.accept() {
             Ok((stream, addr)) => {

@@ -55,6 +55,7 @@ impl<AssetType: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + s
     fn get(&self, asset: &AssetType) -> Result<std::borrow::Cow<'static, [u8]>, std::io::Error> {
         let path = self.inner.get(asset).unwrap().clone();
 
+        debug!("Requesting file at {path:?} for {:?} filesystem", self.fs);
         shared::file::try_bytes(shared::file::Path::new(self.fs, path))
     }
 }
