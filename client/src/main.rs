@@ -93,6 +93,13 @@ impl ggez::event::EventHandler for Chess {
             render::Color::WHITE.into(),
         )?;
 
+        // let mesh = ggez::graphics::Mesh::new_rectangle(
+        //     ctx,
+        //     ggez::graphics::DrawMode::fill(),
+        //     shared::maths::Rect::new(shared::maths::Point::ZERO, window_size,0.).into(),
+        //     render::Color::WHITE.into(),
+        // )?;
+
         render_request.add(mesh, render::DrawParam::new(), render::Layer::Game);
 
         let render_log = self.renderer.run(ctx, self.gui_menu.backend_mut())?;
@@ -321,7 +328,7 @@ fn main() -> ggez::GameResult {
                 .srgb(config.window.srgb),
         )
         .window_mode(config.window.into())
-        .backend(ggez::conf::Backend::default());
+        .backend(ggez::conf::Backend::Dx12);
 
     // if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
     //     let mut path = std::path::PathBuf::from(manifest_dir);
