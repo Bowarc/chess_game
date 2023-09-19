@@ -12,8 +12,8 @@ mod gui;
 mod input;
 mod networking;
 mod render;
+mod ui;
 mod utils;
-
 struct Chess {
     cfg: config::Config,
     renderer: render::Renderer,

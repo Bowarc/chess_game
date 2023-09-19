@@ -41,11 +41,8 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
         }
 
         while let Ok(msg) = self.proxy.try_recv() {
-            match &msg {
-                _ => {
-                    warn!("Unhandled server message: {msg:?}");
-                }
-            }
+
+            // warn!("Unhandled server message: {msg:?}");
         }
         Ok(())
     }
