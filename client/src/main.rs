@@ -14,6 +14,7 @@ mod networking;
 mod render;
 mod ui;
 mod utils;
+
 struct Chess {
     cfg: config::Config,
     renderer: render::Renderer,
@@ -21,6 +22,7 @@ struct Chess {
     frame_stats: utils::framestats::FrameStats,
     client: networking::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
     gui_menu: gui::Gui,
+    ui_mgr: ui::UiManager 
 }
 
 impl Chess {
@@ -39,6 +41,7 @@ impl Chess {
             frame_stats: utils::framestats::FrameStats::new(),
             client,
             gui_menu,
+            ui_mgr: ui::UiManager::default()
         })
     }
 }
@@ -117,9 +120,10 @@ impl ggez::event::EventHandler for Chess {
         &mut self,
         ctx: &mut ggez::Context,
         button: ggez::input::mouse::MouseButton,
-        _x: f32,
-        _y: f32,
+        x: f32,
+        y: f32,
     ) -> std::result::Result<(), ggez::GameError> {
+        self.ui_mgr.register_mouse_press(button, x, y);
         Ok(())
     }
 
@@ -127,10 +131,11 @@ impl ggez::event::EventHandler for Chess {
     fn mouse_button_up_event(
         &mut self,
         _ctx: &mut ggez::Context,
-        _button: ggez::input::mouse::MouseButton,
-        _x: f32,
-        _y: f32,
+        button: ggez::input::mouse::MouseButton,
+        x: f32,
+        y: f32,
     ) -> std::result::Result<(), ggez::GameError> {
+            self.ui_mgr.register_mouse_release(button, x, y);
         Ok(())
     }
 
@@ -168,6 +173,7 @@ impl ggez::event::EventHandler for Chess {
             .backend_mut()
             .input
             .mouse_wheel_event(x * 10., y * 10.);
+        self.ui_mgr.register_mouse_wheel(x, y);
         Ok(())
     }
 
@@ -179,9 +185,10 @@ impl ggez::event::EventHandler for Chess {
     fn key_down_event(
         &mut self,
         _ctx: &mut ggez::Context,
-        _input: ggez::input::keyboard::KeyInput,
-        _repeated: bool,
+        input: ggez::input::keyboard::KeyInput,
+        repeated: bool,
     ) -> Result<(), ggez::GameError> {
+        self.ui_mgr.register_key_down(input, repeated);
         Ok(())
     }
 
@@ -189,8 +196,9 @@ impl ggez::event::EventHandler for Chess {
     fn key_up_event(
         &mut self,
         _ctx: &mut ggez::Context,
-        _input: ggez::input::keyboard::KeyInput,
+        input: ggez::input::keyboard::KeyInput,
     ) -> Result<(), ggez::GameError> {
+        self.ui_mgr.register_key_up(input);
         Ok(())
     }
 
@@ -205,6 +213,7 @@ impl ggez::event::EventHandler for Chess {
             .backend_mut()
             .input
             .text_input_event(character);
+        self.ui_mgr.register_text_input(character);
         Ok(())
     }
 

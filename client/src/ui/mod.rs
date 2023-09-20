@@ -1,18 +1,19 @@
 pub mod element;
 pub mod event;
 pub mod value;
+pub mod register;
 
 pub use value::Value;
 
 pub type Id = String;
 
 #[derive(Default)]
-pub struct Ui {
+pub struct UiManager {
     elements: Vec<element::Element>,
     events: std::collections::VecDeque<event::Event>,
 }
 
-impl Ui {
+impl UiManager {
     pub fn new() -> Self {
         Self::default()
     }
@@ -96,7 +97,7 @@ impl Ui {
 }
 
 /// Event registration
-impl Ui {
+impl UiManager {
     pub fn register_mouse_press(
         &mut self,
         button: ggez::input::mouse::MouseButton,
