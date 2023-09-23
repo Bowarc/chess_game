@@ -1,3 +1,4 @@
+#[derive(Copy, Clone, PartialEq, Default)]
 pub struct BitBoard(u64);
 
 // format!(":b", self.0) displays the raw bytes of the stored value
@@ -18,12 +19,28 @@ impl BitBoard {
 
         self.sub(b);
     }
+    pub fn read(&self, row: impl Into<i32>, col: impl Into<i32>) -> bool {
+        let index = index(row, col);
+
+        let mask = BitBoard(1 << index);
+
+        println!("Mask: {mask}");
+
+        (self & mask).0 != 0
+
+        // self.0 & 1 << index(row, col) != 0
+    }
 
     pub fn add(&mut self, other: BitBoard) {
-        self.0 |= other.0
+        *self |= other
     }
     pub fn sub(&mut self, other: BitBoard) {
-        self.0 &= !other.0
+        *self &= !other
+    }
+
+    /// Used to see the other player's perspective
+    pub fn flip(&mut self) {
+        self.0 = self.0.swap_bytes()
     }
 }
 
@@ -68,15 +85,164 @@ impl From<u64> for BitBoard {
     }
 }
 
-#[test]
-fn bboard() {
-    let mut b = BitBoard(987654321987654321);
+// impl std::ops::Deref for BitBoard {
+//     type Target = u64;
 
-    println!("{b}");
+//     fn deref(&self) -> &Self::Target {
+//         &self.0
+//     }
+// }
 
-    b.set(0, 0);
-    println!("{b}");
+// impl std::ops::DerefMut for BitBoard {
+//     fn deref_mut(&mut self) -> &mut u64 {
+//         &mut self.0
+//     }
+// }
 
-    b.unset(0, 0);
-    println!("{b}")
+// AND
+impl std::ops::BitAnd for BitBoard {
+    type Output = BitBoard;
+    fn bitand(self, rhs: BitBoard) -> BitBoard {
+        BitBoard(self.0 & rhs.0)
+    }
 }
+
+impl std::ops::BitAnd for &BitBoard {
+    type Output = BitBoard;
+    fn bitand(self, rhs: &BitBoard) -> BitBoard {
+        BitBoard(self.0 & rhs.0)
+    }
+}
+
+impl std::ops::BitAnd<&BitBoard> for BitBoard {
+    type Output = BitBoard;
+    fn bitand(self, rhs: &BitBoard) -> BitBoard {
+        BitBoard(self.0 & rhs.0)
+    }
+}
+
+impl std::ops::BitAnd<BitBoard> for &BitBoard {
+    type Output = BitBoard;
+    fn bitand(self, rhs: BitBoard) -> BitBoard {
+        BitBoard(self.0 & rhs.0)
+    }
+}
+
+// AND ASSIGN
+impl std::ops::BitAndAssign for BitBoard {
+    fn bitand_assign(&mut self, rhs: Self) {
+        *self = *self & rhs
+    }
+}
+impl std::ops::BitAndAssign<&BitBoard> for BitBoard {
+    fn bitand_assign(&mut self, rhs: &Self) {
+        *self = *self & rhs
+    }
+}
+
+// OR
+impl std::ops::BitOr for BitBoard {
+    type Output = BitBoard;
+    fn bitor(self, rhs: BitBoard) -> BitBoard {
+        BitBoard(self.0 | rhs.0)
+    }
+}
+
+impl std::ops::BitOr for &BitBoard {
+    type Output = BitBoard;
+    fn bitor(self, rhs: &BitBoard) -> BitBoard {
+        BitBoard(self.0 | rhs.0)
+    }
+}
+
+impl std::ops::BitOr<&BitBoard> for BitBoard {
+    type Output = BitBoard;
+    fn bitor(self, rhs: &BitBoard) -> BitBoard {
+        BitBoard(self.0 | rhs.0)
+    }
+}
+
+impl std::ops::BitOr<BitBoard> for &BitBoard {
+    type Output = BitBoard;
+    fn bitor(self, rhs: BitBoard) -> BitBoard {
+        BitBoard(self.0 | rhs.0)
+    }
+}
+
+// OR ASSIGN
+impl std::ops::BitOrAssign for BitBoard {
+    fn bitor_assign(&mut self, rhs: Self) {
+        *self = *self | rhs
+    }
+}
+impl std::ops::BitOrAssign<&BitBoard> for BitBoard {
+    fn bitor_assign(&mut self, rhs: &Self) {
+        *self = *self | rhs
+    }
+}
+
+impl std::ops::Not for BitBoard {
+    type Output = BitBoard;
+
+    fn not(self) -> BitBoard {
+        BitBoard(!self.0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn index() {
+        assert_eq!(super::index(2, 4), 20);
+
+        assert_eq!(super::index(3, 6), 30);
+
+        assert_eq!(super::index(0, 0), 0);
+    }
+
+    #[test]
+    fn set() {
+        let mut b = BitBoard(0);
+
+        b.set(0, 0);
+
+        assert_eq!(b, BitBoard(1));
+
+        b.set(3, 6);
+
+        assert_eq!(b, BitBoard(1073741825))
+    }
+
+    #[test]
+    fn unset() {
+        let mut b = BitBoard(987654321987654321);
+
+        b.unset(0, 0);
+
+        assert_eq!(b, BitBoard(987654321987654320));
+
+        b.unset(2, 4);
+
+        assert_eq!(b, BitBoard(987654321986605744))
+    }
+}
+
+// #[test]
+// fn bboard() {
+//     let mut b = BitBoard(987654321987654321);
+
+//     println!("{b}");
+
+//     b.set(0, 0);
+//     println!("{b}");
+
+//     b.unset(0, 0);
+//     println!("{b}");
+
+//     b.set(0, 0);
+//     println!("{b}");
+
+//     println!("{}", b.read(7, 1))
+// }
