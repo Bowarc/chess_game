@@ -46,8 +46,9 @@ impl ElementType {
 }
 
 impl ElementPosition {
-    pub fn new_value(value: impl Into<ggez::mint::Point2<super::Value>>) -> Self {
-        Self::Value(value.into())
+    pub fn new_value(value: impl Into<(super::Value, super::Value)>) -> Self {
+        let value = value.into();
+        Self::Value(ggez::mint::Point2::from([value.0, value.1]))
     }
     pub fn new_anchor(
         anchor: Anchor,
@@ -151,8 +152,8 @@ impl Element {
     pub fn draw(
         &mut self,
         ctx: &mut ggez::Context,
-        _canvas: &mut ggez::graphics::Canvas,
         global_mesh: &mut ggez::graphics::MeshBuilder,
+        _render_request: &mut crate::render::RenderRequest
     ) -> ggez::GameResult {
         let rect = self.compute_rect(ctx);
         match &self.t {

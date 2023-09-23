@@ -14,6 +14,7 @@ mod networking;
 mod render;
 mod ui;
 mod utils;
+
 struct Chess {
     cfg: config::Config,
     renderer: render::Renderer,
@@ -21,6 +22,7 @@ struct Chess {
     frame_stats: utils::framestats::FrameStats,
     client: networking::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
     gui_menu: gui::Gui,
+    ui_mgr: ui::UiManager 
 }
 
 impl Chess {
@@ -32,6 +34,10 @@ impl Chess {
 
         let asset_mgr = assets::AssetManager::new();
 
+        let mut ui_mgr = ui::UiManager::default();
+
+        ui::register::register_ui_elements(&mut ui_mgr);
+
         Ok(Self {
             cfg,
             renderer,
@@ -39,6 +45,7 @@ impl Chess {
             frame_stats: utils::framestats::FrameStats::new(),
             client,
             gui_menu,
+            ui_mgr
         })
     }
 }
@@ -56,6 +63,8 @@ impl ggez::event::EventHandler for Chess {
         self.client.update().unwrap();
 
         self.gui_menu.update(ctx, &mut self.cfg)?;
+
+        self.ui_mgr.update(ctx);
 
         // self.assets.update(ctx, &self.config, &self.game);
 
@@ -83,17 +92,8 @@ impl ggez::event::EventHandler for Chess {
             self.client.stats(),
         )?;
         self.gui_menu.draw(ctx, render_request)?;
+        self.ui_mgr.draw(ctx, render_request)?;
 
-        let mesh = ggez::graphics::Mesh::new_circle(
-            ctx,
-            ggez::graphics::DrawMode::fill(),
-            shared::maths::Point::new(window_size.x / 2., window_size.y / 2.),
-            100.,
-            0.1,
-            render::Color::WHITE.into(),
-        )?;
-
-        render_request.add(mesh, render::DrawParam::new(), render::Layer::Game);
 
         let render_log = self.renderer.run(ctx, self.gui_menu.backend_mut())?;
 
@@ -110,9 +110,10 @@ impl ggez::event::EventHandler for Chess {
         &mut self,
         ctx: &mut ggez::Context,
         button: ggez::input::mouse::MouseButton,
-        _x: f32,
-        _y: f32,
+        x: f32,
+        y: f32,
     ) -> std::result::Result<(), ggez::GameError> {
+        self.ui_mgr.register_mouse_press(button, x, y);
         Ok(())
     }
 
@@ -120,10 +121,11 @@ impl ggez::event::EventHandler for Chess {
     fn mouse_button_up_event(
         &mut self,
         _ctx: &mut ggez::Context,
-        _button: ggez::input::mouse::MouseButton,
-        _x: f32,
-        _y: f32,
+        button: ggez::input::mouse::MouseButton,
+        x: f32,
+        y: f32,
     ) -> std::result::Result<(), ggez::GameError> {
+            self.ui_mgr.register_mouse_release(button, x, y);
         Ok(())
     }
 
@@ -161,6 +163,7 @@ impl ggez::event::EventHandler for Chess {
             .backend_mut()
             .input
             .mouse_wheel_event(x * 10., y * 10.);
+        self.ui_mgr.register_mouse_wheel(x, y);
         Ok(())
     }
 
@@ -172,9 +175,10 @@ impl ggez::event::EventHandler for Chess {
     fn key_down_event(
         &mut self,
         _ctx: &mut ggez::Context,
-        _input: ggez::input::keyboard::KeyInput,
-        _repeated: bool,
+        input: ggez::input::keyboard::KeyInput,
+        repeated: bool,
     ) -> Result<(), ggez::GameError> {
+        self.ui_mgr.register_key_down(input, repeated);
         Ok(())
     }
 
@@ -182,8 +186,9 @@ impl ggez::event::EventHandler for Chess {
     fn key_up_event(
         &mut self,
         _ctx: &mut ggez::Context,
-        _input: ggez::input::keyboard::KeyInput,
+        input: ggez::input::keyboard::KeyInput,
     ) -> Result<(), ggez::GameError> {
+        self.ui_mgr.register_key_up(input);
         Ok(())
     }
 
@@ -198,6 +203,7 @@ impl ggez::event::EventHandler for Chess {
             .backend_mut()
             .input
             .text_input_event(character);
+        self.ui_mgr.register_text_input(character);
         Ok(())
     }
 
@@ -321,7 +327,7 @@ fn main() -> ggez::GameResult {
                 .srgb(config.window.srgb),
         )
         .window_mode(config.window.into())
-        .backend(ggez::conf::Backend::default());
+        .backend(ggez::conf::Backend::Dx12);
 
     // if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
     //     let mut path = std::path::PathBuf::from(manifest_dir);

@@ -22,4 +22,6 @@ derivative.workspace = true
 log.workspace = true
 rand.workspace = true
 networking.workspace = true
-time.workspace =true
+time.workspace = true
+ron.workspace = true
+lazy_static = "1.4.0"
