@@ -81,17 +81,18 @@ impl UiManager {
     pub fn draw(
         &mut self,
         ctx: &mut ggez::Context,
-        canvas: &mut ggez::graphics::Canvas,
+        render_request: &mut crate::render::RenderRequest
     ) -> ggez::GameResult {
         let mut global_mesh = ggez::graphics::MeshBuilder::new();
         for elem in self.elements.iter_mut() {
-            elem.draw(ctx, canvas, &mut global_mesh)?
+            elem.draw(ctx,&mut global_mesh, render_request)?
         }
 
-        canvas.draw(
-            &ggez::graphics::Mesh::from_data(ctx, global_mesh.build()),
-            ggez::graphics::DrawParam::new(),
-        );
+        // canvas.draw(
+        //     &ggez::graphics::Mesh::from_data(ctx, global_mesh.build()),
+        //     ggez::graphics::DrawParam::new(),
+        // );
+        render_request.add(global_mesh, crate::render::DrawParam::default(), crate::render::Layer::Ui);
         Ok(())
     }
 }

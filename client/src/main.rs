@@ -34,6 +34,10 @@ impl Chess {
 
         let asset_mgr = assets::AssetManager::new();
 
+        let mut ui_mgr = ui::UiManager::default();
+
+        ui::register::register_ui_elements(&mut ui_mgr);
+
         Ok(Self {
             cfg,
             renderer,
@@ -41,7 +45,7 @@ impl Chess {
             frame_stats: utils::framestats::FrameStats::new(),
             client,
             gui_menu,
-            ui_mgr: ui::UiManager::default()
+            ui_mgr
         })
     }
 }
@@ -59,6 +63,8 @@ impl ggez::event::EventHandler for Chess {
         self.client.update().unwrap();
 
         self.gui_menu.update(ctx, &mut self.cfg)?;
+
+        self.ui_mgr.update(ctx);
 
         // self.assets.update(ctx, &self.config, &self.game);
 
@@ -86,24 +92,8 @@ impl ggez::event::EventHandler for Chess {
             self.client.stats(),
         )?;
         self.gui_menu.draw(ctx, render_request)?;
+        self.ui_mgr.draw(ctx, render_request)?;
 
-        let mesh = ggez::graphics::Mesh::new_circle(
-            ctx,
-            ggez::graphics::DrawMode::fill(),
-            shared::maths::Point::new(window_size.x / 2., window_size.y / 2.),
-            100.,
-            0.1,
-            render::Color::WHITE.into(),
-        )?;
-
-        // let mesh = ggez::graphics::Mesh::new_rectangle(
-        //     ctx,
-        //     ggez::graphics::DrawMode::fill(),
-        //     shared::maths::Rect::new(shared::maths::Point::ZERO, window_size,0.).into(),
-        //     render::Color::WHITE.into(),
-        // )?;
-
-        render_request.add(mesh, render::DrawParam::new(), render::Layer::Game);
 
         let render_log = self.renderer.run(ctx, self.gui_menu.backend_mut())?;
 
