@@ -51,16 +51,16 @@ impl std::fmt::Display for BitBoard {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut s: String = format!("BitBoard({})\n", self.0);
 
-        for row in (0..8).rev() {
-            for col in 0..8 {
-                let pos = super::Position::from_xy(row, col).unwrap();
+        for col in (0..8).rev() {
+            for row in 0..8 {
+                let pos = super::Position::from_index(row, col).unwrap();
                 let index = pos.to_index();
                 if self.0 & (1u64 << index) == (1u64 << index) {
                     s.push_str("X ");
                 } else {
                     s.push_str("• ");
                 }
-                if col % 8 == 7 {
+                if row == 7 {
                     s.push('\n');
                 }
             }
@@ -209,21 +209,3 @@ mod tests {
         assert_eq!(b, BitBoard(987654321986605744))
     }
 }
-
-// #[test]
-// fn bboard() {
-//     let mut b = BitBoard(987654321987654321);
-
-//     println!("{b}");
-
-//     b.set(0, 0);
-//     println!("{b}");
-
-//     b.unset(0, 0);
-//     println!("{b}");
-
-//     b.set(0, 0);
-//     println!("{b}");
-
-//     println!("{}", b.read(7, 1))
-// }

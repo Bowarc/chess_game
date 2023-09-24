@@ -1,7 +1,9 @@
+use std::fmt::Display;
+
 #[derive(Default, Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Position {
-    file: File,
-    rank: Rank,
+    file: File, // x
+    rank: Rank, // y
 }
 
 // X
@@ -36,32 +38,81 @@ impl Position {
     pub fn from_file_rank(file: File, rank: Rank) -> Self {
         Self { file, rank }
     }
-    pub fn from_xy(x: impl Into<u8>, y: impl Into<u8>) -> Option<Self> {
+    pub fn from_index(x: impl Into<u8>, y: impl Into<u8>) -> Option<Self> {
         Some(Self {
             file: File::from_index(x)?,
             rank: Rank::from_index(y)?,
         })
     }
-
-    pub fn x(&self) -> u8 {
-        self.file.to_index()
+    pub fn to_index(&self) -> u8 {
+        self.file.to_index() * 8 + self.rank.to_index()
     }
 
     pub fn file(&self) -> File {
         self.file
     }
-
-    pub fn y(&self) -> u8 {
-        self.rank.to_index()
+    pub fn set_file(&mut self, new_file: File) {
+        self.file = new_file
     }
 
     pub fn rank(&self) -> Rank {
         self.rank
     }
-
-    pub fn to_index(&self) -> u8 {
-        self.x() * 8 + self.y()
+    pub fn new_rank(&mut self, new_rank: Rank) {
+        self.rank = new_rank
     }
+
+    pub fn move_up(&mut self, amnt: impl Into<u8>) {
+        let amnt = amnt.into();
+        self.rank += amnt
+    }
+    pub fn move_down(&mut self, amnt: impl Into<u8>) {
+        let amnt = amnt.into();
+        self.rank -= amnt
+    }
+    pub fn move_left(&mut self, amnt: impl Into<u8>) {
+        let amnt = amnt.into();
+        self.file -= amnt;
+    }
+    pub fn move_right(&mut self, amnt: impl Into<u8>) {
+        let amnt = amnt.into();
+        self.file += amnt
+    }
+
+    // pub fn x(&self) -> u8 {
+    //     self.file.to_index()
+    // }
+
+    // pub fn set_file(&mut self, new_file: File) {
+    //     self.file = new_file
+    // }
+    // pub fn reset_file(&mut self) {
+    //     self.file = File::from_index(0).unwrap()
+    // }
+
+    // pub fn y(&self) -> u8 {
+    //     self.rank.to_index()
+    // }
+
+    // pub fn set_rank(&mut self, new_rank: Rank) {
+    //     self.rank = new_rank
+    // }
+    // pub fn reset_rank(&mut self) {
+    //     self.rank = Rank::from_index(0).unwrap()
+    // }
+
+    // pub fn move_up(&mut self) {
+    //     self.rank += 1;
+    // }
+    // pub fn move_down(&mut self) {
+    //     self.rank -= 1;
+    // }
+    // pub fn move_left(&mut self) {
+    //     self.file -= 1;
+    // }
+    // pub fn move_right(&mut self) {
+    //     self.file += 1;
+    // }
 }
 
 impl From<super::Square> for super::Position {
@@ -188,7 +239,43 @@ impl std::ops::SubAssign<u8> for Rank {
 
 impl From<(u8, u8)> for Position {
     fn from(value: (u8, u8)) -> Self {
-        Self::from_xy(value.0, value.1).unwrap()
+        Self::from_index(value.0, value.1).unwrap()
+    }
+}
+
+impl ToString for File {
+    fn to_string(&self) -> String {
+        match self {
+            File::A => String::from("A"),
+            File::B => String::from("B"),
+            File::C => String::from("C"),
+            File::D => String::from("D"),
+            File::E => String::from("E"),
+            File::F => String::from("F"),
+            File::G => String::from("G"),
+            File::H => String::from("H"),
+        }
+    }
+}
+
+impl ToString for Rank {
+    fn to_string(&self) -> String {
+        match self {
+            Rank::One => String::from("1"),
+            Rank::Two => String::from("2"),
+            Rank::Three => String::from("3"),
+            Rank::Four => String::from("4"),
+            Rank::Five => String::from("5"),
+            Rank::Six => String::from("6"),
+            Rank::Seven => String::from("7"),
+            Rank::Eight => String::from("8"),
+        }
+    }
+}
+
+impl Display for Position {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.file.to_string(), self.rank.to_string())
     }
 }
 
@@ -237,14 +324,23 @@ mod tests {
 
     #[test]
     fn index() {
-        assert_eq!(Position::from_xy(2, 4).unwrap().to_index(), 20);
+        assert_eq!(Position::from_index(2, 4).unwrap().to_index(), 20);
 
-        assert_eq!(Position::from_xy(3, 6).unwrap().to_index(), 30);
+        assert_eq!(Position::from_index(3, 6).unwrap().to_index(), 30);
 
-        assert_eq!(Position::from_xy(0, 0).unwrap().to_index(), 0);
+        assert_eq!(Position::from_index(0, 0).unwrap().to_index(), 0);
 
-        assert_eq!(Position::from_xy(7, 7).unwrap().to_index(), 63);
+        assert_eq!(Position::from_index(7, 7).unwrap().to_index(), 63);
 
-        assert_eq!(Position::from_xy(8, 8), None)
+        assert_eq!(Position::from_index(8, 8), None)
+    }
+
+    #[test]
+    fn r#move() {
+        let mut pos = Position::from_index(0, 7).unwrap();
+
+        println!("{pos}");
+        pos.move_down(1);
+        println!("{pos}");
     }
 }

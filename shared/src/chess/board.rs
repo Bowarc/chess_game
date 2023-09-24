@@ -40,18 +40,21 @@ impl Board {
         let _idk = tokens.get(3).unwrap();
 
         // Set all the pieces to the right places
-        let mut file = super::File::H;
-        let mut rank = super::Rank::One;
+        let mut pos = super::Position::from_index(0, 7).unwrap();
         for p in pieces.chars() {
+            println!("Current pos: {pos}");
+
             // Check line end
             if p == '/' {
-                file -= 1;
+                println!("Moving down");
+                pos.set_file(super::File::A);
+                pos.move_down(1);
                 continue;
             }
 
             // check nbr
             if let Some(nbr) = p.to_digit(10) {
-                rank += nbr as u8;
+                pos.move_right(nbr as u8);
                 continue;
             }
 
@@ -65,9 +68,9 @@ impl Board {
             board.set(
                 piece,
                 super::Color::from_fen_char(p),
-                super::Position::from_file_rank(file, rank),
+                super::Position::from_file_rank(pos.file(), pos.rank()),
             );
-            rank += 1;
+            pos.move_right(1);
         }
 
         // 'Deserialize' the active player
