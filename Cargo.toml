@@ -1,4 +1,5 @@
 [workspace]
+resolver = "1"
 members = [
     "client",
     "server",
@@ -16,7 +17,6 @@ serde = { version = "1.0.188", features = ["derive"] }
 hashbrown = "0.14.0"
 ron = "0.8.1"
 thiserror = "1.0.48"
-rand = "0.8.5"
 spin_sleep = "1.1.1"
 logger = {git = "https://github.com/Bowarc/Crates.git", package = "logger"}
 networking = {git = "https://github.com/Bowarc/Crates.git", package = "networking"}
