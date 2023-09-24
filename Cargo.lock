@@ -2504,14 +2504,10 @@ dependencies = [
 name = "shared"
 version = "0.1.0"
 dependencies = [
- "colored",
- "derivative",
  "ggez",
  "hashbrown 0.14.0",
- "lazy_static",
  "log",
  "networking",
- "rand",
  "ron",
  "rust-embed",
  "serde",
