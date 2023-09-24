@@ -45,7 +45,8 @@ impl Position {
         })
     }
     pub fn to_index(&self) -> u8 {
-        self.file.to_index() * 8 + self.rank.to_index()
+        self.rank.to_index() * 8 + self.file.to_index()
+        // self.rank.to_index() << 3 ^ self.file.to_index() // crates.rs/chess method
     }
 
     pub fn file(&self) -> File {
@@ -78,41 +79,6 @@ impl Position {
         let amnt = amnt.into();
         self.file += amnt
     }
-
-    // pub fn x(&self) -> u8 {
-    //     self.file.to_index()
-    // }
-
-    // pub fn set_file(&mut self, new_file: File) {
-    //     self.file = new_file
-    // }
-    // pub fn reset_file(&mut self) {
-    //     self.file = File::from_index(0).unwrap()
-    // }
-
-    // pub fn y(&self) -> u8 {
-    //     self.rank.to_index()
-    // }
-
-    // pub fn set_rank(&mut self, new_rank: Rank) {
-    //     self.rank = new_rank
-    // }
-    // pub fn reset_rank(&mut self) {
-    //     self.rank = Rank::from_index(0).unwrap()
-    // }
-
-    // pub fn move_up(&mut self) {
-    //     self.rank += 1;
-    // }
-    // pub fn move_down(&mut self) {
-    //     self.rank -= 1;
-    // }
-    // pub fn move_left(&mut self) {
-    //     self.file -= 1;
-    // }
-    // pub fn move_right(&mut self) {
-    //     self.file += 1;
-    // }
 }
 
 impl From<super::Square> for super::Position {

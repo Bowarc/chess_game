@@ -42,11 +42,8 @@ impl Board {
         // Set all the pieces to the right places
         let mut pos = super::Position::from_index(0, 7).unwrap();
         for p in pieces.chars() {
-            println!("Current pos: {pos}");
-
             // Check line end
             if p == '/' {
-                println!("Moving down");
                 pos.set_file(super::File::A);
                 pos.move_down(1);
                 continue;
@@ -116,6 +113,18 @@ impl Board {
         let piece_bb = self.piece_bb.get_mut(&piece).unwrap();
         piece_bb.unset(pos);
     }
+
+    pub fn flip(&mut self) {
+        let w = self.white_bb;
+        self.white_bb.flip();
+        if self.white_bb == w {
+            println!("problem");
+        }
+        self.black_bb.flip();
+        for (_piece, bb) in self.piece_bb.iter_mut() {
+            bb.flip();
+        }
+    }
 }
 
 impl Default for Board {
@@ -138,16 +147,26 @@ mod tests {
 
     #[test]
     fn fen() {
-        let b =
+        let mut b =
             Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap();
 
         assert_eq!(b.active_player, super::super::Color::White);
 
-        println!("Whites: {}", b.white_bb);
-        println!("Blacks: {}", b.black_bb);
+        fn display(b: &Board) {
+            println!("Whites: {}", b.white_bb);
+            println!("Blacks: {}", b.black_bb);
 
-        for piece in super::super::piece::ALL_PIECES {
-            println!("{piece:?} {}", b.piece_bb.get(&piece).unwrap())
+            for piece in super::super::piece::ALL_PIECES {
+                println!("{piece:?} {}", b.piece_bb.get(&piece).unwrap())
+            }
         }
+        display(&b);
+
+        println!("Flipping");
+        b.flip();
+
+        display(&b);
+
+        println!("{}", 554050781184u64.swap_bytes());
     }
 }
