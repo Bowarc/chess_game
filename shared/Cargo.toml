@@ -25,3 +25,4 @@ networking.workspace = true
 time.workspace = true
 ron.workspace = true
 lazy_static = "1.4.0"
+hashbrown.workspace = true

@@ -3,24 +3,21 @@ pub struct BitBoard(u64);
 
 // format!(":b", self.0) displays the raw bytes of the stored value
 impl BitBoard {
-    pub fn set(&mut self, row: impl Into<i32>, col: impl Into<i32>) {
-        let index = index(row, col);
-
-        println!("Setting {index}");
+    pub fn set(&mut self, position: impl Into<super::Position>) {
+        let index = position.into().to_index();
 
         let b = BitBoard::from(1u64 << index);
         self.add(b);
     }
-    pub fn unset(&mut self, row: impl Into<i32>, col: impl Into<i32>) {
-        let index = index(row, col);
+    pub fn unset(&mut self, position: impl Into<super::Position>) {
+        let index = position.into().to_index();
 
-        println!("Unsetting {index}");
         let b = BitBoard::from(1u64 << index);
 
         self.sub(b);
     }
-    pub fn read(&self, row: impl Into<i32>, col: impl Into<i32>) -> bool {
-        let index = index(row, col);
+    pub fn read(&self, position: impl Into<super::Position>) -> bool {
+        let index = position.into().to_index();
 
         let mask = BitBoard(1 << index);
 
@@ -44,12 +41,6 @@ impl BitBoard {
     }
 }
 
-pub fn index(row: impl Into<i32>, col: impl Into<i32>) -> i32 {
-    let row = row.into();
-    let col = col.into();
-    row * 8 + col
-}
-
 impl std::fmt::Debug for BitBoard {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -57,13 +48,13 @@ impl std::fmt::Debug for BitBoard {
 }
 
 impl std::fmt::Display for BitBoard {
-    #[inline]
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut s: String = format!("BitBoard({})\n", self.0);
 
         for row in (0..8).rev() {
             for col in 0..8 {
-                let index = index(row, col);
+                let pos = super::Position::from_xy(row, col).unwrap();
+                let index = pos.to_index();
                 if self.0 & (1u64 << index) == (1u64 << index) {
                     s.push_str("X ");
                 } else {
@@ -192,25 +183,15 @@ impl std::ops::Not for BitBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn index() {
-        assert_eq!(super::index(2, 4), 20);
-
-        assert_eq!(super::index(3, 6), 30);
-
-        assert_eq!(super::index(0, 0), 0);
-    }
-
     #[test]
     fn set() {
         let mut b = BitBoard(0);
 
-        b.set(0, 0);
+        b.set((0, 0));
 
         assert_eq!(b, BitBoard(1));
 
-        b.set(3, 6);
+        b.set((3, 6));
 
         assert_eq!(b, BitBoard(1073741825))
     }
@@ -219,11 +200,11 @@ mod tests {
     fn unset() {
         let mut b = BitBoard(987654321987654321);
 
-        b.unset(0, 0);
+        b.unset((0, 0));
 
         assert_eq!(b, BitBoard(987654321987654320));
 
-        b.unset(2, 4);
+        b.unset((2, 4));
 
         assert_eq!(b, BitBoard(987654321986605744))
     }

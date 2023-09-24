@@ -2507,6 +2507,7 @@ dependencies = [
  "colored",
  "derivative",
  "ggez",
+ "hashbrown 0.14.0",
  "lazy_static",
  "log",
  "networking",
