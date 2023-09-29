@@ -13,25 +13,11 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Server<
             listener,
         }
     }
-    pub fn update(&mut self) {
-        let old_client_len = self.clients.len();
-        self.clients.retain_mut(|handle| {
-            // trace!("updating ({})", handle.ip);
-            if let Err(e) = handle.update() {
-                error!(
-                    "An error occured while updating client handle ({}) {e}, closing the handle",
-                    handle.ip
-                );
-                false
-            } else {
-                true
-            }
-        });
 
-        if self.clients.len() != old_client_len {
-            debug!("Currently connected to {} clients", self.clients.len());
-        }
-
+    pub fn clients(&mut self) -> &mut Vec<super::Client<R, W>> {
+        &mut self.clients
+    }
+    fn accept_new_clients(&mut self){
         match self.listener.accept() {
             Ok((stream, addr)) => {
                 debug!("New client {addr:?}");
@@ -55,6 +41,29 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Server<
             }
         }
     }
+    fn clean_disconnected_clients(&mut self){
+        let old_client_len = self.clients.len();
+        self.clients.retain_mut(|handle| {
+            // trace!("updating ({})", handle.ip);
+            if let Err(e) = handle.update() {
+                error!(
+                    "An error occured while updating client handle ({}) {e}, closing the handle",
+                    handle.ip
+                );
+                false
+            } else {
+                true
+            }
+        });
 
-    fn update_client_handles(&mut self) {}
+        if self.clients.len() != old_client_len {
+            debug!("Currently connected to {} clients", self.clients.len());
+        }
+    }
+
+    pub fn update(&mut self) {
+        self.accept_new_clients();
+        self.clean_disconnected_clients();
+    }
+        
 }

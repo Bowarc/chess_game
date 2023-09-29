@@ -2506,6 +2506,7 @@ version = "0.1.0"
 dependencies = [
  "ggez",
  "hashbrown 0.14.0",
+ "lazy_static",
  "log",
  "networking",
  "ron",

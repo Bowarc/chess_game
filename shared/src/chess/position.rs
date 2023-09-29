@@ -1,5 +1,25 @@
-use std::fmt::Display;
 
+/*
+
+    Note to understand how this should work
+    
+    let mut b = BitBoard(0);
+
+    b.set((3, 6));
+
+    Should make the board b:
+    BitBoard(2251799813685249)
+    8 • • • • • • • •
+    7 • • • X • • • •
+    6 • • • • • • • •
+    5 • • • • • • • •
+    4 • • • • • • • •
+    3 • • • • • • • •
+    2 • • • • • • • •
+    1 • • • • • • • •
+      A B C D E F G H 
+    Because its setting the square D7
+*/ 
 #[derive(Default, Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Position {
     file: File, // x
@@ -209,6 +229,12 @@ impl From<(u8, u8)> for Position {
     }
 }
 
+impl From<(super::File, super::Rank)> for Position{
+    fn from(value: (super::File, super::Rank)) -> Self {
+        Position::from_file_rank(value.0, value.1)        
+    }
+}
+
 impl ToString for File {
     fn to_string(&self) -> String {
         match self {
@@ -239,7 +265,7 @@ impl ToString for Rank {
     }
 }
 
-impl Display for Position {
+impl std::fmt::Display for Position {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}{}", self.file.to_string(), self.rank.to_string())
     }
@@ -290,9 +316,9 @@ mod tests {
 
     #[test]
     fn index() {
-        assert_eq!(Position::from_index(2, 4).unwrap().to_index(), 20);
+        assert_eq!(Position::from_index(2, 4).unwrap().to_index(), 34);
 
-        assert_eq!(Position::from_index(3, 6).unwrap().to_index(), 30);
+        assert_eq!(Position::from_index(3, 6).unwrap().to_index(), 51);
 
         assert_eq!(Position::from_index(0, 0).unwrap().to_index(), 0);
 
