@@ -28,16 +28,21 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
             id: shared::id::Id::new(),
         }
     }
-    pub fn id(&self) -> shared::id::Id{
+    pub fn id(&self) -> shared::id::Id {
         self.id
     }
 
-    pub fn try_recv(&mut self) -> Result<R, std::sync::mpsc::TryRecvError>{
+    pub fn try_recv(&mut self) -> Result<R, std::sync::mpsc::TryRecvError> {
         self.proxy.try_recv()
+    }
+    pub fn send(&mut self, msg: W) -> Result<(), std::sync::mpsc::SendError<W>> {
+        self.proxy.send(msg)
     }
     pub fn update(&mut self) -> Result<(), shared::error::server::ServerError> {
         if !self.is_connected() {
-            return Err(shared::error::server::ServerError::Client(shared::error::server::ClientError::ProxyDisconnected(self.ip)));
+            return Err(shared::error::server::ServerError::Client(
+                shared::error::server::ClientError::ProxyDisconnected(self.ip),
+            ));
         }
 
         while let Ok(_msg) = self.try_recv() {

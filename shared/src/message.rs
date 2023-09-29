@@ -3,8 +3,8 @@ pub enum ClientMessage {
     Text(String),
     Ping,
     Pong,
-    // Get the available games that the server is hosting
-    RequestAvailableGames
+    // Get the games that the server is hosting
+    RequestGames,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
@@ -13,7 +13,7 @@ pub enum ServerMessage {
     Ping,
     Pong,
     // Send a list of games (only send the useful informations, don't give everything)
-    AvailableGames(Vec<crate::game::Game>),
+    Games(Vec<crate::game::Game>),
 }
 
 impl networking::Message for ClientMessage {

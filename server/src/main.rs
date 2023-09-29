@@ -6,7 +6,6 @@ mod utils;
 const TARGET_TPS: f32 = 10.;
 
 fn main() {
-
     let config = logger::LoggerConfig::default().set_level(log::LevelFilter::Debug);
 
     logger::init(config, Some("server.log"));
@@ -23,12 +22,13 @@ fn main() {
         shared::message::ServerMessage,
     >::new(shared::DEFAULT_ADDRESS);
 
-    let mut game_mgr= game_manager::GameManager::new();
+    let mut game_mgr = game_manager::GameManager::new();
 
     debug!("Starting loop with {TARGET_TPS}TPS");
 
     while running.load(std::sync::atomic::Ordering::SeqCst) {
         loop_helper.loop_start();
+        utils::check_loop_health();
 
         server.update();
 
