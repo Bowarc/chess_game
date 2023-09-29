@@ -1,6 +1,5 @@
 pub struct Board {
     active_player: super::Color,
-    pieces: crate::maths::Vec2D<Option<super::Piece>>,
     white_bb: super::BitBoard,
     black_bb: super::BitBoard,
 
@@ -10,8 +9,7 @@ pub struct Board {
 impl Board {
     pub fn from_fen(fen: &str) -> Option<Self> {
         let mut board = Self {
-            active_player: super::Color::White,       // White always starts
-            pieces: crate::maths::Vec2D::new_empty(), // Make a new from fen string
+            active_player: super::Color::default(),    // White always starts (Unless the FEN string says otherwise)
             white_bb: super::BitBoard::default(),
             black_bb: super::BitBoard::default(),
             piece_bb: hashbrown::HashMap::default(),
@@ -28,8 +26,6 @@ impl Board {
             .collect::<Vec<String>>();
 
         if tokens.len() < 4 {
-            println!("Invalid FEN string ({fen})");
-
             error!("Invalid FEN string ({fen})");
             return None;
         }
@@ -57,7 +53,6 @@ impl Board {
 
             // Else, match the piece or return an error if it's no understood
             let Some(piece) = super::Piece::from_fen_char(p) else{
-                println!("Could not convert FEN '{p}' to piece");
                 error!("Could not convert FEN '{p}' to piece");
                 return  None
             };
@@ -72,8 +67,6 @@ impl Board {
 
         // 'Deserialize' the active player
         if active_player.len() != 1 {
-            println!("Could not understand the active player of fen ({fen})");
-
             error!("Could not understand the active player of fen ({fen})");
             return None;
         }
@@ -81,7 +74,6 @@ impl Board {
             "w" => board.active_player = super::Color::White,
             "b" => board.active_player = super::Color::Black,
             _ => {
-                println!("Could not get the active player from fen string ({fen})");
                 error!("Could not get the active player from fen string ({fen})");
                 return None;
             }
@@ -115,11 +107,7 @@ impl Board {
     }
 
     pub fn flip(&mut self) {
-        let w = self.white_bb;
         self.white_bb.flip();
-        if self.white_bb == w {
-            println!("problem");
-        }
         self.black_bb.flip();
         for (_piece, bb) in self.piece_bb.iter_mut() {
             bb.flip();

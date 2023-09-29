@@ -6,6 +6,7 @@ impl BitBoard {
     pub fn set(&mut self, position: impl Into<super::Position>) {
         let index = position.into().to_index();
 
+
         let b = BitBoard::from(1u64 << index);
         self.add(b);
     }
@@ -50,8 +51,8 @@ impl std::fmt::Debug for BitBoard {
 impl std::fmt::Display for BitBoard {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut s: String = format!("BitBoard({})\n", self.0);
-
         for col in (0..8).rev() {
+            s.push_str(&format!("{} ", col +1));
             for row in 0..8 {
                 let pos = super::Position::from_index(row, col).unwrap();
                 let index = pos.to_index();
@@ -65,6 +66,7 @@ impl std::fmt::Display for BitBoard {
                 }
             }
         }
+        s.push_str("  A B C D E F G H");
 
         write!(f, "{}", s)
     }
@@ -191,9 +193,13 @@ mod tests {
 
         assert_eq!(b, BitBoard(1));
 
-        b.set((3, 6));
+        let p = super::super::Position::from((3, 6));
 
-        assert_eq!(b, BitBoard(1073741825))
+        println!("Setting square {p}");
+
+        b.set(p);
+
+        assert_eq!(b, BitBoard(2251799813685249)) // 1073741825 With the other index method
     }
 
     #[test]
@@ -205,7 +211,22 @@ mod tests {
         assert_eq!(b, BitBoard(987654321987654320));
 
         b.unset((2, 4));
+                                
+        assert_eq!(b, BitBoard(987654304807785136)) // 987654321986605744 With the other index method
+    }
 
-        assert_eq!(b, BitBoard(987654321986605744))
+    #[test]
+    fn display(){
+        use super::super::{Position, File, Rank};
+        let mut b = BitBoard(0);
+
+        b.set(Position::from_file_rank(File::F, Rank::Three));
+
+        b.set((File::A, Rank::One));
+        b.set((File::A, Rank::Four));
+
+        b.set((File::H, Rank::Eight));
+
+        println!("{b}");
     }
 }

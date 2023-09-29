@@ -94,7 +94,6 @@ impl ggez::event::EventHandler for Chess {
         self.gui_menu.draw(ctx, render_request)?;
         self.ui_mgr.draw(ctx, render_request)?;
 
-
         let render_log = self.renderer.run(ctx, self.gui_menu.backend_mut())?;
 
         self.frame_stats.set_render_log(render_log);

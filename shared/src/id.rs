@@ -27,7 +27,7 @@ use core::{
 macro_rules! IdImpl {
   ( $(#[$docs:meta])* struct $name: ident, $int_type:ty, $non_zero_type:ty, $atomic_type: ty ) => {
     $(#[$docs])*
-    #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
     #[repr(transparent)]
     pub struct $name {
         id: $non_zero_type,

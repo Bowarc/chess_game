@@ -1,12 +1,13 @@
 #[macro_use]
 extern crate log;
-mod game;
+mod game_manager;
 mod networking;
 mod utils;
 const TARGET_TPS: f32 = 10.;
 
 fn main() {
-    let config = logger::LoggerConfig::default();
+
+    let config = logger::LoggerConfig::default().set_level(log::LevelFilter::Debug);
 
     logger::init(config, Some("server.log"));
 
@@ -22,6 +23,8 @@ fn main() {
         shared::message::ServerMessage,
     >::new(shared::DEFAULT_ADDRESS);
 
+    let mut game_mgr= game_manager::GameManager::new();
+
     debug!("Starting loop with {TARGET_TPS}TPS");
 
     while running.load(std::sync::atomic::Ordering::SeqCst) {
@@ -29,10 +32,10 @@ fn main() {
 
         server.update();
 
+        game_mgr.update(&mut server);
+
         loop_helper.loop_sleep();
     }
-
-    // spin_sleep::sleep(std::time::Duration::from_secs_f32(1.5));
 
     debug!(
         "Stopping loop. The server ran {}",

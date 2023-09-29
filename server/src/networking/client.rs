@@ -3,6 +3,7 @@ pub struct Client<R: networking::Message, W: networking::Message> {
     pub ip: std::net::SocketAddr,
     running: std::sync::Arc<std::sync::atomic::AtomicBool>,
     stats: triple_buffer::Output<networking::NetworkStats<R, W>>,
+    id: shared::id::Id,
 }
 
 impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<R, W> {
@@ -11,7 +12,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
 
         let running = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
 
-        let (mut input, mut output) =
+        let (input, output) =
             triple_buffer::TripleBuffer::new(&networking::NetworkStats::<R, W>::default()).split();
 
         let running_thread = running.clone();
@@ -24,15 +25,22 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
             ip,
             running,
             stats: output,
+            id: shared::id::Id::new(),
         }
     }
+    pub fn id(&self) -> shared::id::Id{
+        self.id
+    }
 
-    pub fn update(&mut self) -> Result<(), String> {
+    pub fn try_recv(&mut self) -> Result<R, std::sync::mpsc::TryRecvError>{
+        self.proxy.try_recv()
+    }
+    pub fn update(&mut self) -> Result<(), shared::error::server::ServerError> {
         if !self.is_connected() {
-            return Err("Proxy is disconnected".to_string());
+            return Err(shared::error::server::ServerError::Client(shared::error::server::ClientError::ProxyDisconnected(self.ip)));
         }
 
-        while let Ok(_msg) = self.proxy.try_recv() {
+        while let Ok(_msg) = self.try_recv() {
             // Received messages from the player's client
 
             // self.proxy
@@ -40,6 +48,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
             //         "Test message".to_string(),
             //     ))
             //     .map_err(|e| format!("{e:?}"))?;
+            warn!("Unhandled messgae from a client: {:?}", _msg);
         }
 
         Ok(())

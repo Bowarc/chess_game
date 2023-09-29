@@ -1,3 +1,12 @@
-pub struct Game {}
+pub struct Game {
+    
 
-impl Game {}
+}
+
+impl Game {
+    pub fn new() -> Self{
+        Self{
+
+        }
+    }
+}
