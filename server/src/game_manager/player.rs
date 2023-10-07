@@ -25,6 +25,10 @@ impl Player {
         self.name.clone()
     }
 
+    pub fn is_connected(&self) -> bool {
+        self.client.is_connected()
+    }
+
     pub fn try_recv(
         &mut self,
     ) -> Result<shared::message::ClientMessage, std::sync::mpsc::TryRecvError> {

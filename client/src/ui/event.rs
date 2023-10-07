@@ -8,8 +8,12 @@ pub enum Event {
         button: ggez::input::mouse::MouseButton,
         position: shared::maths::Point,
     },
+    MouseMotion {
+        pos: shared::maths::Point,
+        delta: shared::maths::Vec2,
+    },
     MouseWheel {
-        pos: shared::maths::Point, // not sure of what to call it
+        delta: shared::maths::Point, // not sure of what to call it
     },
     KeyDown {
         input: ggez::input::keyboard::KeyInput,

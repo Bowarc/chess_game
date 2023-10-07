@@ -22,7 +22,7 @@ struct Chess {
     frame_stats: utils::framestats::FrameStats,
     client: networking::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
     gui_menu: gui::Gui,
-    ui_mgr: ui::UiManager 
+    ui_mgr: ui::UiManager,
 }
 
 impl Chess {
@@ -45,7 +45,7 @@ impl Chess {
             frame_stats: utils::framestats::FrameStats::new(),
             client,
             gui_menu,
-            ui_mgr
+            ui_mgr,
         })
     }
 }
@@ -124,7 +124,7 @@ impl ggez::event::EventHandler for Chess {
         x: f32,
         y: f32,
     ) -> std::result::Result<(), ggez::GameError> {
-            self.ui_mgr.register_mouse_release(button, x, y);
+        self.ui_mgr.register_mouse_release(button, x, y);
         Ok(())
     }
 
@@ -133,11 +133,12 @@ impl ggez::event::EventHandler for Chess {
     fn mouse_motion_event(
         &mut self,
         _ctx: &mut ggez::Context,
-        _x: f32,
-        _y: f32,
-        _dx: f32,
-        _dy: f32,
+        x: f32,
+        y: f32,
+        dx: f32,
+        dy: f32,
     ) -> std::result::Result<(), ggez::GameError> {
+        self.ui_mgr.register_mouse_motion(x, y, dx, dy);
         Ok(())
     }
 

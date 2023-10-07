@@ -27,7 +27,7 @@ pub fn check_loop_health() {
 
     let elapsed = llt.elapsed();
     if elapsed > std::time::Duration::from_secs_f32(max_loop_time * 1.1) {
-        error!(
+        warn!(
             "[Server] Main loop failled to run at 10TPS: +{:.3?}",
             elapsed - std::time::Duration::from_secs_f32(max_loop_time)
         );

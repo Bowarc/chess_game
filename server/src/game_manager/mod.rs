@@ -39,6 +39,23 @@ impl GameManager {
         // self.active_games.retain(|game| game.is_active())
     }
 
+    fn clean_disconnected_players(&mut self) {
+        let mut i = 0;
+
+        while i < self.inactive_players.len() {
+            let p = self.inactive_players.get(i).unwrap(); // this shouls be fine
+            if !p.is_connected() {
+                debug!(
+                    "Player ({}) has been removed from the games due do client disonnection",
+                    p.id()
+                );
+                self.inactive_players.remove(i);
+            } else {
+                i += 1
+            };
+        }
+    }
+
     /// 'Steals' the clients from the server and registers them as player to store them in the list of inactive players
     fn register_new_players(
         &mut self,
@@ -109,6 +126,7 @@ impl GameManager {
         >,
     ) {
         self.clean_inactive();
+        self.clean_disconnected_players();
         self.register_new_players(server);
         self.update_connected_players();
         self.update_games();

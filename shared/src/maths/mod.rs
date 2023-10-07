@@ -1,7 +1,7 @@
 // pub mod arc;
 // pub mod circle;
+pub mod collision;
 pub mod line;
-
 pub mod point;
 pub mod rect;
 pub mod vec2d;

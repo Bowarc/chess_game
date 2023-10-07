@@ -7,7 +7,12 @@ pub struct Client<R: networking::Message, W: networking::Message> {
 
 impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<R, W> {
     pub fn new(addr: std::net::SocketAddr) -> Self {
-        let stream = std::net::TcpStream::connect(shared::DEFAULT_ADDRESS).unwrap();
+        let stream = std::net::TcpStream::connect(shared::DEFAULT_ADDRESS).unwrap_or_else(|_| {
+            panic!(
+                "Could not establish a connection with the server at ({})",
+                shared::DEFAULT_ADDRESS
+            )
+        });
         stream.set_nonblocking(true).unwrap();
 
         let (server, proxy) = threading::Channel::<R, W>::new_pair();
