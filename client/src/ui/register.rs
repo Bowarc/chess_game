@@ -1,34 +1,48 @@
 pub fn register_ui_elements(ui: &mut super::UiManager) {
-    let size = shared::maths::Point::new(10., 10.);
+    let build_style = |main_color: &str| -> super::style::Bundle {
+        super::style::Bundle::new(
+            super::Style::new(crate::render::Color::from_hex(main_color), None, None),
+            Some(super::Style::new(
+                crate::render::Color::from_hex(&format!("{main_color}aa")),
+                None,
+                Some(super::style::BorderStyle::new(
+                    crate::render::Color::from_hex("#000000"),
+                    5.,
+                )),
+            )),
+            Some(super::Style::new(
+                crate::render::Color::from_hex(&format!("{main_color}55")),
+                None,
+                Some(super::style::BorderStyle::new(
+                    crate::render::Color::from_hex("#000000"),
+                    5.,
+                )),
+            )),
+        )
+    };
 
-    let spacing = 20.;
+    let board_size = 1000.;
 
-    let mut style_bundle = super::style::Bundle::default();
-    *style_bundle.get_default_mut().get_color_mut() = crate::render::Color::from_rgb(0, 175, 150);
-    *style_bundle
-        .get_default_mut()
-        .get_border_mut()
-        .unwrap()
-        .get_size_mut() = 0.5;
+    let nbr_of_square: u8 = 8;
 
-    let mut tbundle = super::style::Bundle::default();
-    *tbundle.get_default_mut().get_color_mut() = crate::render::Color::WHITE;
-    *tbundle
-        .get_default_mut()
-        .get_border_mut()
-        .unwrap()
-        .get_color_mut() = crate::render::Color::from_rgb(0, 255, 0);
+    let size = shared::maths::Point::new(board_size / 8., board_size / 8.);
 
-    debug!("1: {style_bundle:?}\n2: {tbundle:?}");
+    let spacing = 0.;
 
-    for i in 0..10 {
+    let style1 = build_style("#b88b4a");
+
+    let style2 = build_style("#e3c16f");
+
+    for i in 0..nbr_of_square {
         let i = i as f64;
-        for j in 0..10 {
+        for j in 0..nbr_of_square {
             let j = j as f64;
 
             let centering = (
-                super::value::MagicValue::ScreenSizeW / 2. - 10. / 2. * (size.x + spacing),
-                super::value::MagicValue::ScreenSizeH / 2. - 10. / 2. * (size.y + spacing),
+                super::value::MagicValue::ScreenSizeW / 2.
+                    - nbr_of_square as f64 / 2. * (size.x + spacing),
+                super::value::MagicValue::ScreenSizeH / 2.
+                    - nbr_of_square as f64 / 2. * (size.y + spacing),
             );
 
             let pos = super::Position::new_value((
@@ -40,10 +54,10 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
                 super::element::ElementType::new_button(),
                 pos,
                 (size.x, size.y),
-                if j as i32 % 2 == 0 {
-                    tbundle
+                if (i + j) as i32 % 2 == 0 {
+                    style1
                 } else {
-                    style_bundle
+                    style2
                 },
             );
             ui.add_element(el);

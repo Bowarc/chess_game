@@ -50,6 +50,7 @@ impl Element {
         &mut self,
         ctx: &mut ggez::Context,
         global_mesh: &mut ggez::graphics::MeshBuilder,
+        top_mesh: &mut ggez::graphics::MeshBuilder,
         _render_request: &mut crate::render::RenderRequest,
     ) -> ggez::GameResult {
         let rect = self.compute_rect(ctx);
@@ -62,7 +63,8 @@ impl Element {
                 rect.rotation(),
             );
 
-            global_mesh.rectangle(
+            // Draw the border above the square
+            top_mesh.rectangle(
                 ggez::graphics::DrawMode::stroke(*border.get_size() as f32),
                 r.into(),
                 (*border.get_color()).into(),

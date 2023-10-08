@@ -1,8 +1,8 @@
 #[derive(Default, Debug, Clone, Copy)]
 pub struct Bundle {
     default: Style,
-    hovered: Style,
-    clicked: Style,
+    hovered: Option<Style>,
+    clicked: Option<Style>,
 }
 #[derive(Debug, Clone, Copy)]
 pub struct Style {
@@ -22,19 +22,19 @@ pub struct BorderStyle {
 }
 
 impl Bundle {
-    pub fn get(&self, state: &super::State) -> &Style {
+    pub fn get(&self, state: &super::State) -> Style {
         if state.clicked {
-            &self.clicked
+            self.clicked.unwrap_or(self.default)
         } else if state.hovered {
-            &self.hovered
+            self.hovered.unwrap_or(self.default)
         } else {
-            &self.default
+            self.default
         }
     }
 }
 
 impl Bundle {
-    pub fn new(default: Style, hovered: Style, clicked: Style) -> Self {
+    pub fn new(default: Style, hovered: Option<Style>, clicked: Option<Style>) -> Self {
         Self {
             default,
             hovered,
@@ -48,18 +48,18 @@ impl Bundle {
         &self.default
     }
 
-    pub fn get_hovered_mut(&mut self) -> &mut Style {
-        &mut self.hovered
+    pub fn get_hovered_mut(&mut self) -> Option<&mut Style> {
+        self.hovered.as_mut()
     }
-    pub fn get_hovered(&self) -> &Style {
-        &self.hovered
+    pub fn get_hovered(&self) -> Option<&Style> {
+        self.hovered.as_ref()
     }
 
-    pub fn get_clicked_mut(&mut self) -> &mut Style {
-        &mut self.clicked
+    pub fn get_clicked_mut(&mut self) -> Option<&mut Style> {
+        self.clicked.as_mut()
     }
-    pub fn get_clicked(&self) -> &Style {
-        &self.clicked
+    pub fn get_clicked(&self) -> Option<&Style> {
+        self.clicked.as_ref()
     }
 }
 

@@ -57,9 +57,10 @@ impl UiManager {
                     }
                     event::Event::MouseMotion { pos, delta: _ } => {
                         if shared::maths::collision::point_rect(pos, rect) {
-                            elem.state.hovered = true
+                            elem.state.hovered = true;
                         } else {
-                            elem.state.hovered = false
+                            elem.state.hovered = false;
+                            elem.state.clicked = false;
                         }
                     }
 
@@ -102,19 +103,15 @@ impl UiManager {
         render_request: &mut crate::render::RenderRequest,
     ) -> ggez::GameResult {
         let mut global_mesh = ggez::graphics::MeshBuilder::new();
+        let mut top_mesh = ggez::graphics::MeshBuilder::new();
         for elem in self.elements.iter_mut() {
-            elem.draw(ctx, &mut global_mesh, render_request)?
+            elem.draw(ctx, &mut global_mesh, &mut top_mesh, render_request)?
         }
 
-        // canvas.draw(
-        //     &ggez::graphics::Mesh::from_data(ctx, global_mesh.build()),
-        //     ggez::graphics::DrawParam::new(),
-        // );
-        render_request.add(
-            global_mesh,
-            crate::render::DrawParam::default(),
-            crate::render::Layer::Ui,
-        );
+        render_request.add(global_mesh, Default::default(), crate::render::Layer::Ui);
+
+        render_request.add(top_mesh, Default::default(), crate::render::Layer::Ui);
+
         Ok(())
     }
 }
