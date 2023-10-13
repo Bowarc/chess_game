@@ -50,7 +50,7 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
                 centering.1 + super::Value::from(size.y * j + spacing * j),
             ));
 
-            let base = super::element::ElementBase::new(
+            let el = super::element::Element::new_button(
                 pos,
                 (size.x, size.y),
                 if (i + j) as i32 % 2 == 0 {
@@ -59,8 +59,6 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
                     style2
                 },
             );
-
-            let el = super::element::Element::new_button(base);
             ui.add_element(el);
         }
     }

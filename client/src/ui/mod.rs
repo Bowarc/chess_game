@@ -6,6 +6,7 @@ pub mod register;
 mod state;
 pub mod style;
 pub mod value;
+mod widget;
 
 pub use anchor::Anchor;
 pub use position::Position;
@@ -27,8 +28,6 @@ impl UiManager {
     }
 
     pub fn update(&mut self, ctx: &mut ggez::Context) {
-        use element::TElement as _;
-
         // Re-initializes the new frame part of the element state struct
         self.elements
             .iter_mut()
@@ -60,7 +59,6 @@ impl UiManager {
         ctx: &mut ggez::Context,
         render_request: &mut crate::render::RenderRequest,
     ) -> ggez::GameResult {
-        use element::TElement as _;
         let mut background_mesh = ggez::graphics::MeshBuilder::new();
         let mut ui_mesh = ggez::graphics::MeshBuilder::new();
         let mut foreground_mesh = ggez::graphics::MeshBuilder::new();
@@ -143,8 +141,6 @@ impl UiManager {
 /// Getters
 impl UiManager {
     pub fn get_element(&mut self, id: Id) -> Option<&element::Element> {
-        use element::TElement as _;
-
         if let Some(index) = self
             .elements
             .iter()
