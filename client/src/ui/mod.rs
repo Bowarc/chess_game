@@ -13,7 +13,7 @@ pub use state::State;
 pub use style::Style;
 pub use value::Value;
 
-pub type Id = String;
+pub type Id = shared::id::Id;
 
 #[derive(Default)]
 pub struct UiManager {
@@ -22,79 +22,37 @@ pub struct UiManager {
 }
 
 impl UiManager {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     pub fn add_element(&mut self, elem: element::Element) {
         self.elements.push(elem)
     }
+
     pub fn update(&mut self, ctx: &mut ggez::Context) {
-        // If new elements are focussed, we need to unfocuss every other elements
-        let mut new_elements_focussed = Vec::<Id>::new();
+        use element::TElement as _;
 
-        while let Some(evnt) = self.events.pop_front() {
-            for elem in self.elements.iter_mut() {
-                let rect = elem.compute_rect(ctx);
-                match evnt {
-                    event::Event::MousePress {
-                        button: _,
-                        position,
-                    } => {
-                        if shared::maths::collision::point_rect(position, rect) {
-                            elem.state.clicked = true;
-                            elem.state.focussed = true;
-                        }
-                        new_elements_focussed.push(elem.id.clone())
-                    }
-                    event::Event::MouseRelease {
-                        button: _,
-                        position,
-                    } => {
-                        if shared::maths::collision::point_rect(position, rect) {
-                            elem.state.clicked = false;
-                        }
-                    }
-                    event::Event::MouseMotion { pos, delta: _ } => {
-                        if shared::maths::collision::point_rect(pos, rect) {
-                            elem.state.hovered = true;
-                        } else {
-                            elem.state.hovered = false;
-                            elem.state.clicked = false;
-                        }
-                    }
+        // Re-initializes the new frame part of the element state struct
+        self.elements
+            .iter_mut()
+            .for_each(|el| el.get_state_mut().new_frame());
 
-                    event::Event::MouseWheel { delta: _ } => {
-                        // Idk how to handle this event for now
+        while let Some(ev) = self.events.pop_front() {
+            for el in self.elements.iter_mut() {
+                match ev {
+                    event::Event::MousePress { button, position } => {
+                        el.on_mouse_press(button, position, ctx)
                     }
-                    event::Event::KeyDown {
-                        input: _,
-                        repeated: _,
-                    } => {
-                        // Idk how to handle this event for now
+                    event::Event::MouseRelease { button, position } => {
+                        el.on_mouse_release(button, position, ctx)
                     }
-                    event::Event::KeyUp { input: _ } => {
-                        // Idk how to handle this event for now
+                    event::Event::MouseMotion { pos, delta } => el.on_mouse_motion(pos, delta, ctx),
+                    event::Event::MouseWheel { delta } => el.on_mouse_wheel(delta, ctx),
+                    event::Event::KeyDown { input, repeated } => {
+                        el.on_key_down(input, repeated, ctx)
                     }
-                    event::Event::TextInput { character: _ } => {
-                        // Idk how to handle this event for now
-                    }
+                    event::Event::KeyUp { input } => el.on_key_up(input, ctx),
+                    event::Event::TextInput { character } => el.on_text_input(character, ctx),
                 }
             }
         }
-
-        if !new_elements_focussed.is_empty() {
-            for elem in self
-                .elements
-                .iter_mut()
-                .filter(|el| !new_elements_focussed.contains(&el.id))
-            {
-                elem.state.clicked = false;
-                elem.state.focussed = false
-            }
-        }
-
-        self.events.clear()
     }
 
     pub fn draw(
@@ -102,15 +60,34 @@ impl UiManager {
         ctx: &mut ggez::Context,
         render_request: &mut crate::render::RenderRequest,
     ) -> ggez::GameResult {
-        let mut global_mesh = ggez::graphics::MeshBuilder::new();
-        let mut top_mesh = ggez::graphics::MeshBuilder::new();
+        use element::TElement as _;
+        let mut background_mesh = ggez::graphics::MeshBuilder::new();
+        let mut ui_mesh = ggez::graphics::MeshBuilder::new();
+        let mut foreground_mesh = ggez::graphics::MeshBuilder::new();
+
         for elem in self.elements.iter_mut() {
-            elem.draw(ctx, &mut global_mesh, &mut top_mesh, render_request)?
+            elem.draw(
+                ctx,
+                &mut background_mesh,
+                &mut ui_mesh,
+                &mut foreground_mesh,
+                render_request,
+            )?
         }
 
-        render_request.add(global_mesh, Default::default(), crate::render::Layer::Ui);
+        render_request.add(
+            background_mesh,
+            Default::default(),
+            crate::render::Layer::UiBackground,
+        );
 
-        render_request.add(top_mesh, Default::default(), crate::render::Layer::Ui);
+        render_request.add(ui_mesh, Default::default(), crate::render::Layer::Ui);
+
+        render_request.add(
+            foreground_mesh,
+            Default::default(),
+            crate::render::Layer::UiForeground,
+        );
 
         Ok(())
     }
@@ -160,5 +137,25 @@ impl UiManager {
     }
     pub fn register_text_input(&mut self, character: char) {
         self.events.push_back(event::Event::TextInput { character })
+    }
+}
+
+/// Getters
+impl UiManager {
+    pub fn get_element(&mut self, id: Id) -> Option<&element::Element> {
+        use element::TElement as _;
+
+        if let Some(index) = self
+            .elements
+            .iter()
+            .enumerate()
+            .flat_map(|(i, el)| if el.get_id() == &id { Some(i) } else { None })
+            .collect::<Vec<usize>>()
+            .first()
+        {
+            Some(self.elements.get(*index).unwrap())
+        } else {
+            None
+        }
     }
 }

@@ -1,5 +1,6 @@
 use crate::ui;
 
+#[derive(Clone, Debug)]
 pub enum Position {
     Value(ggez::mint::Point2<ui::Value>),
     Anchor {

@@ -66,6 +66,18 @@ impl ggez::event::EventHandler for Chess {
 
         self.ui_mgr.update(ctx);
 
+        use ui::element::TElement as _;
+
+        if self
+            .ui_mgr
+            .get_element(unsafe { shared::id::Id::new_unchecked(4) })
+            .unwrap()
+            .get_state()
+            .clicked_this_frame()
+        {
+            debug!("Clicked this frame")
+        }
+
         // self.assets.update(ctx, &self.config, &self.game);
 
         self.frame_stats.end_update();

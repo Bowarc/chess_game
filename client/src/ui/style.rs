@@ -23,9 +23,9 @@ pub struct BorderStyle {
 
 impl Bundle {
     pub fn get(&self, state: &super::State) -> Style {
-        if state.clicked {
+        if state.clicked() {
             self.clicked.unwrap_or(self.default)
-        } else if state.hovered {
+        } else if state.hovered() {
             self.hovered.unwrap_or(self.default)
         } else {
             self.default

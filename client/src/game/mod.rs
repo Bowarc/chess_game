@@ -1,9 +1,11 @@
 mod state;
 
-pub struct Game {}
+type Socket =
+    crate::networking::Client<shared::message::ServerMessage, shared::message::ClientMessage>;
 
-impl Game {
-    pub fn new() -> Self {
-        Self {}
-    }
+// The use of an enum is more fitting i think
+pub enum Game {
+    JustLaunched,
+    Connected { socket: Socket },
+    Playing { socket: Socket },
 }

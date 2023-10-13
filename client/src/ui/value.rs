@@ -1,12 +1,12 @@
 pub const DEFAULT_TEXT_VALUE_TOKEN: &str = "$";
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     Fixed(f64),
     Magic(MagicValue),
     Mutiple(Box<Value>, ValueOperation, Box<Value>),
 }
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ValueOperation {
     Add,
     Sub,
