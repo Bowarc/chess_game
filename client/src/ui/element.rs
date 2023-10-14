@@ -1,87 +1,46 @@
-pub struct Element {
-    widget: super::widget::Widget,
-    id: super::Id,
-    position: super::Position,
-    size: ggez::mint::Point2<crate::ui::Value>,
-    state: super::State,
-    style: super::style::Bundle,
+mod button;
+mod graph;
+
+pub use button::Button;
+pub use graph::Graph;
+
+#[enum_dispatch::enum_dispatch(TElement)]
+pub enum Element {
+    Button,
+    Graph,
 }
 
-/// Constructors
-impl Element {
-    fn new(
-        given_widget: super::widget::Widget,
-        position: super::Position,
-        size: (impl Into<super::Value>, impl Into<super::Value>),
-        style: super::style::Bundle,
-    ) -> Self {
-        let x = size.0.into();
-        let y = size.1.into();
-        let size = ggez::mint::Point2::from([x, y]);
-        Self {
-            widget: given_widget,
-            id: super::Id::new(),
-            position,
-            size,
-            state: super::State::default(),
-            style,
-        }
-    }
-
-    pub fn new_button(
-        position: super::Position,
-        size: (impl Into<super::Value>, impl Into<super::Value>),
-        style: super::style::Bundle,
-    ) -> Self {
-        Self::new(super::widget::Widget::new_button(), position, size, style)
-    }
-}
-
-/// Others
-impl Element {
-    pub fn draw(
+#[enum_dispatch::enum_dispatch]
+pub trait TElement: std::any::Any {
+    fn draw(
         &mut self,
         _: &mut ggez::Context,
         _back: &mut ggez::graphics::MeshBuilder,
         _ui: &mut ggez::graphics::MeshBuilder,
         _front: &mut ggez::graphics::MeshBuilder,
         _: &mut crate::render::RenderRequest,
-    ) -> ggez::GameResult {
-        // self.widget.draw()
+    ) -> ggez::GameResult;
 
-        Ok(())
-    }
-}
+    fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value>;
 
-/// Getters
-impl Element {
-    pub fn get_id(&self) -> &super::Id {
-        &self.id
-    }
-    pub fn get_state(&self) -> &super::State {
-        &self.state
-    }
-    pub fn get_state_mut(&mut self) -> &mut super::State {
-        &mut self.state
-    }
-    pub fn get_style_bundle(&self) -> &super::style::Bundle {
-        &self.style
-    }
-    pub fn get_style_bundle_mut(&mut self) -> &mut super::style::Bundle {
-        &mut self.style
-    }
-    pub fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value> {
-        &self.size
-    }
-    pub fn get_computed_size(&self, ctx: &mut ggez::Context) -> shared::maths::Vec2 {
+    fn get_pos_value(&self) -> &super::Position;
+
+    fn get_id(&self) -> super::Id;
+
+    /*
+        ↑
+        Required
+        Auto impls
+        ↓
+    */
+
+    fn get_computed_size(&self, ctx: &mut ggez::Context) -> shared::maths::Vec2 {
         let sizev = self.get_size_value();
 
         shared::maths::Point::new(sizev.x.compute(ctx), sizev.y.compute(ctx))
     }
-    pub fn get_pos_value(&self) -> &super::Position {
-        &self.position
-    }
-    pub fn get_computed_pos(
+
+    fn get_computed_pos(
         &self,
         ctx: &mut ggez::Context,
         size_opt: Option<shared::maths::Vec2>,
@@ -95,72 +54,278 @@ impl Element {
         };
         posv.compute(ctx, size)
     }
-    pub fn get_computed_rect(&self, ctx: &mut ggez::Context) -> shared::maths::Rect {
+
+    fn get_computed_rect(&self, ctx: &mut ggez::Context) -> shared::maths::Rect {
         let size = self.get_computed_size(ctx);
 
         let position = self.get_computed_pos(ctx, Some(size));
 
         shared::maths::Rect::new(position, size, 0.)
     }
+
+    /*
+        Events
+    */
+
+    fn on_mouse_press(
+        &mut self,
+        _button: ggez::input::mouse::MouseButton,
+        _position: shared::maths::Point,
+        _ctx: &mut ggez::Context,
+    ) {
+    }
+    fn on_mouse_release(
+        &mut self,
+        _button: ggez::input::mouse::MouseButton,
+        _position: shared::maths::Point,
+        _ctx: &mut ggez::Context,
+    ) {
+    }
+    fn on_mouse_motion(
+        &mut self,
+        _position: shared::maths::Point,
+        _delta: shared::maths::Point,
+        _ctx: &mut ggez::Context,
+    ) {
+    }
+    fn on_mouse_wheel(&mut self, _delta: shared::maths::Point, _ctx: &mut ggez::Context) {}
+    fn on_key_down(
+        &mut self,
+        _key: ggez::input::keyboard::KeyInput,
+        _repeated: bool,
+        _ctx: &mut ggez::Context,
+    ) {
+    }
+    fn on_key_up(&mut self, _key: ggez::input::keyboard::KeyInput, _ctx: &mut ggez::Context) {}
+    fn on_text_input(&mut self, _character: char, _ctx: &mut ggez::Context) {}
+    fn on_new_frame(&mut self) {}
 }
 
-/// Events
+/// Constructors
 impl Element {
-    pub fn on_mouse_press(
-        &mut self,
-        button: ggez::input::mouse::MouseButton,
-        position: shared::maths::Point,
-        ctx: &mut ggez::Context,
-    ) {
-        let rect = self.get_computed_rect(ctx);
-        if shared::maths::collision::point_rect(position, rect) {
-            self.state.mouse_press_self()
-        } else {
-            self.state.mouse_press_not_self()
-        }
+    pub fn new_button(
+        position: super::Position,
+        size: (impl Into<super::Value>, impl Into<super::Value>),
+        style: super::style::Bundle,
+    ) -> Self {
+        Self::Button(button::Button::new(
+            position,
+            ggez::mint::Point2::from([size.0.into(), size.1.into()]),
+            style,
+        ))
     }
-    pub fn on_mouse_release(
-        &mut self,
-        button: ggez::input::mouse::MouseButton,
-        position: shared::maths::Point,
-        ctx: &mut ggez::Context,
-    ) {
-        let rect = self.get_computed_rect(ctx);
+    pub fn new_graph(
+        position: super::Position,
+        size: (impl Into<super::Value>, impl Into<super::Value>),
+        style: super::Style,
+    ) -> Self {
+        Self::Graph(graph::Graph::new(
+            position,
+            ggez::mint::Point2::from([size.0.into(), size.1.into()]),
+            style,
+        ))
+    }
+}
 
-        if shared::maths::collision::point_rect(position, rect) {
-            self.state.mouse_release_self()
-        } else {
-            self.state.mouse_release_not_self()
+/// Getters
+impl Element {
+    //Credit: Rust Programming discord: bruh![moment] (170999103482757120)
+    // https://discord.com/channels/273534239310479360/1120124565591425034/1162574037633990736
+    pub fn try_inner<T: TElement>(&self) -> Option<&T> {
+        match self {
+            Self::Button(button) => (button as &dyn std::any::Any).downcast_ref(),
+            Self::Graph(graph) => (graph as &dyn std::any::Any).downcast_ref(),
         }
     }
-    pub fn on_mouse_motion(
-        &mut self,
-        pos: shared::maths::Point,
-        delta: shared::maths::Point,
-        ctx: &mut ggez::Context,
-    ) {
-        let rect = self.get_computed_rect(ctx);
-        if shared::maths::collision::point_rect(pos, rect) {
-            self.state.mouse_hover_self()
-        } else {
-            self.state.mouse_hover_not_self()
+    pub fn inner<T: TElement>(&self) -> &T {
+        self.try_inner().expect("Wrong widget type")
+    }
+
+    pub fn try_inner_mut<T: TElement>(&mut self) -> Option<&mut T> {
+        match self {
+            Self::Button(button) => (button as &mut dyn std::any::Any).downcast_mut(),
+            Self::Graph(graph) => (graph as &mut dyn std::any::Any).downcast_mut(),
         }
     }
-    pub fn on_mouse_wheel(&mut self, _delta: shared::maths::Point, _ctx: &mut ggez::Context) {
-        // Idk
+    pub fn inner_mut<T: TElement>(&mut self) -> &mut T {
+        self.try_inner_mut().expect("Wrong widget type")
     }
-    pub fn on_key_down(
-        &mut self,
-        input: ggez::input::keyboard::KeyInput,
-        repeated: bool,
+
+    pub fn inner_as_trait(&self) -> &dyn TElement {
+        match self {
+            Self::Button(inner) => inner,
+            Self::Graph(inner) => inner,
+        }
+    }
+    pub fn inner_as_trait_mut(&mut self) -> &mut dyn TElement {
+        match self {
+            Self::Button(inner) => inner,
+            Self::Graph(inner) => inner,
+        }
+    }
+
+    // this function creates wayyy too much asm bloat
+    // pub fn inner_as_trait_boxed(&mut self) -> Box<&mut dyn TElement> {
+    //     match self {
+    //         Self::Button(inner) => Box::new(inner),
+    //         Self::Graph(inner) => Box::new(inner),
+    //     }
+    // }
+}
+macro_rules! gen_trait_fn_refmut {
+    ($fn_name:ident $(, $arg:ident : $arg_ty:ty)* => $ret_ty:ty) => {
+        pub fn $fn_name(&mut self, $($arg : $arg_ty),*) -> $ret_ty {
+            self.inner_as_trait_mut().$fn_name($($arg),*)
+        }
+    };
+    ($fn_name:ident => $ret_ty:ty) => {
+        pub fn $fn_name(&mut self) -> $ret_ty {
+            self.inner_as_trait().$fn_name()
+        }
+    };
+}
+
+macro_rules! gen_trait_fn_ref{
+    ($fn_name:ident $(, $arg:ident : $arg_ty:ty)* => $ret_ty:ty) => {
+        pub fn $fn_name(&self, $($arg : $arg_ty),*) -> $ret_ty {
+            self.inner_as_trait().$fn_name($($arg),*)
+        }
+    };
+    ($fn_name:ident => $ret_ty:ty) => {
+        pub fn $fn_name(&self) -> $ret_ty {
+            self.inner_as_trait().$fn_name()
+        }
+    };
+}
+
+// macro_rules! gen_trait_fn_value {
+//     ($fn_name:ident $(, $arg:ident : $arg_ty:ty)* => $ret_ty:ty) => {
+//         pub fn $fn_name(self, $($arg : $arg_ty),*) -> $ret_ty {
+//             self.inner_as_trait().$fn_name($($arg),*)
+//         }
+//     };
+//     ($fn_name:ident => $ret_ty:ty) => {
+//         pub fn $fn_name(self) -> $ret_ty {
+//             self.inner_as_trait().$fn_name()
+//         }
+//     };
+// }
+
+// macro_rules! gen_trait_fn_noself {
+//     ($fn_name:ident $(, $arg:ident : $arg_ty:ty)* => $ret_ty:ty) => {
+//         pub fn $fn_name($($arg : $arg_ty),*) -> $ret_ty {
+//             self.inner_as_trait().$fn_name($($arg),*)
+//         }
+//     };
+//     ($fn_name:ident => $ret_ty:ty) => {
+//         pub fn $fn_name() -> $ret_ty {
+//             self.inner_as_trait().$fn_name()
+//         }
+//     };
+// }
+/// This is so you don't need to import the trait everytime you want to use an Element, you can short circuit it by doing Element::trait_function()
+#[allow(dead_code)]
+impl Element {
+    gen_trait_fn_refmut!(
+        draw,
+        _ctx: &mut ggez::Context,
+        _back: &mut ggez::graphics::MeshBuilder,
+        _ui: &mut ggez::graphics::MeshBuilder,
+        _front: &mut ggez::graphics::MeshBuilder,
+        _render_request: &mut crate::render::RenderRequest
+        => ggez::GameResult
+    );
+    gen_trait_fn_ref!(
+        get_size_value
+        => &ggez::mint::Point2<crate::ui::Value>
+    );
+
+    gen_trait_fn_ref!(
+        get_pos_value
+        => &super::Position
+    );
+
+    gen_trait_fn_ref!(
+        get_id
+        => super::Id
+    );
+    /*
+        ↑
+        Required
+        Auto impls
+        ↓
+    */
+    gen_trait_fn_ref!(
+        get_computed_size,
+        ctx: &mut ggez::Context
+        => shared::maths::Vec2
+    );
+    gen_trait_fn_ref!(
+        get_computed_pos,
         ctx: &mut ggez::Context,
-    ) {
-        // Idk
-    }
-    pub fn on_key_up(&mut self, _input: ggez::input::keyboard::KeyInput, _ctx: &mut ggez::Context) {
-        // Idk
-    }
-    pub fn on_text_input(&mut self, _character: char, _ctx: &mut ggez::Context) {
-        // Idk
-    }
+        size_opt: Option<shared::maths::Vec2>
+        => shared::maths::Point
+    );
+    gen_trait_fn_ref!(
+        get_computed_rect,
+
+        ctx: &mut ggez::Context
+        => shared::maths::Rect
+    );
+
+    /*
+        Events
+    */
+    gen_trait_fn_refmut!(
+        on_mouse_press,
+        _button: ggez::input::mouse::MouseButton,
+        _position: shared::maths::Point,
+        _ctx: &mut ggez::Context
+        => ()
+    );
+    gen_trait_fn_refmut!(
+
+        on_mouse_release,
+        _button: ggez::input::mouse::MouseButton,
+        _position: shared::maths::Point,
+        _ctx: &mut ggez::Context
+        => ()
+    );
+    gen_trait_fn_refmut!(
+
+        on_mouse_motion,
+        _position: shared::maths::Point,
+        _delta: shared::maths::Point,
+        _ctx: &mut ggez::Context
+        => ()
+    );
+    gen_trait_fn_refmut!(
+        on_mouse_wheel,
+        _delta: shared::maths::Point,
+        _ctx: &mut ggez::Context
+        => ()
+    );
+    gen_trait_fn_refmut!(
+        on_key_down,
+        _key: ggez::input::keyboard::KeyInput,
+        _repeated: bool,
+        _ctx: &mut ggez::Context
+        => ()
+    );
+    gen_trait_fn_refmut!(
+        on_key_up,
+        _key: ggez::input::keyboard::KeyInput,
+        _ctx: &mut ggez::Context
+        => ()
+    );
+    gen_trait_fn_refmut!(
+        on_text_input,
+        _character: char,
+        _ctx: &mut ggez::Context
+        => ()
+    );
+    gen_trait_fn_refmut!(
+        on_new_frame
+        =>()
+    );
 }

@@ -8,7 +8,7 @@ It's currently nowhere near finished
     - [x] Dynamic values
     - [x] Events
     - [x] Basic styling
-    - [ ] Simple widgets
+    - [X] Simple widgets
     - [ ] Lots of usefull widgets
     - [ ] Image in texts (Something like LoL does ![](assets/LoL_img_in_text.png))
 - [x] Gui windows (Stole from my game Vupa lol)

@@ -16,12 +16,15 @@ impl Position {
     }
     pub fn new_anchor(
         anchor: super::Anchor,
-        offset: impl Into<Option<ggez::mint::Point2<ui::Value>>>,
+
+        offset: (impl Into<crate::ui::Value>, impl Into<crate::ui::Value>),
     ) -> Self {
-        let offset = offset.into().unwrap_or_else(|| {
-            ggez::mint::Point2::from([ui::Value::Fixed(0.), ui::Value::Fixed(0.)])
-        });
-        Self::Anchor { anchor, offset }
+        // let offset = offset.unwrap_or((0., 0.));
+
+        Self::Anchor {
+            anchor,
+            offset: ggez::mint::Point2::from([offset.0.into(), offset.1.into()]),
+        }
     }
 
     pub fn compute(

@@ -9,18 +9,18 @@ pub enum Event {
         position: shared::maths::Point,
     },
     MouseMotion {
-        pos: shared::maths::Point,
+        position: shared::maths::Point,
         delta: shared::maths::Vec2,
     },
     MouseWheel {
         delta: shared::maths::Point, // not sure of what to call it
     },
     KeyDown {
-        input: ggez::input::keyboard::KeyInput,
+        key: ggez::input::keyboard::KeyInput,
         repeated: bool,
     },
     KeyUp {
-        input: ggez::input::keyboard::KeyInput,
+        key: ggez::input::keyboard::KeyInput,
     },
     TextInput {
         character: char,

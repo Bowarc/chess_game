@@ -6,7 +6,6 @@ pub mod register;
 mod state;
 pub mod style;
 pub mod value;
-mod widget;
 
 pub use anchor::Anchor;
 pub use position::Position;
@@ -19,39 +18,38 @@ pub type Id = shared::id::Id;
 #[derive(Default)]
 pub struct UiManager {
     elements: Vec<element::Element>,
-    events: std::collections::VecDeque<event::Event>,
+    events: Vec<event::Event>,
 }
 
 impl UiManager {
-    pub fn add_element(&mut self, elem: element::Element) {
-        self.elements.push(elem)
+    pub fn add_element(&mut self, elem: element::Element) -> Id {
+        let id = elem.get_id();
+        self.elements.push(elem);
+        id
     }
 
     pub fn update(&mut self, ctx: &mut ggez::Context) {
         // Re-initializes the new frame part of the element state struct
-        self.elements
-            .iter_mut()
-            .for_each(|el| el.get_state_mut().new_frame());
+        self.elements.iter_mut().for_each(|el| el.on_new_frame());
 
-        while let Some(ev) = self.events.pop_front() {
-            for el in self.elements.iter_mut() {
-                match ev {
-                    event::Event::MousePress { button, position } => {
-                        el.on_mouse_press(button, position, ctx)
-                    }
-                    event::Event::MouseRelease { button, position } => {
-                        el.on_mouse_release(button, position, ctx)
-                    }
-                    event::Event::MouseMotion { pos, delta } => el.on_mouse_motion(pos, delta, ctx),
-                    event::Event::MouseWheel { delta } => el.on_mouse_wheel(delta, ctx),
-                    event::Event::KeyDown { input, repeated } => {
-                        el.on_key_down(input, repeated, ctx)
-                    }
-                    event::Event::KeyUp { input } => el.on_key_up(input, ctx),
-                    event::Event::TextInput { character } => el.on_text_input(character, ctx),
+        self.events.iter().for_each(|ev| {
+            self.elements.iter_mut().for_each(|el| match *ev {
+                event::Event::MousePress { button, position } => {
+                    el.on_mouse_press(button, position, ctx)
                 }
-            }
-        }
+                event::Event::MouseRelease { button, position } => {
+                    el.on_mouse_release(button, position, ctx)
+                }
+                event::Event::MouseMotion { position, delta } => {
+                    el.on_mouse_motion(position, delta, ctx)
+                }
+                event::Event::MouseWheel { delta } => el.on_mouse_wheel(delta, ctx),
+                event::Event::KeyDown { key, repeated } => el.on_key_down(key, repeated, ctx),
+                event::Event::KeyUp { key } => el.on_key_up(key, ctx),
+                event::Event::TextInput { character } => el.on_text_input(character, ctx),
+            })
+        });
+        self.events.clear()
     }
 
     pub fn draw(
@@ -99,7 +97,7 @@ impl UiManager {
         x: f32,
         y: f32,
     ) {
-        self.events.push_back(event::Event::MousePress {
+        self.events.push(event::Event::MousePress {
             button,
             position: shared::maths::Point::new(x as f64, y as f64),
         })
@@ -110,48 +108,51 @@ impl UiManager {
         x: f32,
         y: f32,
     ) {
-        self.events.push_back(event::Event::MouseRelease {
+        self.events.push(event::Event::MouseRelease {
             button,
             position: shared::maths::Point::new(x as f64, y as f64),
         })
     }
     pub fn register_mouse_motion(&mut self, x: f32, y: f32, dx: f32, dy: f32) {
-        self.events.push_back(event::Event::MouseMotion {
-            pos: shared::maths::Point::new(x as f64, y as f64),
+        self.events.push(event::Event::MouseMotion {
+            position: shared::maths::Point::new(x as f64, y as f64),
             delta: shared::maths::Vec2::new(dx as f64, dy as f64),
         });
     }
     pub fn register_mouse_wheel(&mut self, x: f32, y: f32) {
-        self.events.push_back(event::Event::MouseWheel {
+        self.events.push(event::Event::MouseWheel {
             delta: shared::maths::Point::new(x as f64, y as f64),
         })
     }
-    pub fn register_key_down(&mut self, input: ggez::input::keyboard::KeyInput, repeated: bool) {
-        self.events
-            .push_back(event::Event::KeyDown { input, repeated })
+    pub fn register_key_down(&mut self, key: ggez::input::keyboard::KeyInput, repeated: bool) {
+        self.events.push(event::Event::KeyDown { key, repeated })
     }
-    pub fn register_key_up(&mut self, input: ggez::input::keyboard::KeyInput) {
-        self.events.push_back(event::Event::KeyUp { input })
+    pub fn register_key_up(&mut self, key: ggez::input::keyboard::KeyInput) {
+        self.events.push(event::Event::KeyUp { key })
     }
     pub fn register_text_input(&mut self, character: char) {
-        self.events.push_back(event::Event::TextInput { character })
+        self.events.push(event::Event::TextInput { character })
     }
 }
 
 /// Getters
 impl UiManager {
-    pub fn get_element(&mut self, id: Id) -> Option<&element::Element> {
+    pub fn try_get_element(&mut self, id: Id) -> Option<&mut element::Element> {
         if let Some(index) = self
             .elements
             .iter()
             .enumerate()
-            .flat_map(|(i, el)| if el.get_id() == &id { Some(i) } else { None })
+            .flat_map(|(i, el)| if el.get_id() == id { Some(i) } else { None })
             .collect::<Vec<usize>>()
             .first()
         {
-            Some(self.elements.get(*index).unwrap())
+            Some(self.elements.get_mut(*index).unwrap())
         } else {
             None
         }
+    }
+
+    pub fn get_element(&mut self, id: Id) -> &mut element::Element {
+        self.try_get_element(id).unwrap()
     }
 }

@@ -1,6 +1,8 @@
 // #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use ui::element;
+
 #[macro_use]
 extern crate log;
 
@@ -38,6 +40,25 @@ impl Chess {
 
         ui::register::register_ui_elements(&mut ui_mgr);
 
+        let id = ui_mgr.add_element(ui::element::Element::new_graph(
+            ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 2.)),
+            (200., 50.),
+            ui::Style::new(
+                render::Color::random_rgb(),
+                None,
+                Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
+            ),
+        ));
+        let id2 = ui_mgr.add_element(ui::element::Element::new_graph(
+            ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 52.)),
+            (200., 50.),
+            ui::Style::new(
+                render::Color::random_rgb(),
+                None,
+                Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
+            ),
+        ));
+
         Ok(Self {
             cfg,
             renderer,
@@ -68,13 +89,22 @@ impl ggez::event::EventHandler for Chess {
 
         if self
             .ui_mgr
-            .get_element(unsafe { shared::id::Id::new_unchecked(4) })
-            .unwrap()
-            .get_state()
+            .get_element(unsafe { shared::id::Id::new_unchecked(1) })
+            .inner::<ui::element::Button>()
             .clicked_this_frame()
         {
             debug!("Clicked this frame")
         }
+
+        self.ui_mgr
+            .get_element(unsafe { shared::id::Id::new_unchecked(65) })
+            .inner_mut::<ui::element::Graph>()
+            .push(ctx.time.fps());
+
+        self.ui_mgr
+            .get_element(unsafe { shared::id::Id::new_unchecked(66) })
+            .inner_mut::<ui::element::Graph>()
+            .push(self.client.stats().get_rtt().as_secs_f64());
 
         // self.assets.update(ctx, &self.config, &self.game);
 
@@ -317,6 +347,7 @@ fn main() -> ggez::GameResult {
         .set_level(log::LevelFilter::Trace)
         .add_filter("wgpu_core", log::LevelFilter::Warn)
         .add_filter("wgpu_hal", log::LevelFilter::Error)
+        .add_filter("gilrs", log::LevelFilter::Off)
         .add_filter("naga", log::LevelFilter::Warn)
         .add_filter("networking", log::LevelFilter::Warn);
     logger::init(logger_config, Some("client.log"));

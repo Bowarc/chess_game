@@ -1,3 +1,4 @@
+/// idk i keep this here, only the button will use this
 #[derive(Default, Debug, Clone, Copy)]
 pub struct Bundle {
     default: Style,
@@ -83,7 +84,7 @@ impl Style {
     pub fn get_bg_mut(&mut self) -> Option<&mut BackgroundStyle> {
         self.bg.as_mut()
     }
-    pub fn set_bg(&self) -> Option<&BackgroundStyle> {
+    pub fn get_bg(&self) -> Option<&BackgroundStyle> {
         self.bg.as_ref()
     }
 
