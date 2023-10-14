@@ -14,7 +14,7 @@ static mut LAST_LOOP_TIME: Option<std::time::Instant> = None;
 pub fn check_loop_health() {
     let llt_opt = unsafe { LAST_LOOP_TIME };
     if llt_opt.is_none() {
-        debug!("LLT is none, setting to atm");
+        // trace!("LLT is none, setting to atm");
         unsafe {
             LAST_LOOP_TIME = Some(std::time::Instant::now());
         };
