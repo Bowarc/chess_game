@@ -9,6 +9,8 @@ pub struct Graph {
     values: std::collections::VecDeque<f64>,
     accept_timer: time::SystemTimeDelay,
 
+    text: Option<GraphText>,
+
     max: f64,
 }
 
@@ -17,6 +19,7 @@ impl Graph {
         position: crate::ui::Position,
         size: ggez::mint::Point2<crate::ui::Value>,
         style: crate::ui::Style,
+        text: Option<GraphText>,
     ) -> Self {
         Self {
             id: crate::ui::Id::new(),
@@ -25,6 +28,7 @@ impl Graph {
             style,
             values: Default::default(),
             accept_timer: time::SystemTimeDelay::new(100),
+            text,
             max: 0.,
         }
     }
@@ -36,7 +40,7 @@ impl Graph {
 
         self.values.push_back(v);
 
-        let mut max = 0.;
+        let mut max = f64::NEG_INFINITY;
         self.values.iter().for_each(|v| {
             if *v > max {
                 max = *v
@@ -49,6 +53,14 @@ impl Graph {
             self.values.pop_front();
         }
     }
+}
+
+pub struct GraphText {
+    anchor: crate::ui::Anchor,
+    offset: shared::maths::Vec2,
+    size: f64,
+    color: crate::render::Color,
+    text: fn(f64) -> String,
 }
 
 impl super::TElement for Graph {
@@ -87,9 +99,39 @@ impl super::TElement for Graph {
             )?;
         };
 
+        // draw debug text
+        if let Some(graph_text) = &self.text {
+            if !self.values.is_empty() {
+                let text = (graph_text.text)(*self.values.back().unwrap());
+                let mut ggtext = ggez::graphics::Text::new(text);
+                ggtext.set_layout(ggez::graphics::TextLayout::top_left());
+
+                let p = graph_text
+                    .anchor
+                    .compute(rect.size(), ggtext.measure(ctx).unwrap().into())
+                    + rect.r_topleft();
+
+                render_request.add(
+                    ggtext,
+                    crate::render::DrawParam::default()
+                        .pos(p)
+                        .color(graph_text.color),
+                    crate::render::Layer::UiForeground,
+                );
+            }
+        }
+
         let mut saved_height = None;
         for (i, val) in self.values.iter().enumerate() {
             let curr_height = (*val as f32 / self.max as f32) * rect.size().y as f32;
+            if curr_height.is_nan() {
+                warn!(
+                    "Could not draw Graph id '{}' because the given value is NAN",
+                    self.id
+                );
+                continue;
+            }
+
             // trace!("{curr_height} - {}", self.max);
             if saved_height.is_none() {
                 saved_height = Some(curr_height);
@@ -124,5 +166,43 @@ impl super::TElement for Graph {
     }
     fn get_id(&self) -> shared::id::Id {
         self.id
+    }
+}
+
+impl GraphText {
+    pub fn anchor(mut self, new_anchor: crate::ui::Anchor) -> Self {
+        self.anchor = new_anchor;
+        self
+    }
+
+    pub fn offset(mut self, new_offset: impl Into<shared::maths::Vec2>) -> Self {
+        self.offset = new_offset.into();
+        self
+    }
+    pub fn size(mut self, new_size: f64) -> Self {
+        self.size = new_size;
+        self
+    }
+
+    pub fn color(mut self, new_color: crate::render::Color) -> Self {
+        self.color = new_color;
+        self
+    }
+
+    pub fn text(mut self, new_text: fn(f64) -> String) -> Self {
+        self.text = new_text;
+        self
+    }
+}
+
+impl Default for GraphText {
+    fn default() -> Self {
+        Self {
+            anchor: crate::ui::Anchor::Topleft,
+            offset: shared::maths::Vec2::ZERO,
+            size: 10.,
+            color: crate::render::Color::WHITE,
+            text: |val| -> String { format!("{val:.3}") },
+        }
     }
 }

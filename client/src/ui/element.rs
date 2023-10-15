@@ -2,7 +2,7 @@ mod button;
 mod graph;
 
 pub use button::Button;
-pub use graph::Graph;
+pub use graph::{Graph, GraphText};
 
 #[enum_dispatch::enum_dispatch(TElement)]
 pub enum Element {
@@ -118,11 +118,13 @@ impl Element {
         position: super::Position,
         size: (impl Into<super::Value>, impl Into<super::Value>),
         style: super::Style,
+        text: Option<graph::GraphText>,
     ) -> Self {
         Self::Graph(graph::Graph::new(
             position,
             ggez::mint::Point2::from([size.0.into(), size.1.into()]),
             style,
+            text,
         ))
     }
 }

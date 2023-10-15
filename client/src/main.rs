@@ -1,8 +1,6 @@
 // #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use ui::element;
-
 #[macro_use]
 extern crate log;
 
@@ -48,6 +46,14 @@ impl Chess {
                 None,
                 Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
             ),
+            Some(
+                ui::element::GraphText::default()
+                    .anchor(ui::Anchor::Topleft)
+                    .offset(shared::maths::Vec2::ONE)
+                    .text(|val| -> String { format!("{}fps", val as i32) })
+                    .size(5.)
+                    .color(render::Color::random_rgb()),
+            ),
         ));
         let id2 = ui_mgr.add_element(ui::element::Element::new_graph(
             ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 52.)),
@@ -56,6 +62,14 @@ impl Chess {
                 render::Color::random_rgb(),
                 None,
                 Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
+            ),
+            Some(
+                ui::element::GraphText::default()
+                    .anchor(ui::Anchor::Topleft)
+                    .offset(shared::maths::Vec2::ONE)
+                    .text(|val| -> String { format!("RTT: {}µs", val as i32) })
+                    .size(8.)
+                    .color(render::Color::random_rgb()),
             ),
         ));
 
@@ -104,7 +118,7 @@ impl ggez::event::EventHandler for Chess {
         self.ui_mgr
             .get_element(unsafe { shared::id::Id::new_unchecked(66) })
             .inner_mut::<ui::element::Graph>()
-            .push(self.client.stats().get_rtt().as_secs_f64());
+            .push(self.client.stats().get_rtt().as_micros() as f64);
 
         // self.assets.update(ctx, &self.config, &self.game);
 
