@@ -1,6 +1,4 @@
-pub enum State{
+pub enum State {
     Disconnected,
-    Connected{
-        GameId: usize,
-    }
+    Connected { GameId: usize },
 }

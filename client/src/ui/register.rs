@@ -21,7 +21,7 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
         )
     };
 
-    let board_size = 1000.;
+    let board_size = 500.;
 
     let nbr_of_square: u8 = 8;
 

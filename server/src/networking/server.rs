@@ -17,7 +17,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Server<
     pub fn clients(&mut self) -> &mut Vec<super::Client<R, W>> {
         &mut self.clients
     }
-    fn accept_new_clients(&mut self){
+    fn accept_new_clients(&mut self) {
         match self.listener.accept() {
             Ok((stream, addr)) => {
                 debug!("New client {addr:?}");
@@ -41,7 +41,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Server<
             }
         }
     }
-    fn clean_disconnected_clients(&mut self){
+    fn clean_disconnected_clients(&mut self) {
         let old_client_len = self.clients.len();
         self.clients.retain_mut(|handle| {
             // trace!("updating ({})", handle.ip);
@@ -65,5 +65,4 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Server<
         self.accept_new_clients();
         self.clean_disconnected_clients();
     }
-        
 }

@@ -1,13 +1,16 @@
 mod button;
 mod graph;
+mod text;
 
 pub use button::Button;
 pub use graph::{Graph, GraphText};
+pub use text::{Text, TextPart};
 
 #[enum_dispatch::enum_dispatch(TElement)]
 pub enum Element {
     Button,
     Graph,
+    Text,
 }
 
 #[enum_dispatch::enum_dispatch]
@@ -127,6 +130,20 @@ impl Element {
             text,
         ))
     }
+    pub fn new_text(
+        position: super::Position,
+        size: impl Into<super::Value>,
+        style: super::Style,
+        parts: Vec<TextPart>
+    ) -> Self {
+        let size = size.into();
+        Self::Text(Text::new(
+            position,
+            size.into(),
+            style,
+            parts
+        ))
+    }
 }
 
 /// Getters
@@ -135,8 +152,9 @@ impl Element {
     // https://discord.com/channels/273534239310479360/1120124565591425034/1162574037633990736
     pub fn try_inner<T: TElement>(&self) -> Option<&T> {
         match self {
-            Self::Button(button) => (button as &dyn std::any::Any).downcast_ref(),
-            Self::Graph(graph) => (graph as &dyn std::any::Any).downcast_ref(),
+            Self::Button(inner) => (inner as &dyn std::any::Any).downcast_ref(),
+            Self::Graph(inner) => (inner as &dyn std::any::Any).downcast_ref(),
+            Self::Text(inner) => (inner as &dyn std::any::Any).downcast_ref(),
         }
     }
     pub fn inner<T: TElement>(&self) -> &T {
@@ -145,8 +163,9 @@ impl Element {
 
     pub fn try_inner_mut<T: TElement>(&mut self) -> Option<&mut T> {
         match self {
-            Self::Button(button) => (button as &mut dyn std::any::Any).downcast_mut(),
-            Self::Graph(graph) => (graph as &mut dyn std::any::Any).downcast_mut(),
+            Self::Button(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
+            Self::Graph(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
+            Self::Text(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
         }
     }
     pub fn inner_mut<T: TElement>(&mut self) -> &mut T {
@@ -157,12 +176,14 @@ impl Element {
         match self {
             Self::Button(inner) => inner,
             Self::Graph(inner) => inner,
+            Self::Text(inner) => inner,
         }
     }
     pub fn inner_as_trait_mut(&mut self) -> &mut dyn TElement {
         match self {
             Self::Button(inner) => inner,
             Self::Graph(inner) => inner,
+            Self::Text(inner) => inner,
         }
     }
 

@@ -76,11 +76,11 @@ impl Handle {
         }
     }
     pub fn retrieve_data(&mut self, target: super::TargetId) -> Option<super::RawLoadedData> {
-        let Some(vec_data) = self.received_data.get_mut(&target) else{
+        let Some(vec_data) = self.received_data.get_mut(&target) else {
             return None;
         };
 
-        let Some(data) = vec_data.pop() else{
+        let Some(data) = vec_data.pop() else {
             return None;
         };
 

@@ -41,7 +41,7 @@ impl Renderer {
 
         while let Some(layer) = Layer::get(layer_index) {
             layer_index += 1;
-            let Some(bits) = self.render_request.get_mut(&layer)else{
+            let Some(bits) = self.render_request.get_mut(&layer) else {
                 continue;
             };
 

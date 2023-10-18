@@ -1,15 +1,10 @@
 #[derive(Default)]
-pub enum State{
+pub enum State {
     #[default]
     Waiting,
-    PLaying{
+    PLaying {
         // infos about the games / board etc..
-    }
-
+    },
 }
 
-
-
-impl State{
-
-}
+impl State {}
