@@ -1,8 +1,7 @@
-
 /*
 
     Note to understand how this should work
-    
+
     let mut b = BitBoard(0);
 
     b.set((3, 6));
@@ -17,9 +16,9 @@
     3 • • • • • • • •
     2 • • • • • • • •
     1 • • • • • • • •
-      A B C D E F G H 
+      A B C D E F G H
     Because its setting the square D7
-*/ 
+*/
 #[derive(Default, Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Position {
     file: File, // x
@@ -229,9 +228,9 @@ impl From<(u8, u8)> for Position {
     }
 }
 
-impl From<(super::File, super::Rank)> for Position{
+impl From<(super::File, super::Rank)> for Position {
     fn from(value: (super::File, super::Rank)) -> Self {
-        Position::from_file_rank(value.0, value.1)        
+        Position::from_file_rank(value.0, value.1)
     }
 }
 

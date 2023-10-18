@@ -9,7 +9,7 @@ pub struct Board {
 impl Board {
     pub fn from_fen(fen: &str) -> Option<Self> {
         let mut board = Self {
-            active_player: super::Color::default(),    // White always starts (Unless the FEN string says otherwise)
+            active_player: super::Color::default(), // White always starts (Unless the FEN string says otherwise)
             white_bb: super::BitBoard::default(),
             black_bb: super::BitBoard::default(),
             piece_bb: hashbrown::HashMap::default(),
@@ -52,9 +52,9 @@ impl Board {
             }
 
             // Else, match the piece or return an error if it's no understood
-            let Some(piece) = super::Piece::from_fen_char(p) else{
+            let Some(piece) = super::Piece::from_fen_char(p) else {
                 error!("Could not convert FEN '{p}' to piece");
-                return  None
+                return None;
             };
 
             board.set(

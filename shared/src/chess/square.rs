@@ -10,7 +10,7 @@ pub enum Square {
     H1,H2,H3,H4,H5,H6,H7,H8,
 }
 
-impl Square{
+impl Square {
     #[rustfmt::skip]  
     pub fn file(&self) -> super::File{
         match self {
@@ -40,32 +40,72 @@ impl Square{
             },
         }
     }
-    pub fn rank(&self) -> super::Rank{
+    pub fn rank(&self) -> super::Rank {
         match self {
-            Square::A1|Square::B1|Square::C1|Square::D1|Square::E1|Square::F1|Square::G1|Square::H1 => {
-                super::Rank::One
-            },
-            Square::A2|Square::B2|Square::C2|Square::D2|Square::E2|Square::F2|Square::G2|Square::H2 => {
-                super::Rank::Two
-            },
-            Square::A3|Square::B3|Square::C3|Square::D3|Square::E3|Square::F3|Square::G3|Square::H3 => {
-                super::Rank::Three
-            },
-            Square::A4|Square::B4|Square::C4|Square::D4|Square::E4|Square::F4|Square::G4|Square::H4 => {
-                super::Rank::Four
-            },
-            Square::A5|Square::B5|Square::C5|Square::D5|Square::E5|Square::F5|Square::G5|Square::H5 => {
-                super::Rank::Five
-            },
-            Square::A6|Square::B6|Square::C6|Square::D6|Square::E6|Square::F6|Square::G6|Square::H6 => {
-                super::Rank::Six
-            },
-            Square::A7|Square::B7|Square::C7|Square::D7|Square::E7|Square::F7|Square::G7|Square::H7 => {
-                super::Rank::Seven
-            },
-            Square::A8|Square::B8|Square::C8|Square::D8|Square::E8|Square::F8|Square::G8|Square::H8 => {
-                super::Rank::Eight
-            },
+            Square::A1
+            | Square::B1
+            | Square::C1
+            | Square::D1
+            | Square::E1
+            | Square::F1
+            | Square::G1
+            | Square::H1 => super::Rank::One,
+            Square::A2
+            | Square::B2
+            | Square::C2
+            | Square::D2
+            | Square::E2
+            | Square::F2
+            | Square::G2
+            | Square::H2 => super::Rank::Two,
+            Square::A3
+            | Square::B3
+            | Square::C3
+            | Square::D3
+            | Square::E3
+            | Square::F3
+            | Square::G3
+            | Square::H3 => super::Rank::Three,
+            Square::A4
+            | Square::B4
+            | Square::C4
+            | Square::D4
+            | Square::E4
+            | Square::F4
+            | Square::G4
+            | Square::H4 => super::Rank::Four,
+            Square::A5
+            | Square::B5
+            | Square::C5
+            | Square::D5
+            | Square::E5
+            | Square::F5
+            | Square::G5
+            | Square::H5 => super::Rank::Five,
+            Square::A6
+            | Square::B6
+            | Square::C6
+            | Square::D6
+            | Square::E6
+            | Square::F6
+            | Square::G6
+            | Square::H6 => super::Rank::Six,
+            Square::A7
+            | Square::B7
+            | Square::C7
+            | Square::D7
+            | Square::E7
+            | Square::F7
+            | Square::G7
+            | Square::H7 => super::Rank::Seven,
+            Square::A8
+            | Square::B8
+            | Square::C8
+            | Square::D8
+            | Square::E8
+            | Square::F8
+            | Square::G8
+            | Square::H8 => super::Rank::Eight,
         }
     }
 }

@@ -1,19 +1,19 @@
 #[derive(thiserror::Error, Debug)]
-pub enum ServerError{
+pub enum ServerError {
     #[error(transparent)]
     Game(GameError),
     #[error(transparent)]
-    Client(ClientError)
+    Client(ClientError),
 }
 
 #[derive(thiserror::Error, Debug)]
-pub enum GameError{
+pub enum GameError {
     #[error("The session is full")]
-    SessionIsFull
+    SessionIsFull,
 }
 
 #[derive(thiserror::Error, Debug)]
-pub enum ClientError{
+pub enum ClientError {
     #[error("The proxy for the client '{0}' has disconnected")]
-    ProxyDisconnected(std::net::SocketAddr)
+    ProxyDisconnected(std::net::SocketAddr),
 }

@@ -1,4 +1,4 @@
-pub const DEFAULT_TEXT_VALUE_TOKEN: &str = "$";
+// pub const DEFAULT_TEXT_VALUE_TOKEN: &str = "$"; // Relic of a bygone past
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {

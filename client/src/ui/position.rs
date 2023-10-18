@@ -1,5 +1,6 @@
 use crate::ui;
 
+// The position of an element is it's center
 #[derive(Clone, Debug)]
 pub enum Position {
     Value(ggez::mint::Point2<ui::Value>),

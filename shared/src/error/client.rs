@@ -1,3 +1,1 @@
-pub enum ClientError{
-    
-}
+pub enum ClientError {}

@@ -73,6 +73,17 @@ impl Chess {
             ),
         ));
 
+        let text_id = ui_mgr.add_element(ui::element::Element::new_text(
+            ui::Position::new_anchor(ui::Anchor::TopCenter, (0., 2.)),
+            20.,
+            ui::Style::new(render::Color::WHITE, None, Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.))),
+            vec![
+                ui::element::TextPart::new_text(String::from("This is a test string"), Some(render::Color::from_rgb(255, 0, 0))),
+                ui::element::TextPart::new_text(String::from("\n"), Some(render::Color::from_rgb(0, 255, 0))),
+                ui::element::TextPart::new_text(String::from("This seccond string should be on another line"), Some(render::Color::from_rgb(0, 0, 255))),
+            ],
+        ));
+
         Ok(Self {
             cfg,
             renderer,
