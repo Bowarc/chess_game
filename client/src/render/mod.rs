@@ -137,7 +137,8 @@ impl Renderer {
             // The implicit unwrap of get_mut is fine as any sprite in this list has been queried before so it *should* be loaded
             let ia = sprite_bank.get_mut(id, loader_handle);
 
-            canvas.draw(ia, DrawParam::default())
+            canvas.draw(ia, DrawParam::default());
+            ia.clear()
         }
 
         log
