@@ -26,7 +26,7 @@ pub fn check_loop_health() {
     let max_loop_time = 1. / crate::TARGET_TPS;
 
     let elapsed = llt.elapsed();
-    if elapsed > std::time::Duration::from_secs_f32(max_loop_time * 1.1) {
+    if elapsed > std::time::Duration::from_secs_f32(max_loop_time * 1.5) {
         warn!(
             "[Server] Main loop failled to run at 10TPS: +{:.3?}",
             elapsed - std::time::Duration::from_secs_f32(max_loop_time)

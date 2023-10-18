@@ -66,6 +66,7 @@ impl DrawParam {
     pub fn to_ggez_unscaled(self) -> ggez::graphics::DrawParam {
         ggez::graphics::DrawParam::new()
             .dest(self.pos)
+            .scale(self.scale)
             .offset(self.offset)
             .rotation(self.rotation as f32)
             .color(self.color)
@@ -82,5 +83,11 @@ impl std::default::Default for DrawParam {
             rotation: 0.,
             color: [255, 255, 255, 255].into(),
         }
+    }
+}
+
+impl From<DrawParam> for ggez::graphics::DrawParam {
+    fn from(val: DrawParam) -> Self {
+        val.to_ggez_unscaled()
     }
 }

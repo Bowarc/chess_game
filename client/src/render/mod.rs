@@ -4,6 +4,8 @@ mod layer;
 mod render_log;
 mod render_request;
 
+use std::todo;
+
 pub use color::Color;
 pub use draw_param::DrawParam;
 pub use layer::Layer;
@@ -35,6 +37,11 @@ impl Renderer {
         &mut self,
         ctx: &mut ggez::Context,
         menu_backend: &mut ggegui::EguiBackend,
+        loader_handle: &mut crate::assets::loader::Handle,
+        sprite_bank: &mut impl crate::assets::Bank<
+            crate::assets::sprite::SpriteId,
+            ggez::graphics::InstanceArray,
+        >,
     ) -> ggez::GameResult<RenderLog> {
         let mut layer_index = 0;
         let mut global_log = RenderLog::new();
@@ -47,7 +54,14 @@ impl Renderer {
 
             let mut canvas = ggez::graphics::Canvas::from_frame(ctx, None);
 
-            global_log += Self::_run(ctx, &mut canvas, bits, menu_backend);
+            global_log += Self::_run(
+                ctx,
+                &mut canvas,
+                bits,
+                menu_backend,
+                loader_handle,
+                sprite_bank,
+            );
 
             canvas.finish(ctx)?;
         }
@@ -61,7 +75,13 @@ impl Renderer {
         canvas: &mut ggez::graphics::Canvas,
         bits: &mut [(render_request::RenderRequestBit, DrawParam)],
         menu_backend: &mut ggegui::EguiBackend,
+        loader_handle: &mut crate::assets::loader::Handle,
+        sprite_bank: &mut impl crate::assets::Bank<
+            crate::assets::sprite::SpriteId,
+            ggez::graphics::InstanceArray,
+        >,
     ) -> RenderLog {
+        use ggez::graphics::Drawable as _;
         // 'log' is already taken by the log crate, fuck you
         let mut log = RenderLog::new();
 
@@ -70,7 +90,20 @@ impl Renderer {
         for (bit, dp) in bits {
             match bit {
                 RenderRequestBit::Sprite(id) => {
-                    todo!();
+                    let Some(ia) = sprite_bank.try_get_mut(id, loader_handle) else{
+                        error!("Could not get instance array for sprite {id:?}");
+                        continue;
+                    };
+                    let Some(dimensions) = ia.image().dimensions(ctx) else{
+                        error!("Could not query the size of the image for sprite {id:?}");
+                        continue;
+                    };
+                    ia.push(dp.to_ggez_scaled(dimensions.size()));
+
+                    if !sprites_used.contains(id) {
+                        sprites_used.push(*id)
+                    }
+
                     log.on_sprite();
                     sprites_used.push(*id)
                 }
@@ -98,6 +131,13 @@ impl Renderer {
                     log.on_draw_call();
                 }
             }
+        }
+
+        for id in sprites_used.iter() {
+            // The implicit unwrap of get_mut is fine as any sprite in this list has been queried before so it *should* be loaded
+            let ia = sprite_bank.get_mut(id, loader_handle);
+
+            canvas.draw(ia, DrawParam::default())
         }
 
         log

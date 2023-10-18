@@ -6,16 +6,21 @@ pub use sound_id::SoundId;
 pub struct SoundBank {}
 
 impl SoundBank {
-    pub fn new() -> Self {
+    pub fn new(loader_handle: &mut super::loader::Handle) -> Self {
         Self {}
     }
 }
 
 impl super::Bank<SoundId, ggez::audio::Source> for SoundBank {
-    fn update(&mut self) {
-        todo!()
+    fn update(&mut self, _ctx: &mut ggez::Context, _loader_handle: &mut super::loader::Handle) {
+        // nothing to do for now
     }
-    fn get(&mut self, _: SoundId, _: super::loader::Handle) -> &mut ggez::audio::Source {
+
+    fn try_get_mut(
+        &mut self,
+        _: &SoundId,
+        _: &mut super::loader::Handle,
+    ) -> std::option::Option<&mut ggez::audio::Source> {
         todo!()
     }
 }

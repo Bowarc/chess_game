@@ -76,11 +76,24 @@ impl Chess {
         let text_id = ui_mgr.add_element(ui::element::Element::new_text(
             ui::Position::new_anchor(ui::Anchor::TopCenter, (0., 2.)),
             20.,
-            ui::Style::new(render::Color::WHITE, None, Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.))),
+            ui::Style::new(
+                render::Color::WHITE,
+                None,
+                Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
+            ),
             vec![
-                ui::element::TextPart::new_text(String::from("This is a test string"), Some(render::Color::from_rgb(255, 0, 0))),
-                ui::element::TextPart::new_text(String::from("\n"), Some(render::Color::from_rgb(0, 255, 0))),
-                ui::element::TextPart::new_text(String::from("This seccond string should be on another line"), Some(render::Color::from_rgb(0, 0, 255))),
+                ui::element::TextPart::new_text(
+                    String::from("This is a test string"),
+                    Some(render::Color::from_rgb(255, 0, 0)),
+                ),
+                ui::element::TextPart::new_text(
+                    String::from("\n"),
+                    Some(render::Color::from_rgb(0, 255, 0)),
+                ),
+                ui::element::TextPart::new_text(
+                    String::from("This seccond string should be on another line"),
+                    Some(render::Color::from_rgb(0, 0, 255)),
+                ),
             ],
         ));
 
@@ -132,6 +145,7 @@ impl ggez::event::EventHandler for Chess {
             .push(self.client.stats().get_rtt().as_micros() as f64);
 
         // self.assets.update(ctx, &self.config, &self.game);
+        self.asset_mgr.update(ctx);
 
         self.frame_stats.end_update();
         Ok(())
@@ -149,17 +163,30 @@ impl ggez::event::EventHandler for Chess {
 
         let render_request = self.renderer.render_request();
 
+        render_request.add(
+            assets::sprite::SpriteId::default(),
+            render::DrawParam::default()
+                .pos(window_size / 2.)
+                .size(shared::maths::Vec2::new(100., 100.)),
+            render::Layer::TopMost,
+        );
+
         self.frame_stats.draw(
             shared::maths::Point::ZERO,
             ctx,
             render_request,
-            self.asset_mgr.loader().ongoing_requests(),
+            self.asset_mgr.get_loader().ongoing_requests(),
             self.client.stats(),
         )?;
         self.gui_menu.draw(ctx, render_request)?;
         self.ui_mgr.draw(ctx, render_request)?;
 
-        let render_log = self.renderer.run(ctx, self.gui_menu.backend_mut())?;
+        let render_log = self.renderer.run(
+            ctx,
+            self.gui_menu.backend_mut(),
+            &mut self.asset_mgr.loader_handle,
+            &mut self.asset_mgr.sprite_bank,
+        )?;
 
         self.frame_stats.set_render_log(render_log);
 
