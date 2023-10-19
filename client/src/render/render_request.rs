@@ -53,7 +53,7 @@ fn get_order_value_from_drawable(
     ctx: &mut ggez::Context,
 ) -> i32 {
     match d.dimensions(ctx) {
-        Some(d) => (d.y + (d.h / 2.)) as i32,
+        Some(d) => (d.y + (d.h * 0.5)) as i32,
         None => {
             error!("Could not get dimensions of Drawable");
             0

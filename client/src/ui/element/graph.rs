@@ -87,7 +87,7 @@ impl super::TElement for Graph {
         // draw border
         if let Some(border) = self.style.get_border() {
             let r = shared::maths::Rect::new(
-                rect.r_topleft() - border.get_size() / 2.,
+                rect.r_topleft() - border.get_size() * 0.5,
                 rect.size() + *border.get_size(),
                 rect.rotation(),
             );

@@ -1,3 +1,4 @@
+
 pub struct ResolverManager<Sprite, Sound, Font> {
     internal_sprite: Resolver<Sprite>,
     external_sprite: Resolver<Sprite>,
@@ -9,10 +10,13 @@ pub struct ResolverManager<Sprite, Sound, Font> {
     external_font: Resolver<Font>,
 }
 
+
+type AssetPath = String;
+type AssetPathPrefix = String;
 struct Resolver<AssetType> {
     fs: shared::file::FileSystem,
-    path_prefix: String,
-    inner: std::collections::HashMap<AssetType, String>,
+    path_prefix: AssetPathPrefix,
+    inner: std::collections::HashMap<AssetType, AssetPath>,
 }
 
 impl<AssetType: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + std::fmt::Debug>
@@ -24,7 +28,7 @@ impl<AssetType: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + s
         let bytes = match shared::file::try_bytes(path.into()) {
             Ok(bytes) => bytes,
             Err(e) => {
-                // error!("Asset loader could not open resolver file path: {e}");
+                // error!("Resolver could not open resolver file path: {e}");
                 return Err(e.into());
             }
         };
@@ -33,7 +37,7 @@ impl<AssetType: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + s
             match ron::de::from_bytes::<std::collections::HashMap<AssetType, String>>(&bytes) {
                 Ok(resolver) => resolver,
                 Err(e) => {
-                    error!("Asset loader could not deserialize resolver file bytes: {e}");
+                    error!("Resolver could not deserialize resolver file bytes: {e}");
 
                     return Err(ggez::GameError::ResourceLoadError(format!("{e:?}")));
                 }
@@ -46,17 +50,16 @@ impl<AssetType: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + s
         })
     }
     fn has(&self, asset: &AssetType) -> bool {
-        self.inner
-            .keys()
-            .collect::<Vec<&AssetType>>()
-            .contains(&asset)
+        self.inner.contains_key(asset)
     }
 
-    fn get(&self, asset: &AssetType) -> Result<std::borrow::Cow<'static, [u8]>, std::io::Error> {
+    fn try_get(&self, asset: &AssetType) -> Result<std::borrow::Cow<'static, [u8]>, std::io::Error> {
         let path = format!("{}{}", self.path_prefix, self.inner.get(asset).unwrap());
-
         debug!("Requesting file at {path:?} for {:?} filesystem", self.fs);
         shared::file::try_bytes(shared::file::Path::new(self.fs, path))
+    }
+    fn get(&self, asset: &AssetType) -> std::borrow::Cow<'static, [u8]>{
+        self.try_get(asset).unwrap()
     }
 }
 
@@ -114,37 +117,42 @@ impl<
             )?,
         })
     }
-
-    pub fn get_sprite(&self, sprite: &Sprite) -> Option<std::borrow::Cow<'static, [u8]>> {
-        if self.internal_sprite.has(sprite) {
-            Some(self.internal_sprite.get(sprite).unwrap())
-        } else if self.external_sprite.has(sprite) {
-            Some(self.external_sprite.get(sprite).unwrap())
+    fn get<Asset>(&self, internal_resolver: &Resolver<Asset>, external_resolver: &Resolver<Asset>, asset: &Asset) -> Option<std::borrow::Cow<'static, [u8]>>
+    where Asset: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + std::fmt::Debug{
+        // The implicit .unwrap of resolver.get is fine as we test before if that resolver has the asset
+        if internal_resolver.has(asset) {
+            Some(internal_resolver.get(asset))
+        } else if external_resolver.has(asset) {
+            Some(external_resolver.get(asset))
         } else {
-            error!("None of the sprite resolvers have the asset: {sprite:?}");
             None
         }
+    }
+
+    pub fn get_sprite(&self, sprite: &Sprite) -> Option<std::borrow::Cow<'static, [u8]>> {
+        let res = self.get(&self.internal_sprite, &self.external_sprite, sprite);
+
+        if res.is_none(){
+            error!("None of the sprite resolvers have the asset: {sprite:?}");
+        }
+        res
     }
 
     pub fn get_sound(&self, sound: &Sound) -> Option<std::borrow::Cow<'static, [u8]>> {
-        if self.internal_sound.has(sound) {
-            Some(self.internal_sound.get(sound).unwrap())
-        } else if self.external_sound.has(sound) {
-            Some(self.external_sound.get(sound).unwrap())
-        } else {
+        let res = self.get(&self.internal_sound, &self.external_sound, sound);
+
+        if res.is_none(){
             error!("None of the sound resolvers have the asset: {sound:?}");
-            None
         }
+        res
     }
 
     pub fn get_font(&self, font: &Font) -> Option<std::borrow::Cow<'static, [u8]>> {
-        if self.internal_font.has(font) {
-            Some(self.internal_font.get(font).unwrap())
-        } else if self.external_font.has(font) {
-            Some(self.external_font.get(font).unwrap())
-        } else {
+        let res = self.get(&self.internal_font, &self.external_font, font);
+
+        if res.is_none(){
             error!("None of the font resolvers have the asset: {font:?}");
-            None
         }
+        res
     }
 }

@@ -18,7 +18,7 @@ impl InnerRect {
         let rotation = rotation.into();
 
         Self {
-            center: topleft + size / 2.,
+            center: topleft + size * 0.5,
             size,
             rotation,
         }
@@ -45,29 +45,29 @@ impl InnerRect {
     /// Axis aligned top left point
     pub fn aa_topleft(&self) -> maths::Point {
         maths::Point::new(
-            self.center.x - self.size.x / 2.,
-            self.center.y - self.size.y / 2.,
+            self.center.x - self.size.x * 0.5,
+            self.center.y - self.size.y * 0.5,
         )
     }
     /// Axis aligned top right point
     pub fn aa_topright(&self) -> maths::Point {
         maths::Point::new(
-            self.center.x + self.size.x / 2.,
-            self.center.y - self.size.y / 2.,
+            self.center.x + self.size.x * 0.5,
+            self.center.y - self.size.y * 0.5,
         )
     }
     /// Axis aligned bot right point
     pub fn aa_botright(&self) -> maths::Point {
         maths::Point::new(
-            self.center.x + self.size.x / 2.,
-            self.center.y + self.size.y / 2.,
+            self.center.x + self.size.x * 0.5,
+            self.center.y + self.size.y * 0.5,
         )
     }
     /// Axis aligned bot left point
     pub fn aa_botleft(&self) -> maths::Point {
         maths::Point::new(
-            self.center.x - self.size.x / 2.,
-            self.center.y + self.size.y / 2.,
+            self.center.x - self.size.x * 0.5,
+            self.center.y + self.size.y * 0.5,
         )
     }
     /// Axis aligned lines
