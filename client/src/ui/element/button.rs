@@ -44,7 +44,7 @@ impl super::TElement for Button {
 
         if let Some(border) = style.get_border() {
             let r = shared::maths::Rect::new(
-                rect.r_topleft() - border.get_size() / 2.,
+                rect.r_topleft() - border.get_size() * 0.5,
                 rect.size() + *border.get_size(),
                 rect.rotation(),
             );

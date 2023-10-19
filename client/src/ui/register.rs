@@ -39,10 +39,10 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
             let j = j as f64;
 
             let centering = (
-                super::value::MagicValue::ScreenSizeW / 2.
-                    - nbr_of_square as f64 / 2. * (size.x + spacing),
-                super::value::MagicValue::ScreenSizeH / 2.
-                    - nbr_of_square as f64 / 2. * (size.y + spacing),
+                super::value::MagicValue::ScreenSizeW * 0.5
+                    - nbr_of_square as f64 * 0.5 * (size.x + spacing),
+                super::value::MagicValue::ScreenSizeH * 0.5
+                    - nbr_of_square as f64 * 0.5 * (size.y + spacing),
             );
 
             let pos = super::Position::new_value((

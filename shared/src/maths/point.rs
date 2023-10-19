@@ -357,7 +357,7 @@ fn point_comparison() {
 
 #[test]
 fn test_angle_maths() {
-    let a = 3.14159265358979323846 / 2.;
+    let a = 3.14159265358979323846 * 0.5;
     let mut l1 = super::Line::new(Point::ZERO, Point::ONE);
     l1.rotate(a);
     let end_pt = l1.1;

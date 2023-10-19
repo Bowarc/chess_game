@@ -166,7 +166,7 @@ impl ggez::event::EventHandler for Chess {
         render_request.add(
             assets::sprite::SpriteId::default(),
             render::DrawParam::default()
-                .pos(window_size / 2.)
+                .pos(window_size * 0.5)
                 .size(shared::maths::Vec2::new(100., 100.)),
             render::Layer::TopMost,
         );
@@ -203,7 +203,7 @@ impl ggez::event::EventHandler for Chess {
         button: ggez::input::mouse::MouseButton,
         x: f32,
         y: f32,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         self.ui_mgr.register_mouse_press(button, x, y);
         Ok(())
     }
@@ -215,7 +215,7 @@ impl ggez::event::EventHandler for Chess {
         button: ggez::input::mouse::MouseButton,
         x: f32,
         y: f32,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         self.ui_mgr.register_mouse_release(button, x, y);
         Ok(())
     }
@@ -229,7 +229,7 @@ impl ggez::event::EventHandler for Chess {
         y: f32,
         dx: f32,
         dy: f32,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         self.ui_mgr.register_mouse_motion(x, y, dx, dy);
         Ok(())
     }
@@ -239,7 +239,7 @@ impl ggez::event::EventHandler for Chess {
         &mut self,
         _ctx: &mut ggez::Context,
         _entered: bool,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         Ok(())
     }
 
@@ -250,7 +250,7 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
         x: f32,
         y: f32,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         self.gui_menu
             .backend_mut()
             .input
@@ -269,7 +269,7 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
         input: ggez::input::keyboard::KeyInput,
         repeated: bool,
-    ) -> Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         self.ui_mgr.register_key_down(input, repeated);
         Ok(())
     }
@@ -279,7 +279,7 @@ impl ggez::event::EventHandler for Chess {
         &mut self,
         _ctx: &mut ggez::Context,
         input: ggez::input::keyboard::KeyInput,
-    ) -> Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         self.ui_mgr.register_key_up(input);
         Ok(())
     }
@@ -290,7 +290,7 @@ impl ggez::event::EventHandler for Chess {
         &mut self,
         _ctx: &mut ggez::Context,
         character: char,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         self.gui_menu
             .backend_mut()
             .input
@@ -308,7 +308,7 @@ impl ggez::event::EventHandler for Chess {
         _phase: ggez::event::winit_event::TouchPhase,
         _x: f64,
         _y: f64,
-    ) -> Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         Ok(())
     }
 
@@ -320,7 +320,7 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
         _btn: ggez::event::Button,
         _id: ggez::input::gamepad::GamepadId,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         Ok(())
     }
 
@@ -332,7 +332,7 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
         _btn: ggez::event::Button,
         _id: ggez::input::gamepad::GamepadId,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         Ok(())
     }
 
@@ -345,7 +345,7 @@ impl ggez::event::EventHandler for Chess {
         _axis: ggez::event::Axis,
         _value: f32,
         _id: ggez::input::gamepad::GamepadId,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         Ok(())
     }
 
@@ -354,7 +354,7 @@ impl ggez::event::EventHandler for Chess {
         &mut self,
         _ctx: &mut ggez::Context,
         _gained: bool,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         Ok(())
     }
 
@@ -363,7 +363,7 @@ impl ggez::event::EventHandler for Chess {
     fn quit_event(
         &mut self,
         _ctx: &mut ggez::Context,
-    ) -> std::result::Result<bool, ggez::GameError> {
+    ) -> ggez::GameResult<bool> {
         debug!("See you next time. . .");
 
         Ok(false)
@@ -376,7 +376,7 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
         _width: f32,
         _height: f32,
-    ) -> std::result::Result<(), ggez::GameError> {
+    ) -> ggez::GameResult {
         Ok(())
     }
 
@@ -401,7 +401,8 @@ fn main() -> ggez::GameResult {
         .add_filter("wgpu_hal", log::LevelFilter::Error)
         .add_filter("gilrs", log::LevelFilter::Off)
         .add_filter("naga", log::LevelFilter::Warn)
-        .add_filter("networking", log::LevelFilter::Warn);
+        .add_filter("networking", log::LevelFilter::Warn)
+        .add_filter("ggez", log::LevelFilter::Warn);
     logger::init(logger_config, Some("client.log"));
     logger::test();
 

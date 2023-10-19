@@ -70,7 +70,7 @@ impl super::TElement for Text {
         // draw border
         if let Some(border) = self.style.get_border() {
             let r = shared::maths::Rect::new(
-                real_rect.r_topleft() - border.get_size() / 2.,
+                real_rect.r_topleft() - border.get_size() * 0.5,
                 real_rect.size() + *border.get_size(),
                 real_rect.rotation(),
             );
