@@ -4,8 +4,6 @@ mod layer;
 mod render_log;
 mod render_request;
 
-use std::todo;
-
 pub use color::Color;
 pub use draw_param::DrawParam;
 pub use layer::Layer;
@@ -90,11 +88,11 @@ impl Renderer {
         for (bit, dp) in bits {
             match bit {
                 RenderRequestBit::Sprite(id) => {
-                    let Some(ia) = sprite_bank.try_get_mut(id, loader_handle) else{
+                    let Some(ia) = sprite_bank.try_get_mut(id, loader_handle) else {
                         error!("Could not get instance array for sprite {id:?}");
                         continue;
                     };
-                    let Some(dimensions) = ia.image().dimensions(ctx) else{
+                    let Some(dimensions) = ia.image().dimensions(ctx) else {
                         error!("Could not query the size of the image for sprite {id:?}");
                         continue;
                     };

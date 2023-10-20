@@ -134,15 +134,10 @@ impl Element {
         position: super::Position,
         size: impl Into<super::Value>,
         style: super::Style,
-        parts: Vec<TextPart>
+        parts: Vec<TextPart>,
     ) -> Self {
         let size = size.into();
-        Self::Text(Text::new(
-            position,
-            size.into(),
-            style,
-            parts
-        ))
+        Self::Text(Text::new(position, size.into(), style, parts))
     }
 }
 

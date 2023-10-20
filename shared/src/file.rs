@@ -65,8 +65,10 @@ impl std::ops::Add<&str> for Path {
 }
 
 pub fn list() {
-    debug!("Internal files: {:#?}", Resolver::iter().collect::<Vec<std::borrow::Cow<'static, str>>>());
-
+    debug!(
+        "Internal files: {:#?}",
+        Resolver::iter().collect::<Vec<std::borrow::Cow<'static, str>>>()
+    );
 }
 
 pub fn try_bytes(path: Path) -> Result<std::borrow::Cow<'static, [u8]>, std::io::Error> {
