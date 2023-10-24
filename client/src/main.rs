@@ -86,24 +86,24 @@ impl Chess {
                 Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
             ),
             vec![
-                ui::element::TextPart::new_text(
+                ui::element::TextBit::new_text(
                     String::from("This is a test string"),
                     Some(render::Color::from_rgb(255, 0, 0)),
                 ),
-                ui::element::TextPart::new_text(
+                ui::element::TextBit::new_text(
                     String::from("\n"),
                     Some(render::Color::from_rgb(0, 255, 0)),
                 ),
-                ui::element::TextPart::new_text(
+                ui::element::TextBit::new_text(
                     String::from("This seccond string should be on another line|"),
                     Some(render::Color::from_rgb(0, 0, 255)),
                 ),
-                ui::element::TextPart::new_img(assets::sprite::SpriteId::MissingNo),
-                ui::element::TextPart::new_text(
+                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo),
+                ui::element::TextBit::new_text(
                     String::from("This is the prelast string\n"),
                     Some(render::Color::from_rgb(0, 255, 0)),
                 ),
-                ui::element::TextPart::new_text(
+                ui::element::TextBit::new_text(
                     String::from("This is the last string"),
                     Some(render::Color::random_rgb()),
                 ),
@@ -411,7 +411,7 @@ fn main() -> ggez::GameResult {
         .resources_dir_name("resources\\external\\")
         .window_setup(
             ggez::conf::WindowSetup::default()
-                .title("Vupa")
+                .title("Chess game")
                 .samples(config.window.samples)
                 .vsync(config.window.v_sync)
                 // .icon("/icon/logoV1.png")// .icon(iconpath.as_str()), // .icon("/Python.ico"),

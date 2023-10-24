@@ -4,7 +4,7 @@ mod text;
 
 pub use button::Button;
 pub use graph::{Graph, GraphText};
-pub use text::{Text, TextPart};
+pub use text::{Text, TextBit};
 
 #[enum_dispatch::enum_dispatch(TElement)]
 pub enum Element {
@@ -134,7 +134,7 @@ impl Element {
         position: super::Position,
         size: impl Into<super::Value>,
         style: super::Style,
-        parts: Vec<TextPart>,
+        parts: Vec<TextBit>,
     ) -> Self {
         let size = size.into();
         Self::Text(Text::new(position, size.into(), style, parts))
