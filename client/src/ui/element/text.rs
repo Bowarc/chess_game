@@ -184,28 +184,45 @@ impl Text {
         let mut curr_row = Vec::new();
         let mut curr_width = 0.;
         let mut curr_height = 0.;
+        let mut curr_text: Option<ggez::graphics::Text> = None;
         for (i,bit) in self.bits.iter().enumerate(){
             let mut need_draw = false;
             match bit{
                 TextBit::Text { raw, color_opt } => {
                     let mut f = ggez::graphics::TextFragment::new(raw).scale(target_size as f32);
                     f.color = color_opt.map(|c| c.into());
-                    let ggtext = ggez::graphics::Text::new(f);
-                    curr_width += ggtext.dimensions(ctx).unwrap().w as f64;
-                    curr_row.push(ComputedTextBit::Text(ggtext));
+
+                    if let Some(text) = &mut curr_text{
+                        text.add(f);
+                        curr_width = text.dimensions(ctx).unwrap().w as f64
+                    }else{
+                        let text = ggez::graphics::Text::new(f);
+                        curr_width += text.dimensions(ctx).unwrap().w as f64;
+                        curr_text = Some(text);
+                    };
                 },
                 TextBit::Image(sprite_id) => {
+                    if let Some(text) = curr_text{
+                        curr_row.push(ComputedTextBit::Text(text));
+                        curr_text = None;
+                    }
                     curr_row.push(
                         ComputedTextBit::Image(*sprite_id)
                     );
                     curr_width += target_size;
                 }
                 TextBit::NewLine => {
+                    if let Some(text) = curr_text{
+                        curr_row.push(ComputedTextBit::Text(text));
+                        curr_text = None;
+                    }
                     need_draw = true;
+
                 },
             }
 
             if need_draw || i == self.bits.len() - 1{
+                debug!("Drawing with w {curr_width:?}");
                 draw_curr_row(curr_row, curr_width, curr_height);
                 curr_row = Vec::new();
 

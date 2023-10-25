@@ -92,10 +92,18 @@ impl Chess {
                     Some(render::Color::from_rgb(255, 0, 0)),
                 ),
                 ui::element::TextBit::new_text(
+                    String::from("This is a test string2"),
+                    Some(render::Color::from_rgb(0, 255, 0)),
+                ),
+                ui::element::TextBit::new_text(
+                    String::from("This is a test string3"),
+                    Some(render::Color::from_rgb(0, 0, 255)),
+                ),
+                ui::element::TextBit::new_text(
                     String::from("\n"),
                     Some(render::Color::from_rgb(0, 255, 0)),
                 ),
-                // ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo),
+                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo),
                 ui::element::TextBit::new_text(
                     String::from("This seccond string should be on another line|"),
                     Some(render::Color::from_rgb(0, 0, 255)),
@@ -106,7 +114,7 @@ impl Chess {
                     Some(render::Color::random_rgb()),
                 ),
                 ui::element::TextBit::NewLine,
-                // ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo)
+                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo)
             ],
         ));
 
