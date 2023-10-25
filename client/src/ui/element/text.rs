@@ -1,3 +1,5 @@
+use ggez::graphics::Drawable;
+
 pub struct Text {
     id: crate::ui::Id,
     position: crate::ui::Position,
@@ -95,32 +97,44 @@ impl Text {
             bits: new_bits,
         }
     }
-}
 
-impl super::TElement for Text {
-    fn draw(
-        &mut self,
+    fn draw_bits_single_text(&mut self, 
         ctx: &mut ggez::Context,
-        back_mesh: &mut ggez::graphics::MeshBuilder,
-        ui_mesh: &mut ggez::graphics::MeshBuilder,
-        front_mesh: &mut ggez::graphics::MeshBuilder,
+        target_size: f64,
+        real_rect: &shared::maths::Rect,
         render_request: &mut crate::render::RenderRequest,
-    ) -> ggez::GameResult {
-        use ggez::graphics::Drawable as _;
-        let real_rect = self.get_computed_rect(ctx);
-        let target_size = self.req_size.compute(ctx);
+    ){
+        // This is called under the assumption that there is no image in the bits !
 
-        // draw background
-        if let Some(bg) = self.style.get_bg() {
-            bg.draw(back_mesh, render_request, real_rect)?
+        let mut global_text = ggez::graphics::Text::new("");
+        global_text.set_layout(ggez::graphics::TextLayout::center());
+        for bit in self.bits.iter(){
+            match bit{
+                TextBit::Text { raw, color_opt } => {
+                    let mut f = ggez::graphics::TextFragment::new(raw.clone()).scale(target_size as f32);
+                    f.color = color_opt.map(|c| c.into());
+                    global_text.add(f);
+                },
+                TextBit::NewLine => {
+                    global_text.add('\n');
+                }
+                TextBit::Image(_) => unreachable!("You're not supposed to draw images in this loop"),
+            }
         }
+        let size = global_text.dimensions(ctx).unwrap().size();
 
-        // draw border
-        if let Some(border) = self.style.get_border() {
-            border.draw(front_mesh, real_rect)?;
-        };
+        self.real_size = ggez::mint::Point2::from([crate::ui::Value::fixed(size.x.into()), crate::ui::Value::fixed(size.y.into())]);
 
+        render_request.add(global_text, crate::render::DrawParam::default().pos(real_rect.center()), crate::render::Layer::Ui);
+    }
 
+    fn draw_bits_multi_text(&mut self,
+        ctx: &mut ggez::Context,
+        target_size: f64,
+        real_rect: &shared::maths::Rect,
+        render_request: &mut crate::render::RenderRequest
+    ){
+        use ggez::graphics::Drawable as _;
         let mut draw_curr_row = |curr_row:  Vec<ComputedTextBit>, curr_width: f64, curr_height: f64|{
             let mut x = 0.;
             for computed_bit in curr_row{
@@ -174,7 +188,7 @@ impl super::TElement for Text {
             let mut need_draw = false;
             match bit{
                 TextBit::Text { raw, color_opt } => {
-                    let mut f = ggez::graphics::TextFragment::new(raw);
+                    let mut f = ggez::graphics::TextFragment::new(raw).scale(target_size as f32);
                     f.color = color_opt.map(|c| c.into());
                     let ggtext = ggez::graphics::Text::new(f);
                     curr_width += ggtext.dimensions(ctx).unwrap().w as f64;
@@ -205,6 +219,45 @@ impl super::TElement for Text {
         total_size.y = curr_height;
 
         self.real_size = ggez::mint::Point2::from([crate::ui::Value::fixed(total_size.x), crate::ui::Value::fixed(total_size.y)]);
+
+    }
+}
+
+impl super::TElement for Text {
+    fn draw(
+        &mut self,
+        ctx: &mut ggez::Context,
+        back_mesh: &mut ggez::graphics::MeshBuilder,
+        ui_mesh: &mut ggez::graphics::MeshBuilder,
+        front_mesh: &mut ggez::graphics::MeshBuilder,
+        render_request: &mut crate::render::RenderRequest,
+    ) -> ggez::GameResult {
+        let real_rect = self.get_computed_rect(ctx);
+        let target_size = self.req_size.compute(ctx);
+
+        // draw background
+        if let Some(bg) = self.style.get_bg() {
+            bg.draw(back_mesh, render_request, real_rect)?
+        }
+
+        // draw border
+        if let Some(border) = self.style.get_border() {
+            border.draw(front_mesh, real_rect)?;
+        };
+
+
+        let image_count: i32 = self.bits.iter().map(|bit|{
+            if let TextBit::Image(_) = bit{
+                1
+            }else{0}
+        }).sum();
+
+        if image_count > 0{
+            self.draw_bits_multi_text(ctx, target_size, &real_rect, render_request);
+        }else{
+            self.draw_bits_single_text(ctx, target_size, &real_rect, render_request);
+        }
+
         Ok(())
     }
     fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value> {
