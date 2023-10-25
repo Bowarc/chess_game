@@ -192,16 +192,11 @@ impl super::TElement for Text {
             let mut need_draw = false;
             match bit{
                 TextBit::Text { raw, color_opt } => {
-                    let nlc = raw.matches('\n').count();
                     let mut f = ggez::graphics::TextFragment::new(raw);
                     f.color = color_opt.map(|c| c.into());
                     let ggtext = ggez::graphics::Text::new(f);
                     curr_width += ggtext.dimensions(ctx).unwrap().w as f64;
                     curr_row.push(ComputedTextBit::Text(ggtext));
-
-                    assert_eq!(nlc, 0); // this is temporary to make sure that the initialisation is done well
-                    // TODO remove that
-
                 },
                 TextBit::Image(sprite_id) => {
                     curr_row.push(
