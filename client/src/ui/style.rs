@@ -116,6 +116,32 @@ impl BackgroundStyle {
     pub fn get_img(&self) -> Option<&crate::assets::sprite::SpriteId> {
         self.img.as_ref()
     }
+
+    pub fn draw(
+        &self,
+        mesh: &mut ggez::graphics::MeshBuilder,
+        render_request: &mut crate::render::RenderRequest,
+        element_rect: shared::maths::Rect,
+    ) -> ggez::GameResult {
+        if let Some(sprite_id) = self.get_img() {
+            render_request.add(
+                *sprite_id,
+                crate::render::DrawParam::default()
+                    .pos(element_rect.center())
+                    .size(element_rect.size())
+                    .color(*self.get_color()),
+                crate::render::Layer::UiBackground,
+            )
+        } else {
+            mesh.rectangle(
+                ggez::graphics::DrawMode::fill(),
+                element_rect.into(),
+                (*self.get_color()).into(),
+            )?;
+        }
+
+        Ok(())
+    }
 }
 
 impl BorderStyle {
@@ -135,6 +161,25 @@ impl BorderStyle {
     }
     pub fn get_size(&self) -> &f64 {
         &self.size
+    }
+
+    pub fn draw(
+        &self,
+        mesh: &mut ggez::graphics::MeshBuilder,
+        element_rect: shared::maths::Rect,
+    ) -> ggez::GameResult {
+        let r = shared::maths::Rect::new(
+            element_rect.r_topleft() - self.get_size() * 0.5,
+            element_rect.size() + *self.get_size(),
+            element_rect.rotation(),
+        );
+
+        mesh.rectangle(
+            ggez::graphics::DrawMode::stroke(*self.get_size() as f32),
+            r.into(),
+            (*self.get_color()).into(),
+        )?;
+        Ok(())
     }
 }
 

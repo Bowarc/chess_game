@@ -77,32 +77,18 @@ impl super::TElement for Graph {
 
         // draw background
         if let Some(bg) = self.style.get_bg() {
-            back_mesh.rectangle(
-                ggez::graphics::DrawMode::fill(),
-                self.get_computed_rect(ctx).into(),
-                (*bg.get_color()).into(),
-            )?;
+            bg.draw(back_mesh, render_request, rect)?
         }
 
         // draw border
         if let Some(border) = self.style.get_border() {
-            let r = shared::maths::Rect::new(
-                rect.r_topleft() - border.get_size() * 0.5,
-                rect.size() + *border.get_size(),
-                rect.rotation(),
-            );
-
-            front_mesh.rectangle(
-                ggez::graphics::DrawMode::stroke(*border.get_size() as f32),
-                r.into(),
-                (*border.get_color()).into(),
-            )?;
+            border.draw(front_mesh, rect)?;
         };
 
         // draw debug text
         if let Some(graph_text) = &self.text {
             if !self.values.is_empty() {
-                let text = (graph_text.text)(*self.values.back().unwrap());
+                let text = (graph_text.text)(*self.values.back().unwrap()); // Unwraping here is fine as we checked above if the list was empty or not
                 let mut ggtext = ggez::graphics::Text::new(text);
                 ggtext.set_layout(ggez::graphics::TextLayout::top_left());
 
@@ -125,10 +111,10 @@ impl super::TElement for Graph {
         for (i, val) in self.values.iter().enumerate() {
             let curr_height = (*val as f32 / self.max as f32) * rect.size().y as f32;
             if curr_height.is_nan() {
-                warn!(
-                    "Could not draw Graph id '{}' because the given value is NAN",
-                    self.id
-                );
+                // warn!(
+                //     "Could not draw Graph id '{}' because the given value is NAN",
+                //     self.id
+                // );
                 continue;
             }
 

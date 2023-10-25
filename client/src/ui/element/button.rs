@@ -42,18 +42,14 @@ impl super::TElement for Button {
         let rect = self.get_computed_rect(ctx);
         let style = self.style.get(&self.state);
 
-        if let Some(border) = style.get_border() {
-            let r = shared::maths::Rect::new(
-                rect.r_topleft() - border.get_size() * 0.5,
-                rect.size() + *border.get_size(),
-                rect.rotation(),
-            );
+        // draw background
+        if let Some(bg) = style.get_bg() {
+            bg.draw(back_mesh, render_request, rect)?
+        }
 
-            front_mesh.rectangle(
-                ggez::graphics::DrawMode::stroke(*border.get_size() as f32),
-                r.into(),
-                (*border.get_color()).into(),
-            )?;
+        // draw border
+        if let Some(border) = style.get_border() {
+            border.draw(front_mesh, rect)?;
         };
 
         ui_mesh.rectangle(

@@ -27,9 +27,10 @@ struct Chess {
 
 impl Chess {
     fn new(ctx: &mut ggez::Context, mut cfg: config::Config) -> ggez::GameResult<Self> {
-        let mut client = networking::Client::new(shared::DEFAULT_ADDRESS);
-        client.request_ping().unwrap();
+        let client = networking::Client::new(shared::DEFAULT_ADDRESS);
+
         let renderer = render::Renderer::new();
+
         let gui_menu = gui::Gui::new(ctx, &mut cfg)?;
 
         let asset_mgr = assets::AssetManager::new();
@@ -43,7 +44,10 @@ impl Chess {
             (200., 50.),
             ui::Style::new(
                 render::Color::random_rgb(),
-                None,
+                Some(ui::style::BackgroundStyle::new(
+                    render::Color::from_rgba(23, 23, 23, 150),
+                    Some(assets::sprite::SpriteId::MissingNo),
+                )),
                 Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
             ),
             Some(
@@ -78,22 +82,39 @@ impl Chess {
             20.,
             ui::Style::new(
                 render::Color::WHITE,
+                // Some(ui::style::BackgroundStyle::new(render::Color::WHITE, Some(assets::sprite::SpriteId::MissingNo))),
                 None,
                 Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
             ),
             vec![
-                ui::element::TextPart::new_text(
+                ui::element::TextBit::new_text(
                     String::from("This is a test string"),
                     Some(render::Color::from_rgb(255, 0, 0)),
                 ),
-                ui::element::TextPart::new_text(
+                ui::element::TextBit::new_text(
+                    String::from("This is a test string2"),
+                    Some(render::Color::from_rgb(0, 255, 0)),
+                ),
+                ui::element::TextBit::new_text(
+                    String::from("This is a test string3"),
+                    Some(render::Color::from_rgb(0, 0, 255)),
+                ),
+                ui::element::TextBit::new_text(
                     String::from("\n"),
                     Some(render::Color::from_rgb(0, 255, 0)),
                 ),
-                ui::element::TextPart::new_text(
-                    String::from("This seccond string should be on another line"),
+                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo),
+                ui::element::TextBit::new_text(
+                    String::from("This seccond string should be on another line|"),
                     Some(render::Color::from_rgb(0, 0, 255)),
                 ),
+                ui::element::TextBit::new_text("".to_string(), None), 
+                ui::element::TextBit::new_text(
+                    String::from("\n\nNew String\n"),
+                    Some(render::Color::random_rgb()),
+                ),
+                ui::element::TextBit::NewLine,
+                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo)
             ],
         ));
 
@@ -245,12 +266,7 @@ impl ggez::event::EventHandler for Chess {
 
     /// The mousewheel was scrolled, vertically (y, positive away from and negative toward the user)
     /// or horizontally (x, positive to the right and negative to the left).
-    fn mouse_wheel_event(
-        &mut self,
-        _ctx: &mut ggez::Context,
-        x: f32,
-        y: f32,
-    ) -> ggez::GameResult {
+    fn mouse_wheel_event(&mut self, _ctx: &mut ggez::Context, x: f32, y: f32) -> ggez::GameResult {
         self.gui_menu
             .backend_mut()
             .input
@@ -286,11 +302,7 @@ impl ggez::event::EventHandler for Chess {
 
     /// A unicode character was received, usually from keyboard input.
     /// This is the intended way of facilitating text input.
-    fn text_input_event(
-        &mut self,
-        _ctx: &mut ggez::Context,
-        character: char,
-    ) -> ggez::GameResult {
+    fn text_input_event(&mut self, _ctx: &mut ggez::Context, character: char) -> ggez::GameResult {
         self.gui_menu
             .backend_mut()
             .input
@@ -350,20 +362,13 @@ impl ggez::event::EventHandler for Chess {
     }
 
     /// Called when the window is shown or hidden.
-    fn focus_event(
-        &mut self,
-        _ctx: &mut ggez::Context,
-        _gained: bool,
-    ) -> ggez::GameResult {
+    fn focus_event(&mut self, _ctx: &mut ggez::Context, _gained: bool) -> ggez::GameResult {
         Ok(())
     }
 
     /// Called upon a quit event.  If it returns true,
     /// the game does not exit (the quit event is cancelled).
-    fn quit_event(
-        &mut self,
-        _ctx: &mut ggez::Context,
-    ) -> ggez::GameResult<bool> {
+    fn quit_event(&mut self, _ctx: &mut ggez::Context) -> ggez::GameResult<bool> {
         debug!("See you next time. . .");
 
         Ok(false)
@@ -414,7 +419,7 @@ fn main() -> ggez::GameResult {
         .resources_dir_name("resources\\external\\")
         .window_setup(
             ggez::conf::WindowSetup::default()
-                .title("Vupa")
+                .title("Chess game")
                 .samples(config.window.samples)
                 .vsync(config.window.v_sync)
                 // .icon("/icon/logoV1.png")// .icon(iconpath.as_str()), // .icon("/Python.ico"),
