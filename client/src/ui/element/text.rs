@@ -1,13 +1,3 @@
-// pub const IMAGE_TOKEN: &str = "$";
-// Do we want to do "Start of text $ end of text", image_id1
-// or "Start of text {image_id1} end of text" ?
-// I think the first one is the best option
-// Option we use precomputed data as computing it each frame is useless, so we'll use vec of parts, instead of parsing the raw_string each frame
-
-// I'd like to have a way to set a color per part, having different size would fuck up lot of things tho
-
-use std::assert_eq;
-
 pub struct Text {
     id: crate::ui::Id,
     position: crate::ui::Position,
@@ -43,12 +33,6 @@ impl Text {
         style: crate::ui::Style,
         bits: Vec<TextBit>,
     ) -> Self {
-        // Here we split the texts when we find multiple new lines in a single bit
-        // but what if a bit as a lot of new lines chars ?
-        // well it's up to the user to not do stoopid sht
-        // jk i'll find a cool solution later
-        // TODO ^
-
         let mut new_bits = Vec::new();
 
         for bit in bits{
@@ -60,7 +44,6 @@ impl Text {
                             new_bits.push(
                                 TextBit::Text { raw: splitted.to_string(), color_opt: *color_opt }
                             );   
-                            
                             if i < raws.len() - 1{
                                 new_bits.push(
                                     TextBit::NewLine
@@ -84,7 +67,6 @@ impl Text {
             if let TextBit::Text { raw ,.. } = new_bits.get(i).unwrap(){
                 if raw.is_empty(){
                     remove = true;
-                    // TODO Test this
                 }
             }
 
@@ -220,8 +202,6 @@ impl super::TElement for Text {
                 curr_height += target_size;
             }
         }        
-        // draw_curr_row(curr_row, curr_width, curr_height);
-        // curr_height += target_size;
         total_size.y = curr_height;
 
         self.real_size = ggez::mint::Point2::from([crate::ui::Value::fixed(total_size.x), crate::ui::Value::fixed(total_size.y)]);

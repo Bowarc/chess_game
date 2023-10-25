@@ -82,7 +82,8 @@ impl Chess {
             20.,
             ui::Style::new(
                 render::Color::WHITE,
-                Some(ui::style::BackgroundStyle::new(render::Color::WHITE, Some(assets::sprite::SpriteId::MissingNo))),
+                // Some(ui::style::BackgroundStyle::new(render::Color::WHITE, Some(assets::sprite::SpriteId::MissingNo))),
+                None,
                 Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
             ),
             vec![
