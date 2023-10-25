@@ -6,6 +6,8 @@
 
 // I'd like to have a way to set a color per part, having different size would fuck up lot of things tho
 
+use std::assert_eq;
+
 pub struct Text {
     id: crate::ui::Id,
     position: crate::ui::Position,
@@ -24,6 +26,7 @@ pub enum TextBit{
         color_opt: Option<crate::render::Color>,
     },
     Image(crate::assets::sprite::SpriteId),
+    NewLine,
 }
 
 #[derive(Clone)]
@@ -46,19 +49,52 @@ impl Text {
         // jk i'll find a cool solution later
         // TODO ^
 
-        // let mut new_bits = Vec::new();
+        let mut new_bits = Vec::new();
 
-        for bit in bits.iter(){
+        for bit in bits{
+            match &bit{
+                TextBit::Text { raw, color_opt } => {
+                    if raw.contains('\n'){
+                        let raws = raw.split('\n').collect::<Vec<&str>>();
+                        for (i,splitted) in raws.iter().enumerate(){
+                            if !splitted.is_empty(){
 
+                                new_bits.push(
+                                    // It's fine to clone as this is only called in initialisation
+                                    TextBit::Text { raw: splitted.to_string(), color_opt: *color_opt }
+                                );   
+                            }
+                            if i < raws.len() -1{
+                                new_bits.push(
+                                    TextBit::NewLine
+                                );   
+                            }
+                        }
+                    }else{
+                        new_bits.push(bit)
+                    }
+                },
+                _ => {
+                    new_bits.push(bit)
+                }
+            }
         }
 
+        // Do we pop if the last bit is a new line ?
+        /*unsure */{
+            while let Some(TextBit::NewLine) = new_bits.last(){
+                new_bits.pop();
+            }
+        }
+
+        debug!("{new_bits:?}");
         Self {
             id: crate::ui::Id::new(),
             position,
             req_size,
             real_size: ggez::mint::Point2::from([0f64.into(), 0f64.into()]),
             style,
-            bits,
+            bits: new_bits,
         }
     }
 }
@@ -114,9 +150,11 @@ impl super::TElement for Text {
                                     real_rect.center() + 
                                     shared::maths::Point::new(
                                         x - curr_width * 0.5,
-                                        0. + curr_height - real_rect.height()* 0.5
-                                    ) + 
-                                    target_size * 0.4
+                                        0. + curr_height - real_rect.height() * 0.5
+                                    ) +  
+                                    shared::maths::Vec2::new(0.5, 0.4) * target_size
+                                    // This is sort of fcked, koz when the row is a single image, the image is not centered
+                                    // TODO fix ?
                                 )
                                 .size(target_size),
                             crate::render::Layer::Ui
@@ -133,6 +171,7 @@ impl super::TElement for Text {
         let mut curr_width = 0.;
         let mut curr_height = 0.;
         for (i,bit) in self.bits.iter().enumerate(){
+            let mut need_draw = false;
             match bit{
                 TextBit::Text { raw, color_opt } => {
                     let nlc = raw.matches('\n').count();
@@ -142,18 +181,9 @@ impl super::TElement for Text {
                     curr_width += ggtext.dimensions(ctx).unwrap().w as f64;
                     curr_row.push(ComputedTextBit::Text(ggtext));
 
+                    assert_eq!(nlc, 0); // this is temporary to make sure that the initialisation is done well
+                    // TODO remove that
 
-                    if nlc > 0 || i == self.bits.len()- 1{
-                        // Draw then increment the Y position and reset the x position
-                        draw_curr_row(curr_row, curr_width, curr_height);
-                        curr_row = Vec::new();
-
-                        if curr_width > total_size.x{
-                            total_size.x = curr_width;
-                        }
-                        curr_width = 0.;
-                        curr_height += target_size;
-                    }
                 },
                 TextBit::Image(sprite_id) => {
                     curr_row.push(
@@ -161,13 +191,25 @@ impl super::TElement for Text {
                     );
                     curr_width += target_size;
                 }
+                TextBit::NewLine => {
+                    need_draw = true;
+                },
+            }
+
+            if need_draw || i == self.bits.len() - 1{
+                draw_curr_row(curr_row, curr_width, curr_height);
+                curr_row = Vec::new();
+
+                if curr_width > total_size.x{
+                    total_size.x = curr_width;
+                }
+                curr_width = 0.;
+                curr_height += target_size;
             }
         }        
         // draw_curr_row(curr_row, curr_width, curr_height);
         // curr_height += target_size;
         total_size.y = curr_height;
-
-        debug!("{total_size:?}");
 
         self.real_size = ggez::mint::Point2::from([crate::ui::Value::fixed(total_size.x), crate::ui::Value::fixed(total_size.y)]);
         Ok(())

@@ -111,10 +111,10 @@ impl super::TElement for Graph {
         for (i, val) in self.values.iter().enumerate() {
             let curr_height = (*val as f32 / self.max as f32) * rect.size().y as f32;
             if curr_height.is_nan() {
-                warn!(
-                    "Could not draw Graph id '{}' because the given value is NAN",
-                    self.id
-                );
+                // warn!(
+                //     "Could not draw Graph id '{}' because the given value is NAN",
+                //     self.id
+                // );
                 continue;
             }
 

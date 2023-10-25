@@ -82,7 +82,7 @@ impl Chess {
             20.,
             ui::Style::new(
                 render::Color::WHITE,
-                None,
+                Some(ui::style::BackgroundStyle::new(render::Color::WHITE, Some(assets::sprite::SpriteId::MissingNo))),
                 Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
             ),
             vec![
@@ -98,15 +98,12 @@ impl Chess {
                     String::from("This seccond string should be on another line|"),
                     Some(render::Color::from_rgb(0, 0, 255)),
                 ),
-                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo),
                 ui::element::TextBit::new_text(
-                    String::from("This is the prelast string\n"),
-                    Some(render::Color::from_rgb(0, 255, 0)),
-                ),
-                ui::element::TextBit::new_text(
-                    String::from("This is the last string"),
+                    String::from("\n\nNew String\n"),
                     Some(render::Color::random_rgb()),
                 ),
+                ui::element::TextBit::NewLine,
+                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo)
             ],
         ));
 
