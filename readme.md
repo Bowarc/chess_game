@@ -10,7 +10,7 @@ It's currently nowhere near finished
     - [x] Basic styling
     - [X] Simple widgets
     - [ ] Lots of usefull widgets
-    - [ ] Image in texts (Something like LoL does ![](assets/LoL_img_in_text.png))
+    - [x] Image in texts (Something like LoL does ![](assets/LoL_img_in_text.png))
 - [x] Gui windows (Stole from my game Vupa lol)
 - [ ] Asset loading
     - [x] Config
