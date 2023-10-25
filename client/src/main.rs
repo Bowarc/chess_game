@@ -94,10 +94,12 @@ impl Chess {
                     String::from("\n"),
                     Some(render::Color::from_rgb(0, 255, 0)),
                 ),
+                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo),
                 ui::element::TextBit::new_text(
                     String::from("This seccond string should be on another line|"),
                     Some(render::Color::from_rgb(0, 0, 255)),
                 ),
+                ui::element::TextBit::new_text("".to_string(), None), 
                 ui::element::TextBit::new_text(
                     String::from("\n\nNew String\n"),
                     Some(render::Color::random_rgb()),

@@ -57,14 +57,11 @@ impl Text {
                     if raw.contains('\n'){
                         let raws = raw.split('\n').collect::<Vec<&str>>();
                         for (i,splitted) in raws.iter().enumerate(){
-                            if !splitted.is_empty(){
-
-                                new_bits.push(
-                                    // It's fine to clone as this is only called in initialisation
-                                    TextBit::Text { raw: splitted.to_string(), color_opt: *color_opt }
-                                );   
-                            }
-                            if i < raws.len() -1{
+                            new_bits.push(
+                                TextBit::Text { raw: splitted.to_string(), color_opt: *color_opt }
+                            );   
+                            
+                            if i < raws.len() - 1{
                                 new_bits.push(
                                     TextBit::NewLine
                                 );   
@@ -80,6 +77,24 @@ impl Text {
             }
         }
 
+        // Remove all empty strings
+        let mut i = 0;
+        while i < new_bits.len(){
+            let mut remove= false;
+            if let TextBit::Text { raw ,.. } = new_bits.get(i).unwrap(){
+                if raw.is_empty(){
+                    remove = true;
+                    // TODO Test this
+                }
+            }
+
+            if remove{
+                new_bits.remove(i);
+            }else{
+                i+=1;
+            }
+        }
+
         // Do we pop if the last bit is a new line ?
         /*unsure */{
             while let Some(TextBit::NewLine) = new_bits.last(){
@@ -88,6 +103,7 @@ impl Text {
         }
 
         debug!("{new_bits:?}");
+
         Self {
             id: crate::ui::Id::new(),
             position,
@@ -134,7 +150,7 @@ impl super::TElement for Text {
                             crate::render::DrawParam::default()
                                 .pos(real_rect.center() +
                                     shared::maths::Point::new(
-                                        x - curr_width *0.5, 
+                                        x - curr_width * 0.5, 
                                         0.  + curr_height - real_rect.height() * 0.5
                                     )
                                 ),
@@ -151,10 +167,12 @@ impl super::TElement for Text {
                                     shared::maths::Point::new(
                                         x - curr_width * 0.5,
                                         0. + curr_height - real_rect.height() * 0.5
-                                    ) +  
-                                    shared::maths::Vec2::new(0.5, 0.4) * target_size
+                                    )
+                                     +  shared::maths::Vec2::new(0.5, 0.4) * target_size
                                     // This is sort of fcked, koz when the row is a single image, the image is not centered
                                     // TODO fix ?
+                                    // Hmm removing the last line doesn't fix the problem, i don't think it's that important rn
+                                    // i'll still open an issue
                                 )
                                 .size(target_size),
                             crate::render::Layer::Ui
