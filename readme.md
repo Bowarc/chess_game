@@ -14,7 +14,7 @@ It's currently nowhere near finished
 - [x] Gui windows (Stole from my game Vupa lol)
 - [ ] Asset loading
     - [x] Config
-    - [ ] Sprites
+    - [x] Sprites
     - [ ] Strong error resistance
 - [ ] Gameplay
     - [ ] Can create, join and leave games
