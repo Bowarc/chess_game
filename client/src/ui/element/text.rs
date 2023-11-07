@@ -222,7 +222,6 @@ impl Text {
             }
 
             if need_draw || i == self.bits.len() - 1{
-                debug!("Drawing with w {curr_width:?}");
                 draw_curr_row(curr_row, curr_width, curr_height);
                 curr_row = Vec::new();
 
@@ -236,7 +235,6 @@ impl Text {
         total_size.y = curr_height;
 
         self.real_size = ggez::mint::Point2::from([crate::ui::Value::fixed(total_size.x), crate::ui::Value::fixed(total_size.y)]);
-
     }
 }
 

@@ -1,16 +1,19 @@
 mod button;
 mod graph;
 mod text;
+mod text_edit;
 
 pub use button::Button;
 pub use graph::{Graph, GraphText};
 pub use text::{Text, TextBit};
+pub use text_edit::TextEdit;
 
 #[enum_dispatch::enum_dispatch(TElement)]
 pub enum Element {
     Button,
     Graph,
     Text,
+    TextEdit
 }
 
 #[enum_dispatch::enum_dispatch]
@@ -137,7 +140,17 @@ impl Element {
         parts: Vec<TextBit>,
     ) -> Self {
         let size = size.into();
-        Self::Text(Text::new(position, size.into(), style, parts))
+        Self::Text(Text::new(position, size, style, parts))
+    }
+    pub fn new_text_edit(
+        position: super::Position,
+        size: impl Into<super::Value>,
+        rows: usize,
+        font_size: f64,
+        style: super::style::Bundle,
+    ) -> Self {
+        let size = size.into();
+        Self::TextEdit(TextEdit::new(position, size, rows, font_size, style))
     }
 }
 
@@ -150,6 +163,7 @@ impl Element {
             Self::Button(inner) => (inner as &dyn std::any::Any).downcast_ref(),
             Self::Graph(inner) => (inner as &dyn std::any::Any).downcast_ref(),
             Self::Text(inner) => (inner as &dyn std::any::Any).downcast_ref(),
+            Self::TextEdit(inner) => (inner as &dyn std::any::Any).downcast_ref(),
         }
     }
     pub fn inner<T: TElement>(&self) -> &T {
@@ -161,6 +175,7 @@ impl Element {
             Self::Button(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
             Self::Graph(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
             Self::Text(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
+            Self::TextEdit(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
         }
     }
     pub fn inner_mut<T: TElement>(&mut self) -> &mut T {
@@ -172,6 +187,7 @@ impl Element {
             Self::Button(inner) => inner,
             Self::Graph(inner) => inner,
             Self::Text(inner) => inner,
+            Self::TextEdit(inner) => inner,
         }
     }
     pub fn inner_as_trait_mut(&mut self) -> &mut dyn TElement {
@@ -179,6 +195,7 @@ impl Element {
             Self::Button(inner) => inner,
             Self::Graph(inner) => inner,
             Self::Text(inner) => inner,
+            Self::TextEdit(inner) => inner,
         }
     }
 
