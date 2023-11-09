@@ -1,4 +1,20 @@
+
+
+#[derive(Default)]
 pub enum State {
-    Disconnected,
-    Connected { GameId: usize },
+    #[default]
+    JustLaunched,
+    Disconnected{
+
+    },
+    Connecting{
+        client: super::Client,
+    },
+    Connected {
+        client: super::Client,
+        active_games: crate::networking::Future<Vec<shared::game::Game>>
+    },
+    Playing {
+        client: super::Client,
+    },
 }

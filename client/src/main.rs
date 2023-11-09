@@ -20,14 +20,13 @@ struct Chess {
     renderer: render::Renderer,
     asset_mgr: assets::AssetManager,
     frame_stats: utils::framestats::FrameStats,
-    client: networking::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
     gui_menu: gui::Gui,
     ui_mgr: ui::UiManager,
+    game_state: game::Game
 }
 
 impl Chess {
     fn new(ctx: &mut ggez::Context, mut cfg: config::Config) -> ggez::GameResult<Self> {
-        let client = networking::Client::new(shared::DEFAULT_ADDRESS);
 
         let renderer = render::Renderer::new();
 
@@ -167,9 +166,9 @@ impl Chess {
             renderer,
             asset_mgr,
             frame_stats: utils::framestats::FrameStats::new(),
-            client,
             gui_menu,
             ui_mgr,
+            game_state: game::Game::new(),
         })
     }
 }
@@ -184,9 +183,9 @@ impl ggez::event::EventHandler for Chess {
 
         let dt: f64 = ctx.time.delta().as_secs_f64();
 
-        self.client.update().unwrap();
 
         self.gui_menu.update(ctx, &mut self.cfg)?;
+        self.game_state.update();
 
         self.ui_mgr.update(ctx);
 
@@ -207,7 +206,7 @@ impl ggez::event::EventHandler for Chess {
         self.ui_mgr
             .get_element(unsafe { shared::id::Id::new_unchecked(66) })
             .inner_mut::<ui::element::Graph>()
-            .push(self.client.stats().get_rtt().as_micros() as f64);
+            .push(self.game_state.try_get_client_mut().map(|client| client.stats().get_rtt().as_micros() as f64).unwrap_or(0.));
 
         self.ui_mgr
             .get_element(unsafe { shared::id::Id::new_unchecked(68) })
@@ -249,7 +248,7 @@ impl ggez::event::EventHandler for Chess {
             ctx,
             render_request,
             self.asset_mgr.get_loader().ongoing_requests(),
-            self.client.stats(),
+            self.game_state.try_get_client_mut().map(|client| client.stats()),
         )?;
         self.gui_menu.draw(ctx, render_request)?;
         self.ui_mgr.draw(ctx, render_request)?;

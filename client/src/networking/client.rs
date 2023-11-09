@@ -1,8 +1,9 @@
 pub struct Client<R: networking::Message, W: networking::Message> {
     proxy: threading::Channel<R, W>,
-    pub ip: std::net::SocketAddr,
+    ip: std::net::SocketAddr,
     running: std::sync::Arc<std::sync::atomic::AtomicBool>,
     stats: triple_buffer::Output<networking::NetworkStats<R, W>>,
+    received_msg: Vec<R>,
 }
 
 impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<R, W> {
@@ -32,12 +33,19 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
             ip: addr,
             running,
             stats: stats_out,
+            received_msg: Vec::new(),
         }
+    }
+    pub fn ip(&self) -> &std::net::SocketAddr{
+        &self.ip
     }
 
     pub fn stats(&mut self) -> &networking::NetworkStats<R, W> {
         // needs mutable as it updates before reading
         self.stats.read()
+    }
+    pub fn received_msg_mut(&mut self) -> &mut Vec<R>{
+        &mut self.received_msg
     }
 
     pub fn update(&mut self) -> Result<(), String> {
@@ -46,9 +54,9 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
         }
 
         while let Ok(msg) = self.proxy.try_recv() {
-
-            // warn!("Unhandled server message: {msg:?}");
+            self.received_msg.push(msg)
         }
+
         Ok(())
     }
 
