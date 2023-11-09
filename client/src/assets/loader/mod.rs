@@ -12,6 +12,7 @@ pub use targets::TargetId;
 
 pub struct Loader {
     channel: threading::Channel<Request, RawLoadedData>,
+    // This cooldown is only used for debug purposes
     cooldown: std::time::Duration,
 
     resolvers: ResolverManager<super::sprite::SpriteId, super::sound::SoundId, super::font::FontId>,
@@ -35,6 +36,14 @@ impl Loader {
         loop {
             spin_sleep::sleep(self.cooldown);
 
+            /*
+             *   The idea is:
+             *
+             *   1) Receive the load request from any bank (sprite, sound, font etc..)
+             *   2) Ask the resolvers for the file content (as bytes)
+             *   3) Send back the file content
+             */
+
             match self.channel.try_recv() {
                 Ok(request) => {
                     let bytes_opt = match request {
@@ -43,7 +52,8 @@ impl Loader {
                         Request::Font(id) => self.resolvers.get_font(&id),
                     };
 
-                    let bytes_opt = bytes_opt.clone();
+                    // Why was it cloned ?
+                    //let bytes_opt = bytes_opt.clone();
 
                     if let Some(bytes) = bytes_opt {
                         match self.channel.send(RawLoadedData { request, bytes }) {
@@ -60,7 +70,8 @@ impl Loader {
                 Err(e) => {
                     match e {
                         std::sync::mpsc::TryRecvError::Empty => {
-                            // classic error, we obviously don't receive requests every frame
+                            // No requests were received,
+                            // It's normal, we can't expect a load request every tick
                         }
                         std::sync::mpsc::TryRecvError::Disconnected => {
                             error!("The loader thread encountered an unexpected error: {e:?}");
