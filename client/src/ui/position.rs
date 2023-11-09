@@ -48,9 +48,14 @@ impl Position {
     }
 }
 
-
-impl From<super::Anchor> for Position{
+impl From<super::Anchor> for Position {
     fn from(value: super::Anchor) -> Self {
         Self::new_anchor(value, (0., 0.))
+    }
+}
+
+impl From<(super::Anchor, shared::maths::Vec2)> for Position {
+    fn from(value: (super::Anchor, shared::maths::Vec2)) -> Self {
+        Self::new_anchor(value.0, (value.1.x, value.1.y))
     }
 }

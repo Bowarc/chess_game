@@ -1,4 +1,3 @@
-
 pub struct Text {
     id: crate::ui::Id,
     position: crate::ui::Position,
@@ -26,6 +25,58 @@ enum ComputedTextBit {
     Image(crate::assets::sprite::SpriteId),
 }
 
+fn compute_text_bits(bits: Vec<TextBit>) -> Vec<TextBit> {
+    let mut new_bits = Vec::new();
+
+    for bit in bits {
+        match &bit {
+            TextBit::Text { raw, color_opt } => {
+                if raw.contains('\n') {
+                    let raws = raw.split('\n').collect::<Vec<&str>>();
+                    for (i, splitted) in raws.iter().enumerate() {
+                        new_bits.push(TextBit::Text {
+                            raw: splitted.to_string(),
+                            color_opt: *color_opt,
+                        });
+                        if i < raws.len() - 1 {
+                            new_bits.push(TextBit::NewLine);
+                        }
+                    }
+                } else {
+                    new_bits.push(bit)
+                }
+            }
+            _ => new_bits.push(bit),
+        }
+    }
+
+    // Remove all empty strings
+    let mut i = 0;
+    while i < new_bits.len() {
+        let mut remove = false;
+        if let TextBit::Text { raw, .. } = new_bits.get(i).unwrap() {
+            if raw.is_empty() {
+                remove = true;
+            }
+        }
+
+        if remove {
+            new_bits.remove(i);
+        } else {
+            i += 1;
+        }
+    }
+
+    // Do we pop if the last bit is a new line ?
+    /*unsure */
+    {
+        while let Some(TextBit::NewLine) = new_bits.last() {
+            new_bits.pop();
+        }
+    }
+    new_bits
+}
+
 impl Text {
     pub fn new(
         position: crate::ui::Position,
@@ -33,56 +84,7 @@ impl Text {
         style: crate::ui::Style,
         bits: Vec<TextBit>,
     ) -> Self {
-        let mut new_bits = Vec::new();
-
-        for bit in bits {
-            match &bit {
-                TextBit::Text { raw, color_opt } => {
-                    if raw.contains('\n') {
-                        let raws = raw.split('\n').collect::<Vec<&str>>();
-                        for (i, splitted) in raws.iter().enumerate() {
-                            new_bits.push(TextBit::Text {
-                                raw: splitted.to_string(),
-                                color_opt: *color_opt,
-                            });
-                            if i < raws.len() - 1 {
-                                new_bits.push(TextBit::NewLine);
-                            }
-                        }
-                    } else {
-                        new_bits.push(bit)
-                    }
-                }
-                _ => new_bits.push(bit),
-            }
-        }
-
-        // Remove all empty strings
-        let mut i = 0;
-        while i < new_bits.len() {
-            let mut remove = false;
-            if let TextBit::Text { raw, .. } = new_bits.get(i).unwrap() {
-                if raw.is_empty() {
-                    remove = true;
-                }
-            }
-
-            if remove {
-                new_bits.remove(i);
-            } else {
-                i += 1;
-            }
-        }
-
-        // Do we pop if the last bit is a new line ?
-        /*unsure */
-        {
-            while let Some(TextBit::NewLine) = new_bits.last() {
-                new_bits.pop();
-            }
-        }
-
-        debug!("{new_bits:?}");
+        let new_bits = compute_text_bits(bits);
 
         Self {
             id: crate::ui::Id::new(),
@@ -175,7 +177,7 @@ impl Text {
                                                 x - curr_width * 0.5,
                                                 0. + curr_height - real_rect.height() * 0.5,
                                             )
-                                            + shared::maths::Vec2::new(0.5, 0.4) * target_size,
+                                            + shared::maths::Vec2::new(0.5, 0.5) * target_size,
                                     )
                                     .size(target_size),
                                 crate::render::Layer::Ui,
@@ -243,10 +245,8 @@ impl Text {
             crate::ui::Value::fixed(total_size.y),
         ]);
     }
-    pub fn replace_bits(&mut self, new_bits: Vec<TextBit>){
-        let old_id = self.id;
-        *self = Self::new(self.position.clone(), self.req_size.clone(), self.style, new_bits);
-        self.id = old_id;
+    pub fn replace_bits(&mut self, new_bits: Vec<TextBit>) {
+        self.bits = compute_text_bits(new_bits)
     }
 }
 
@@ -261,7 +261,6 @@ impl super::TElement for Text {
     ) -> ggez::GameResult {
         let real_rect = self.get_computed_rect(ctx);
         let target_size = self.req_size.compute(ctx);
-
         // draw background
         if let Some(bg) = self.style.get_bg() {
             bg.draw(back_mesh, render_request, real_rect)?

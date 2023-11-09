@@ -149,12 +149,19 @@ impl Chess {
         ));
 
         let mp_id = ui_mgr.add_element(ui::element::Element::new_text(
-            ui::Anchor::BotLeft.into(),
+            (ui::Anchor::BotRight, shared::maths::Vec2::new(-1., -1.)),
             20.,
-            ui::Style::default(),
+            ui::Style::new(
+                render::Color::random_rgb(),
+                Some(ui::style::BackgroundStyle::new(
+                    render::Color::from_rgba(20, 20, 20, 100),
+                    None,
+                )),
+                Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+            ),
             vec![ui::element::TextBit::new_text("".to_string(), None)],
         ));
-        debug!("{mp_id}");
+
         Ok(Self {
             cfg,
             renderer,
@@ -203,9 +210,12 @@ impl ggez::event::EventHandler for Chess {
             .push(self.client.stats().get_rtt().as_micros() as f64);
 
         self.ui_mgr
-            .get_element(unsafe { shared::id::Id::new_unchecked(68)})
+            .get_element(unsafe { shared::id::Id::new_unchecked(68) })
             .inner_mut::<ui::element::Text>()
-            .replace_bits(vec![ui::element::TextBit::new_text(format!("{:?}", ctx.mouse.position()),None)]);
+            .replace_bits(vec![
+                ui::element::TextBit::new_text(format!("{:?}", ctx.mouse.position()), None),
+                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo),
+            ]);
 
         // self.assets.update(ctx, &self.config, &self.game);
         self.asset_mgr.update(ctx);

@@ -66,7 +66,7 @@ pub trait TElement: std::any::Any {
 
         let position = self.get_computed_pos(ctx, Some(size));
 
-        shared::maths::Rect::new(position, size, 0.)
+        shared::maths::Rect::new_from_center(position, size, 0.)
     }
 
     /*
@@ -110,47 +110,47 @@ pub trait TElement: std::any::Any {
 /// Constructors
 impl Element {
     pub fn new_button(
-        position: super::Position,
+        position: impl Into<super::Position>,
         size: (impl Into<super::Value>, impl Into<super::Value>),
         style: super::style::Bundle,
     ) -> Self {
         Self::Button(button::Button::new(
-            position,
+            position.into(),
             ggez::mint::Point2::from([size.0.into(), size.1.into()]),
             style,
         ))
     }
     pub fn new_graph(
-        position: super::Position,
+        position: impl Into<super::Position>,
         size: (impl Into<super::Value>, impl Into<super::Value>),
         style: super::Style,
         text: Option<graph::GraphText>,
     ) -> Self {
         Self::Graph(graph::Graph::new(
-            position,
+            position.into(),
             ggez::mint::Point2::from([size.0.into(), size.1.into()]),
             style,
             text,
         ))
     }
     pub fn new_text(
-        position: super::Position,
+        position: impl Into<super::Position>,
         size: impl Into<super::Value>,
         style: super::Style,
         parts: Vec<TextBit>,
     ) -> Self {
         let size = size.into();
-        Self::Text(Text::new(position, size, style, parts))
+        Self::Text(Text::new(position.into(), size, style, parts))
     }
     pub fn new_text_edit(
-        position: super::Position,
+        position: impl Into<super::Position>,
         size: impl Into<super::Value>,
         rows: usize,
         font_size: f64,
         style: super::style::Bundle,
     ) -> Self {
         let size = size.into();
-        Self::TextEdit(TextEdit::new(position, size, rows, font_size, style))
+        Self::TextEdit(TextEdit::new(position.into(), size, rows, font_size, style))
     }
 }
 

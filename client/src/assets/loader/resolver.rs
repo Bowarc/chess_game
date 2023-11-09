@@ -64,7 +64,7 @@ impl<AssetType: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + s
         self.inner.contains_key(asset)
     }
 
-    /// Tries to load the given asset 
+    /// Tries to load the given asset
     fn try_get(
         &self,
         asset: &AssetType,
@@ -86,7 +86,6 @@ impl<
         Font: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + std::fmt::Debug,
     > ResolverManager<Sprite, Sound, Font>
 {
-
     /// Builds all the resolvers
     /// Fails if any of the resolvers fails to initialise
     pub fn new() -> ggez::GameResult<Self> {

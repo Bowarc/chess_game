@@ -21,7 +21,7 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
         )
     };
 
-    let board_size = 500.;
+    let board_size = 600.;
 
     let nbr_of_square: u8 = 8;
 
@@ -40,9 +40,11 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
 
             let centering = (
                 super::value::MagicValue::ScreenSizeW * 0.5
-                    - nbr_of_square as f64 * 0.5 * (size.x + spacing),
+                    - nbr_of_square as f64 * 0.5 * (size.x + spacing)
+                    + size.x * 0.5,
                 super::value::MagicValue::ScreenSizeH * 0.5
-                    - nbr_of_square as f64 * 0.5 * (size.y + spacing),
+                    - nbr_of_square as f64 * 0.5 * (size.y + spacing)
+                    + size.y * 0.5,
             );
 
             let pos = super::Position::new_value((
