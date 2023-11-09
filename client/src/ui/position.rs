@@ -47,3 +47,10 @@ impl Position {
         }
     }
 }
+
+
+impl From<super::Anchor> for Position{
+    fn from(value: super::Anchor) -> Self {
+        Self::new_anchor(value, (0., 0.))
+    }
+}

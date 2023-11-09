@@ -13,7 +13,7 @@ pub enum Element {
     Button,
     Graph,
     Text,
-    TextEdit
+    TextEdit,
 }
 
 #[enum_dispatch::enum_dispatch]

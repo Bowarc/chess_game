@@ -108,7 +108,7 @@ impl Chess {
         //             String::from("This seccond string should be on another line|"),
         //             Some(render::Color::from_rgb(0, 0, 255)),
         //         ),
-        //         ui::element::TextBit::new_text("".to_string(), None), 
+        //         ui::element::TextBit::new_text("".to_string(), None),
         //         ui::element::TextBit::new_text(
         //             String::from("\n\nNew String\n"),
         //             Some(render::Color::random_rgb()),
@@ -118,55 +118,43 @@ impl Chess {
         //     ],
         // ));
 
-        let text_edit_id = ui_mgr.add_element(
-            ui::element::Element::new_text_edit(
-                ui::Position::new_anchor(
-                    ui::Anchor::TopCenter, (0., 2.)
+        let text_edit_id = ui_mgr.add_element(ui::element::Element::new_text_edit(
+            ui::Position::new_anchor(ui::Anchor::TopCenter, (0., 2.)),
+            200.,
+            3,
+            40.,
+            ui::style::Bundle::new(
+                ui::Style::new(
+                    render::Color::default(),
+                    Some(ui::style::BackgroundStyle::new(
+                        render::Color::random_rgb(),
+                        None,
+                    )),
+                    Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
                 ),
-                200.,
-                3,
-                20.,
-                ui::style::Bundle::new(
-                    ui::Style::new(
-                        render::Color::default(),
-                        Some(
-                            ui::style::BackgroundStyle::new(
-                                render::Color::random_rgb(),
-                                None
-                            )),
-                        Some(
-                            ui::style::BorderStyle::new(
-                                render::Color::random_rgb(), 1.
-                            )
-                        )
-                    ),
-                    Some(
-                        ui::Style::new(
-                            render::Color::random_rgb(),
-                            Some(
-                                ui::style::BackgroundStyle::new(
-                                    render::Color::random_rgb(),
-                                    None)
-                                ),
-                            Some(ui::style::BorderStyle::default())
-                            )
-                        ), 
-                    Some(
-                        ui::Style::new(
-                            render::Color::random_rgb(),
-                            None,
-                            Some(
-                                ui::style::BorderStyle::new(
-                                    render::Color::random_rgb(),
-                                    1.
-                                )
-                            )
-                        )
-                        ),
-                    ),
-                )
-            );
+                Some(ui::Style::new(
+                    render::Color::random_rgb(),
+                    Some(ui::style::BackgroundStyle::new(
+                        render::Color::random_rgb(),
+                        None,
+                    )),
+                    Some(ui::style::BorderStyle::default()),
+                )),
+                Some(ui::Style::new(
+                    render::Color::random_rgb(),
+                    None,
+                    Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+                )),
+            ),
+        ));
 
+        let mp_id = ui_mgr.add_element(ui::element::Element::new_text(
+            ui::Anchor::BotLeft.into(),
+            20.,
+            ui::Style::default(),
+            vec![ui::element::TextBit::new_text("".to_string(), None)],
+        ));
+        debug!("{mp_id}");
         Ok(Self {
             cfg,
             renderer,
@@ -213,6 +201,11 @@ impl ggez::event::EventHandler for Chess {
             .get_element(unsafe { shared::id::Id::new_unchecked(66) })
             .inner_mut::<ui::element::Graph>()
             .push(self.client.stats().get_rtt().as_micros() as f64);
+
+        self.ui_mgr
+            .get_element(unsafe { shared::id::Id::new_unchecked(68)})
+            .inner_mut::<ui::element::Text>()
+            .replace_bits(vec![ui::element::TextBit::new_text(format!("{:?}", ctx.mouse.position()),None)]);
 
         // self.assets.update(ctx, &self.config, &self.game);
         self.asset_mgr.update(ctx);

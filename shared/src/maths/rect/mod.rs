@@ -26,6 +26,19 @@ impl Rect {
 
         Self { inner, cache }
     }
+    pub fn new_from_center(
+        center: impl Into<super::Point>,
+        size: impl Into<super::Point>,
+        rotation: impl Into<f64> 
+    ) -> Self{
+        let center = center.into();
+        let size = size.into();
+
+        let topleft = center - size * 0.5;
+
+        Self::new(topleft, size, rotation) 
+    }
+
     /// Check if the rect is axis aligned
     pub fn is_aa(&self) -> bool {
         self.rotation() == 0.
