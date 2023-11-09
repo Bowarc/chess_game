@@ -1,3 +1,7 @@
+/*
+Used by any1 that need to make calls to the loader thread
+*/
+
 use crate::assets::{font, sound, sprite};
 
 #[derive(Debug, Clone, Copy, PartialEq)]

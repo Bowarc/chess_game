@@ -4,6 +4,9 @@ pub mod loader;
 pub mod sound;
 pub mod sprite;
 
+// The goal of this is to be able to store a asset and be able to retrieve it.
+// The update function is supposed to be used to request assets to the loader thread
+// ex: sprite bank, sound bank, font bank
 pub trait Bank<In, Out> {
     fn update(&mut self, _: &mut ggez::Context, _: &mut loader::Handle);
     fn try_get_mut(&mut self, _: &In, _: &mut loader::Handle) -> Option<&mut Out>;

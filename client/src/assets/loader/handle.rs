@@ -49,11 +49,8 @@ impl Handle {
         self.received_data.get_mut(&target_id).unwrap().push(data);
     }
 
-    pub fn recv(&mut self) -> Result<super::RawLoadedData, std::sync::mpsc::RecvError> {
-        self.channel.recv()
-    }
-
-    pub fn try_recv(&mut self) -> Result<super::RawLoadedData, std::sync::mpsc::TryRecvError> {
+    /// I removed the .recv function koz this one is the only one use and usefull
+    fn try_recv(&mut self) -> Result<super::RawLoadedData, std::sync::mpsc::TryRecvError> {
         self.channel.try_recv()
     }
 
