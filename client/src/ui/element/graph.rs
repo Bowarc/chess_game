@@ -16,13 +16,14 @@ pub struct Graph {
 
 impl Graph {
     pub fn new(
+        id: crate::ui::Id,
         position: crate::ui::Position,
         size: ggez::mint::Point2<crate::ui::Value>,
         style: crate::ui::Style,
         text: Option<GraphText>,
     ) -> Self {
         Self {
-            id: crate::ui::Id::new(),
+            id,
             position,
             size,
             style,
@@ -150,8 +151,8 @@ impl super::TElement for Graph {
     fn get_pos_value(&self) -> &crate::ui::Position {
         &self.position
     }
-    fn get_id(&self) -> shared::id::Id {
-        self.id
+    fn get_id(&self) -> crate::ui::Id {
+        self.id.clone()
     }
 }
 

@@ -12,6 +12,7 @@ pub struct TextEdit {
 
 impl TextEdit {
     pub fn new(
+        id: crate::ui::Id,
         position: crate::ui::Position,
         width: crate::ui::Value,
         rows: usize,
@@ -19,7 +20,7 @@ impl TextEdit {
         style: crate::ui::style::Bundle,
     ) -> Self {
         Self {
-            id: crate::ui::Id::new(),
+            id,
             position,
             width,
             rows,
@@ -88,7 +89,7 @@ impl super::TElement for TextEdit {
     }
 
     fn get_id(&self) -> crate::ui::Id {
-        self.id
+        self.id.clone()
     }
 
     fn on_new_frame(&mut self) {

@@ -8,12 +8,13 @@ pub struct Button {
 
 impl Button {
     pub fn new(
+        id: crate::ui::Id,
         position: crate::ui::Position,
         size: ggez::mint::Point2<crate::ui::Value>,
         style: crate::ui::style::Bundle,
     ) -> Self {
         Self {
-            id: crate::ui::Id::new(),
+            id,
             position,
             size,
             state: crate::ui::State::default(),
@@ -65,8 +66,8 @@ impl super::TElement for Button {
     fn get_pos_value(&self) -> &crate::ui::Position {
         &self.position
     }
-    fn get_id(&self) -> shared::id::Id {
-        self.id
+    fn get_id(&self) -> crate::ui::Id {
+        self.id.clone()
     }
 
     fn on_new_frame(&mut self) {

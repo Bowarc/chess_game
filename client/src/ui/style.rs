@@ -127,7 +127,7 @@ impl BackgroundStyle {
             render_request.add(
                 *sprite_id,
                 crate::render::DrawParam::default()
-                    .pos(element_rect.aa_topleft())
+                    .pos(element_rect.center())
                     .size(element_rect.size())
                     .color(*self.get_color()),
                 crate::render::Layer::UiBackground,

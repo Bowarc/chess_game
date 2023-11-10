@@ -53,6 +53,7 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
             ));
 
             let el = super::element::Element::new_button(
+                format!("board square {i}x{j}"),
                 pos,
                 (size.x, size.y),
                 if (i + j) as i32 % 2 == 0 {

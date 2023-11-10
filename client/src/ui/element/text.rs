@@ -79,6 +79,7 @@ fn compute_text_bits(bits: Vec<TextBit>) -> Vec<TextBit> {
 
 impl Text {
     pub fn new(
+        id: crate::ui::Id,
         position: crate::ui::Position,
         req_size: crate::ui::Value,
         style: crate::ui::Style,
@@ -87,7 +88,7 @@ impl Text {
         let new_bits = compute_text_bits(bits);
 
         Self {
-            id: crate::ui::Id::new(),
+            id,
             position,
             req_size,
             real_size: ggez::mint::Point2::from([0f64.into(), 0f64.into()]),
@@ -291,14 +292,14 @@ impl super::TElement for Text {
     fn get_pos_value(&self) -> &crate::ui::Position {
         &self.position
     }
-    fn get_id(&self) -> shared::id::Id {
-        self.id
+    fn get_id(&self) -> crate::ui::Id {
+        self.id.clone()
     }
 }
 
 impl TextBit {
-    pub fn new_text(raw: String, color_opt: Option<crate::render::Color>) -> Self {
-        Self::Text { raw, color_opt }
+    pub fn new_text(raw: impl Into<String>, color_opt: Option<crate::render::Color>) -> Self {
+        Self::Text { raw: raw.into(), color_opt }
     }
     pub fn new_img(sprite_id: crate::assets::sprite::SpriteId) -> Self {
         Self::Image(sprite_id)
