@@ -88,7 +88,7 @@ def check_unused_dependency(dep_lst):
 
         if os.popen(f'rg "{s1}|{s2}|{s3}" {package}\\src\\').read() != "":
             return
-        print(f"{package} appear to not use the {dep} dependecy")
+        print(f"{package} appear to not use the {dep} dependency")
 
     threads = []
     for dep in dep_lst.get_specifics() + dep_lst.get_globals():
