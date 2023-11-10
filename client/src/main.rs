@@ -21,7 +21,7 @@ struct Chess {
     asset_mgr: assets::AssetManager,
     frame_stats: utils::framestats::FrameStats,
     gui_menu: gui::Gui,
-    ui_mgr: ui::UiManager,
+    global_ui: ui::UiManager,
     game_state: game::Game
 }
 
@@ -34,11 +34,12 @@ impl Chess {
 
         let asset_mgr = assets::AssetManager::new();
 
-        let mut ui_mgr = ui::UiManager::default();
+        let mut global_ui = ui::UiManager::default();
 
-        ui::register::register_ui_elements(&mut ui_mgr);
+        ui::register::register_ui_elements(&mut global_ui);
 
-        let id = ui_mgr.add_element(ui::element::Element::new_graph(
+        let id = global_ui.add_element(ui::element::Element::new_graph(
+            "fps graph",
             ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 2.)),
             (200., 50.),
             ui::Style::new(
@@ -58,7 +59,8 @@ impl Chess {
                     .color(render::Color::random_rgb()),
             ),
         ));
-        let id2 = ui_mgr.add_element(ui::element::Element::new_graph(
+        let id2 = global_ui.add_element(ui::element::Element::new_graph(
+            "rtt graph",
             ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 52.)),
             (200., 50.),
             ui::Style::new(
@@ -76,7 +78,7 @@ impl Chess {
             ),
         ));
 
-        // let text_id = ui_mgr.add_element(ui::element::Element::new_text(
+        // let text_id = global_ui.add_element(ui::element::Element::new_text(
         //     ui::Position::new_anchor(ui::Anchor::TopCenter, (0., 2.)),
         //     20.,
         //     ui::Style::new(
@@ -117,7 +119,8 @@ impl Chess {
         //     ],
         // ));
 
-        let text_edit_id = ui_mgr.add_element(ui::element::Element::new_text_edit(
+        let text_edit_id = global_ui.add_element(ui::element::Element::new_text_edit(
+            "Text edit 1",
             ui::Position::new_anchor(ui::Anchor::TopCenter, (0., 2.)),
             200.,
             3,
@@ -147,7 +150,8 @@ impl Chess {
             ),
         ));
 
-        let mp_id = ui_mgr.add_element(ui::element::Element::new_text(
+        let mp_id = global_ui.add_element(ui::element::Element::new_text(
+            "mouse pos text",
             (ui::Anchor::BotRight, shared::maths::Vec2::new(-1., -1.)),
             20.,
             ui::Style::new(
@@ -167,7 +171,7 @@ impl Chess {
             asset_mgr,
             frame_stats: utils::framestats::FrameStats::new(),
             gui_menu,
-            ui_mgr,
+            global_ui,
             game_state: game::Game::new(),
         })
     }
@@ -185,31 +189,32 @@ impl ggez::event::EventHandler for Chess {
 
 
         self.gui_menu.update(ctx, &mut self.cfg)?;
+
         self.game_state.update();
 
-        self.ui_mgr.update(ctx);
+        self.global_ui.update(ctx);
 
         if self
-            .ui_mgr
-            .get_element(unsafe { shared::id::Id::new_unchecked(1) })
+            .global_ui
+            .get_element("board square 0x0")
             .inner::<ui::element::Button>()
             .clicked_this_frame()
         {
             debug!("Clicked this frame")
         }
 
-        self.ui_mgr
-            .get_element(unsafe { shared::id::Id::new_unchecked(65) })
+        self.global_ui
+            .get_element("fps graph")
             .inner_mut::<ui::element::Graph>()
             .push(ctx.time.fps());
 
-        self.ui_mgr
-            .get_element(unsafe { shared::id::Id::new_unchecked(66) })
+        self.global_ui
+            .get_element("rtt graph")
             .inner_mut::<ui::element::Graph>()
             .push(self.game_state.try_get_client_mut().map(|client| client.stats().get_rtt().as_micros() as f64).unwrap_or(0.));
 
-        self.ui_mgr
-            .get_element(unsafe { shared::id::Id::new_unchecked(68) })
+        self.global_ui
+            .get_element("mouse pos text")
             .inner_mut::<ui::element::Text>()
             .replace_bits(vec![
                 ui::element::TextBit::new_text(format!("{:?}", ctx.mouse.position()), None),
@@ -251,7 +256,13 @@ impl ggez::event::EventHandler for Chess {
             self.game_state.try_get_client_mut().map(|client| client.stats()),
         )?;
         self.gui_menu.draw(ctx, render_request)?;
-        self.ui_mgr.draw(ctx, render_request)?;
+
+
+        if let Some(ui_mgr) = self.game_state.try_get_ui_mgr_mut(){
+            ui_mgr.draw(ctx, render_request)?;
+        }
+
+        self.global_ui.draw(ctx, render_request)?;
 
         let render_log = self.renderer.run(
             ctx,
@@ -276,7 +287,11 @@ impl ggez::event::EventHandler for Chess {
         x: f32,
         y: f32,
     ) -> ggez::GameResult {
-        self.ui_mgr.register_mouse_press(button, x, y);
+        self.global_ui.register_mouse_press(button, x, y);
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+            ui.register_mouse_press(button, x, y);
+        }
+
         Ok(())
     }
 
@@ -288,7 +303,10 @@ impl ggez::event::EventHandler for Chess {
         x: f32,
         y: f32,
     ) -> ggez::GameResult {
-        self.ui_mgr.register_mouse_release(button, x, y);
+        self.global_ui.register_mouse_release(button, x, y);
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+            ui.register_mouse_release(button, x, y);
+        }
         Ok(())
     }
 
@@ -302,7 +320,10 @@ impl ggez::event::EventHandler for Chess {
         dx: f32,
         dy: f32,
     ) -> ggez::GameResult {
-        self.ui_mgr.register_mouse_motion(x, y, dx, dy);
+        self.global_ui.register_mouse_motion(x, y, dx, dy);
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+            ui.register_mouse_motion(x, y, dx, dy);
+        }
         Ok(())
     }
 
@@ -322,7 +343,10 @@ impl ggez::event::EventHandler for Chess {
             .backend_mut()
             .input
             .mouse_wheel_event(x * 10., y * 10.);
-        self.ui_mgr.register_mouse_wheel(x, y);
+        self.global_ui.register_mouse_wheel(x, y);
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+            ui.register_mouse_wheel( x, y);
+        }
         Ok(())
     }
 
@@ -337,7 +361,10 @@ impl ggez::event::EventHandler for Chess {
         input: ggez::input::keyboard::KeyInput,
         repeated: bool,
     ) -> ggez::GameResult {
-        self.ui_mgr.register_key_down(input, repeated);
+        self.global_ui.register_key_down(input, repeated);
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+            ui.register_key_down(input, repeated);
+        }
         Ok(())
     }
 
@@ -347,7 +374,10 @@ impl ggez::event::EventHandler for Chess {
         _ctx: &mut ggez::Context,
         input: ggez::input::keyboard::KeyInput,
     ) -> ggez::GameResult {
-        self.ui_mgr.register_key_up(input);
+        self.global_ui.register_key_up(input);
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+            ui.register_key_up(input);
+        }
         Ok(())
     }
 
@@ -358,7 +388,10 @@ impl ggez::event::EventHandler for Chess {
             .backend_mut()
             .input
             .text_input_event(character);
-        self.ui_mgr.register_text_input(character);
+        self.global_ui.register_text_input(character);
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+            ui.register_text_input(character);
+        }
         Ok(())
     }
 

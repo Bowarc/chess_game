@@ -110,23 +110,27 @@ pub trait TElement: std::any::Any {
 /// Constructors
 impl Element {
     pub fn new_button(
+        id: impl Into<super::Id>,
         position: impl Into<super::Position>,
         size: (impl Into<super::Value>, impl Into<super::Value>),
         style: super::style::Bundle,
     ) -> Self {
         Self::Button(button::Button::new(
+            id.into(),
             position.into(),
             ggez::mint::Point2::from([size.0.into(), size.1.into()]),
             style,
         ))
     }
     pub fn new_graph(
+        id: impl Into<super::Id>,
         position: impl Into<super::Position>,
         size: (impl Into<super::Value>, impl Into<super::Value>),
         style: super::Style,
         text: Option<graph::GraphText>,
     ) -> Self {
         Self::Graph(graph::Graph::new(
+            id.into(),
             position.into(),
             ggez::mint::Point2::from([size.0.into(), size.1.into()]),
             style,
@@ -134,15 +138,17 @@ impl Element {
         ))
     }
     pub fn new_text(
+        id: impl Into<super::Id>,
         position: impl Into<super::Position>,
         size: impl Into<super::Value>,
         style: super::Style,
         parts: Vec<TextBit>,
     ) -> Self {
         let size = size.into();
-        Self::Text(Text::new(position.into(), size, style, parts))
+        Self::Text(Text::new(id.into(), position.into(), size, style, parts))
     }
     pub fn new_text_edit(
+        id: impl Into<super::Id>,
         position: impl Into<super::Position>,
         size: impl Into<super::Value>,
         rows: usize,
@@ -150,7 +156,7 @@ impl Element {
         style: super::style::Bundle,
     ) -> Self {
         let size = size.into();
-        Self::TextEdit(TextEdit::new(position.into(), size, rows, font_size, style))
+        Self::TextEdit(TextEdit::new(id.into(),position.into(), size, rows, font_size, style))
     }
 }
 

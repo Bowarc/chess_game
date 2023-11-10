@@ -13,7 +13,8 @@ pub use state::State;
 pub use style::Style;
 pub use value::Value;
 
-pub type Id = shared::id::Id;
+// pub type Id = shared::id::Id;
+pub type Id = String;
 
 #[derive(Default)]
 pub struct UiManager {
@@ -24,6 +25,7 @@ pub struct UiManager {
 impl UiManager {
     pub fn add_element(&mut self, elem: element::Element) -> Id {
         let id = elem.get_id();
+        assert!(self.try_get_element(id.clone()).is_none(), "Ui element id collision");
         self.elements.push(elem);
         id
     }
@@ -152,7 +154,7 @@ impl UiManager {
         }
     }
 
-    pub fn get_element(&mut self, id: Id) -> &mut element::Element {
-        self.try_get_element(id).unwrap()
+    pub fn get_element(&mut self, id: impl Into<Id>) -> &mut element::Element {
+        self.try_get_element(id.into()).unwrap()
     }
 }
