@@ -93,10 +93,11 @@ impl super::TElement for Graph {
                 let mut ggtext = ggez::graphics::Text::new(text);
                 ggtext.set_layout(ggez::graphics::TextLayout::top_left());
 
-                let p = graph_text
-                    .anchor
-                    .compute(rect.size(), ggtext.measure(ctx).unwrap().into())
-                    + rect.r_topleft();
+                // let p = graph_text
+                //     .anchor
+                //     .compute(rect.size(), ggtext.measure(ctx).unwrap().into())
+                //     + rect.r_topleft();
+                let p = rect.aa_topleft();
 
                 render_request.add(
                     ggtext,

@@ -34,7 +34,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
             received_msg: Vec::new(),
         })
     }
-    pub fn ip(&self) -> &std::net::SocketAddr{
+    pub fn ip(&self) -> &std::net::SocketAddr {
         &self.ip
     }
 
@@ -42,7 +42,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
         // needs mutable as it updates before reading
         self.stats.read()
     }
-    pub fn received_msg_mut(&mut self) -> &mut Vec<R>{
+    pub fn received_msg_mut(&mut self) -> &mut Vec<R> {
         &mut self.received_msg
     }
 

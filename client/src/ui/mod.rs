@@ -25,7 +25,10 @@ pub struct UiManager {
 impl UiManager {
     pub fn add_element(&mut self, elem: element::Element) -> Id {
         let id = elem.get_id();
-        assert!(self.try_get_element(id.clone()).is_none(), "Ui element id collision");
+        assert!(
+            self.try_get_element(id.clone()).is_none(),
+            "Ui element id collision"
+        );
         self.elements.push(elem);
         id
     }

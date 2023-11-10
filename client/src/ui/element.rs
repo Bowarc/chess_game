@@ -156,7 +156,14 @@ impl Element {
         style: super::style::Bundle,
     ) -> Self {
         let size = size.into();
-        Self::TextEdit(TextEdit::new(id.into(),position.into(), size, rows, font_size, style))
+        Self::TextEdit(TextEdit::new(
+            id.into(),
+            position.into(),
+            size,
+            rows,
+            font_size,
+            style,
+        ))
     }
 }
 

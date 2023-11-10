@@ -58,21 +58,22 @@ impl FrameStats {
         ctx: &mut ggez::Context,
         render_request: &mut crate::render::RenderRequest,
         in_loading_requests: &[crate::assets::loader::Request],
-        network_stats_opt: Option<&networking::NetworkStats<
-            shared::message::ServerMessage,
-            shared::message::ClientMessage,
-        >>,
+        network_stats_opt: Option<
+            &networking::NetworkStats<
+                shared::message::ServerMessage,
+                shared::message::ClientMessage,
+            >,
+        >,
     ) -> ggez::GameResult {
         use ggez::graphics::Drawable as _;
 
         let time_frag = self.draw_time_measurements(ctx);
         let render_frag = self.draw_render_stats(in_loading_requests);
 
-
         let mut total_text = ggez::graphics::Text::new(time_frag);
         total_text.add(render_frag);
-        
-        if let Some(network_stats) = network_stats_opt{
+
+        if let Some(network_stats) = network_stats_opt {
             let network_frag = self.draw_network(network_stats);
             total_text.add(network_frag);
         }

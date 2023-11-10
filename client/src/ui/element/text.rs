@@ -299,7 +299,10 @@ impl super::TElement for Text {
 
 impl TextBit {
     pub fn new_text(raw: impl Into<String>, color_opt: Option<crate::render::Color>) -> Self {
-        Self::Text { raw: raw.into(), color_opt }
+        Self::Text {
+            raw: raw.into(),
+            color_opt,
+        }
     }
     pub fn new_img(sprite_id: crate::assets::sprite::SpriteId) -> Self {
         Self::Image(sprite_id)

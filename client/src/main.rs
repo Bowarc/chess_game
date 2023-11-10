@@ -22,12 +22,11 @@ struct Chess {
     frame_stats: utils::framestats::FrameStats,
     gui_menu: gui::Gui,
     global_ui: ui::UiManager,
-    game_state: game::Game
+    game_state: game::Game,
 }
 
 impl Chess {
     fn new(ctx: &mut ggez::Context, mut cfg: config::Config) -> ggez::GameResult<Self> {
-
         let renderer = render::Renderer::new();
 
         let gui_menu = gui::Gui::new(ctx, &mut cfg)?;
@@ -187,7 +186,6 @@ impl ggez::event::EventHandler for Chess {
 
         let dt: f64 = ctx.time.delta().as_secs_f64();
 
-
         self.gui_menu.update(ctx, &mut self.cfg)?;
 
         self.game_state.update();
@@ -211,7 +209,12 @@ impl ggez::event::EventHandler for Chess {
         self.global_ui
             .get_element("rtt graph")
             .inner_mut::<ui::element::Graph>()
-            .push(self.game_state.try_get_client_mut().map(|client| client.stats().get_rtt().as_micros() as f64).unwrap_or(0.));
+            .push(
+                self.game_state
+                    .try_get_client_mut()
+                    .map(|client| client.stats().get_rtt().as_micros() as f64)
+                    .unwrap_or(0.),
+            );
 
         self.global_ui
             .get_element("mouse pos text")
@@ -253,12 +256,13 @@ impl ggez::event::EventHandler for Chess {
             ctx,
             render_request,
             self.asset_mgr.get_loader().ongoing_requests(),
-            self.game_state.try_get_client_mut().map(|client| client.stats()),
+            self.game_state
+                .try_get_client_mut()
+                .map(|client| client.stats()),
         )?;
         self.gui_menu.draw(ctx, render_request)?;
 
-
-        if let Some(ui_mgr) = self.game_state.try_get_ui_mgr_mut(){
+        if let Some(ui_mgr) = self.game_state.try_get_ui_mgr_mut() {
             ui_mgr.draw(ctx, render_request)?;
         }
 
@@ -288,7 +292,7 @@ impl ggez::event::EventHandler for Chess {
         y: f32,
     ) -> ggez::GameResult {
         self.global_ui.register_mouse_press(button, x, y);
-        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut() {
             ui.register_mouse_press(button, x, y);
         }
 
@@ -304,7 +308,7 @@ impl ggez::event::EventHandler for Chess {
         y: f32,
     ) -> ggez::GameResult {
         self.global_ui.register_mouse_release(button, x, y);
-        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut() {
             ui.register_mouse_release(button, x, y);
         }
         Ok(())
@@ -321,7 +325,7 @@ impl ggez::event::EventHandler for Chess {
         dy: f32,
     ) -> ggez::GameResult {
         self.global_ui.register_mouse_motion(x, y, dx, dy);
-        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut() {
             ui.register_mouse_motion(x, y, dx, dy);
         }
         Ok(())
@@ -344,8 +348,8 @@ impl ggez::event::EventHandler for Chess {
             .input
             .mouse_wheel_event(x * 10., y * 10.);
         self.global_ui.register_mouse_wheel(x, y);
-        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
-            ui.register_mouse_wheel( x, y);
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut() {
+            ui.register_mouse_wheel(x, y);
         }
         Ok(())
     }
@@ -362,7 +366,7 @@ impl ggez::event::EventHandler for Chess {
         repeated: bool,
     ) -> ggez::GameResult {
         self.global_ui.register_key_down(input, repeated);
-        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut() {
             ui.register_key_down(input, repeated);
         }
         Ok(())
@@ -375,7 +379,7 @@ impl ggez::event::EventHandler for Chess {
         input: ggez::input::keyboard::KeyInput,
     ) -> ggez::GameResult {
         self.global_ui.register_key_up(input);
-        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut() {
             ui.register_key_up(input);
         }
         Ok(())
@@ -389,7 +393,7 @@ impl ggez::event::EventHandler for Chess {
             .input
             .text_input_event(character);
         self.global_ui.register_text_input(character);
-        if let Some(ui) = self.game_state.try_get_ui_mgr_mut(){
+        if let Some(ui) = self.game_state.try_get_ui_mgr_mut() {
             ui.register_text_input(character);
         }
         Ok(())
