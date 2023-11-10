@@ -2,6 +2,7 @@
 
 #[derive(Default)]
 pub enum State {
+    __Dummy,
     #[default]
     JustLaunched,
     Disconnected{

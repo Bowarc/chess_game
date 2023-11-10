@@ -1,6 +1,3 @@
-
-
-
 mod state;
 use state::State;
 type Client =
@@ -28,14 +25,19 @@ impl Game {
     }
     pub fn update(&mut self) {
         // take ownership of the old status, installing the dummy Idle
-        let this = std::mem::replace(&mut self.state, State::JustLaunched);
-
-        match this{
+        let state = std::mem::replace(&mut self.state, State::__Dummy);
+        let state_disc = std::mem::discriminant(&state);
+        match state{
             State::JustLaunched => {
                 self.state = State::Disconnected {}  
             },
             State::Disconnected {  } => {
-                self.state = State::Connecting { client: Client::new(shared::DEFAULT_ADDRESS) }
+                if let Ok(client) = Client::new(shared::DEFAULT_ADDRESS){
+                    self.state = State::Connecting { client  }
+                }else{
+                    warn!("Could not connect to the sever..");
+                    self.state = State::Disconnected {  }
+                }
             },
             State::Connecting { mut client } => {
                 client.update().unwrap();
@@ -57,19 +59,29 @@ impl Game {
                     }
                 }else{
                     warn!("Still trying to connect");
-                    self.state = std::mem::replace(&mut self.state, State::Connecting { client })              
+                    self.state = State::Connecting { client };
+                    // let dummy_state = std::mem::replace(&mut self.state, State::Connecting { client });              
                 }
             },
             State::Connected { mut client, active_games } => {
-                client.update().unwrap();
-                self.state = State::Connected { client, active_games }
+                if let Err(e) = client.update(){
+                    self.state = State::Disconnected {  }
+
+                }else{
+
+                    self.state = State::Connected { client, active_games }
+                }
                 // self.state = State::Playing { client }
             },
             State::Playing { mut client } => {
                 client.update().unwrap();
                 self.state = State::Playing { client }
             },
+            State::__Dummy => unreachable!("Dummy state cannot be used as value")
         };
+        if let State::__Dummy = self.state{
+            panic!("You forgot to switch back the state, {state_disc:?}");
+        }
 
     }
 }
