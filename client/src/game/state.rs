@@ -1,55 +1,48 @@
-#[derive(Default)]
+mod connected;
+mod connecting;
+mod disconnected;
+mod dummy;
+mod just_launched;
+mod playing;
+
+use connected::Connected;
+use connecting::Connecting;
+use disconnected::Disconnected;
+use dummy::__Dummy;
+use just_launched::JustLaunched;
+use playing::Playing;
+
+#[enum_dispatch::enum_dispatch]
+pub trait StateMachine: Sized {
+    fn update(self, delta_time: f64) -> State;
+    fn draw(self, _: &mut crate::render::RenderRequest) -> State;
+
+    fn try_get_client_mut(&mut self) -> Option<&mut super::Client> {
+        None
+    }
+    fn try_get_ui_mgr_mut(&mut self) -> Option<&mut crate::ui::UiManager> {
+        None
+    }
+}
+
+#[enum_dispatch::enum_dispatch(StateMachine)]
 pub enum State {
     __Dummy,
-    #[default]
     JustLaunched,
-    Disconnected {
-        ui: crate::ui::UiManager,
-    },
-    Connecting {
-        ui: crate::ui::UiManager,
-        client: super::Client,
-    },
-    Connected {
-        ui: crate::ui::UiManager,
-        client: super::Client,
-        active_games: crate::networking::Future<Vec<shared::game::Game>>,
-    },
-    Playing {
-        ui: crate::ui::UiManager,
-        client: super::Client,
-        current_game: crate::networking::Future<shared::game::Game>,
-        current_board: crate::networking::Future<shared::chess::Board>,
-    },
+    Disconnected,
+    Connecting,
+    Connected,
+    Playing,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        JustLaunched {}.into()
+    }
 }
 
 impl State {
-    pub fn new_disconnected() -> Self {
-        Self::Disconnected {
-            ui: crate::ui::UiManager::default(),
-        }
-    }
-    pub fn new_connecting(client: super::Client) -> Self {
-        Self::Connecting {
-            ui: crate::ui::UiManager::default(),
-            client,
-        }
-    }
-    pub fn new_connected(client: super::Client) -> Self {
-        Self::Connected {
-            ui: crate::ui::UiManager::default(),
-            client,
-            active_games: crate::networking::Future::new(
-                shared::message::ClientMessage::RequestGames,
-                |msg| matches!(msg, shared::message::ServerMessage::Games(_)),
-                |msg| {
-                    if let shared::message::ServerMessage::Games(g) = msg {
-                        g
-                    } else {
-                        panic!("?? Something went wrong in the validator ");
-                    }
-                },
-            ),
-        }
+    pub fn dummy() -> Self {
+        __Dummy.into()
     }
 }

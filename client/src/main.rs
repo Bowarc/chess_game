@@ -188,7 +188,7 @@ impl ggez::event::EventHandler for Chess {
 
         self.gui_menu.update(ctx, &mut self.cfg)?;
 
-        self.game_state.update();
+        self.game_state.update(dt);
 
         self.global_ui.update(ctx);
 

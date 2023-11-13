@@ -1,6 +1,6 @@
 pub struct Future<T> {
     validator: fn(&shared::message::ServerMessage) -> bool,
-    extractor: fn(shared::message::ServerMessage) -> T,
+    extractor: fn(shared::message::ServerMessage) -> Option<T>,
     inner: Option<T>,
     request_msg: shared::message::ClientMessage,
     requested: bool,
@@ -11,7 +11,7 @@ impl<T> Future<T> {
     pub fn new(
         request_msg: shared::message::ClientMessage,
         validator: fn(&shared::message::ServerMessage) -> bool,
-        extractor: fn(shared::message::ServerMessage) -> T,
+        extractor: fn(shared::message::ServerMessage) -> Option<T>,
     ) -> Self {
         Self {
             validator,
@@ -75,7 +75,11 @@ impl<T> Future<T> {
             {
                 let msg = client.received_msg_mut().remove(*index);
 
-                self.inner = Some((self.extractor)(msg));
+                if let Some(extracted) = (self.extractor)(msg){
+                    self.inner = Some(extracted)
+                }else{
+                    error!("Future for request {:?} failled to unpack its data", self.request_msg)
+                }
                 debug!(
                     "Future for request: {:?} has received it's data",
                     self.request_msg
