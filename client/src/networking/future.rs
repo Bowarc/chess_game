@@ -61,10 +61,13 @@ impl<T> Future<T> {
             if let Some(index) = client.received_msg().iter().position(|msg|(self.validator)(msg)){
                 let msg = client.received_msg_mut().remove(index);
 
-                if let Some(extracted) = (self.extractor)(msg){
+                if let Some(extracted) = (self.extractor)(msg) {
                     self.inner = Some(extracted)
-                }else{
-                    error!("Future for request {:?} failled to unpack its data", self.request_msg)
+                } else {
+                    error!(
+                        "Future for request {:?} failled to unpack its data",
+                        self.request_msg
+                    )
                 }
                 debug!(
                     "Future for request: {:?} has received it's data",

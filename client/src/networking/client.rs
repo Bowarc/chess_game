@@ -8,9 +8,11 @@ pub struct Client<R: networking::Message, W: networking::Message> {
 
 impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<R, W> {
     pub fn new(addr: std::net::SocketAddr) -> ggez::GameResult<Self> {
-        let Ok(stream) = std::net::TcpStream::connect(shared::DEFAULT_ADDRESS) else{
-            return Err(ggez::GameError::CustomError(format!("Could not establish a connection with the server at ({})", shared::DEFAULT_ADDRESS)))
-        
+        let Ok(stream) = std::net::TcpStream::connect(shared::DEFAULT_ADDRESS) else {
+            return Err(ggez::GameError::CustomError(format!(
+                "Could not establish a connection with the server at ({})",
+                shared::DEFAULT_ADDRESS
+            )));
         };
         stream.set_nonblocking(true).unwrap();
 
