@@ -55,25 +55,11 @@ impl<T> Future<T> {
         &mut self,
         client: &mut super::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
     ) {
+
         self.changed = false;
         if self.requested {
-            if let Some(index) = client
-                .received_msg_mut()
-                .iter()
-                .enumerate()
-                .flat_map(
-                    |(i, msg)| {
-                        if (self.validator)(msg) {
-                            Some(i)
-                        } else {
-                            None
-                        }
-                    },
-                )
-                .collect::<Vec<usize>>()
-                .first()
-            {
-                let msg = client.received_msg_mut().remove(*index);
+            if let Some(index) = client.received_msg().iter().position(|msg|(self.validator)(msg)){
+                let msg = client.received_msg_mut().remove(index);
 
                 if let Some(extracted) = (self.extractor)(msg){
                     self.inner = Some(extracted)

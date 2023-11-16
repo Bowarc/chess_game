@@ -46,6 +46,10 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
         &mut self.received_msg
     }
 
+    pub fn received_msg(&self) -> &Vec<R> {
+        &self.received_msg
+    }
+
     pub fn update(&mut self) -> Result<(), String> {
         if !self.is_connected() {
             return Err("Proxy is disconnected".to_string());
