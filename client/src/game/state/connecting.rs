@@ -11,14 +11,16 @@ impl Connecting {
 
 impl super::StateMachine for Connecting {
     fn update(mut self, _: f64) -> super::State {
-        self.client.update().unwrap();
+        if let Err(e) = self.client.update() {
+            error!("Error while updating the client in Conntecting state: {e}");
+            return super::Disconnected::new().into();
+        }
         if self.client.is_connected() {
             debug!("Client is now connected, switching State to connected");
             super::Connected::new(self.client).into()
         } else {
             warn!("Still trying to connect");
             self.into()
-            // let dummy_state = std::mem::replace(&mut self.state, State::Connecting { client });
         }
     }
     fn draw(mut self, _: &mut crate::render::RenderRequest) -> super::State {

@@ -20,24 +20,22 @@ impl Game {
         state::StateMachine::try_get_ui_mgr_mut(&mut self.state)
     }
     pub fn update(&mut self, delta_time: f64) {
-        // take ownership of the old status, installing the dummy Idle
-        self.state = state::StateMachine::update(std::mem::replace(&mut self.state, State::dummy()), delta_time);
+        self.state = state::StateMachine::update(
+            std::mem::replace(&mut self.state, State::dummy()),
+            delta_time,
+        );
         self.verify_state()
     }
-
-    pub fn draw(&mut self, render_request: &mut crate::render::RenderRequest){
-
-        self.state = state::StateMachine::draw(std::mem::replace(&mut self.state, State::dummy()), render_request);
+    pub fn draw(&mut self, render_request: &mut crate::render::RenderRequest) {
+        self.state = state::StateMachine::draw(
+            std::mem::replace(&mut self.state, State::dummy()),
+            render_request,
+        );
         self.verify_state()
     }
-
-
-    pub fn verify_state(&self){
-        if let State::__Dummy(_) = self.state{
-            panic!(
-                "You forgot to switch back the state, {:?}",
-                stringify!(self.state)
-            );
+    pub fn verify_state(&self) {
+        if let State::__Dummy(_) = self.state {
+            panic!("Dummy state detected, you might have forgot to switch it back",);
         }
     }
 }

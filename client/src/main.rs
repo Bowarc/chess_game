@@ -224,7 +224,6 @@ impl ggez::event::EventHandler for Chess {
                 ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo),
             ]);
 
-        // self.assets.update(ctx, &self.config, &self.game);
         self.asset_mgr.update(ctx);
 
         self.frame_stats.end_update();
@@ -268,6 +267,7 @@ impl ggez::event::EventHandler for Chess {
 
         self.global_ui.draw(ctx, render_request)?;
 
+        self.game_state.draw(render_request);
         let render_log = self.renderer.run(
             ctx,
             self.gui_menu.backend_mut(),
