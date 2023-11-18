@@ -13,7 +13,7 @@ impl Disconnected {
 impl super::StateMachine for Disconnected {
     fn update(mut self, delta_time: f64) -> super::State {
         if let Ok(client) = crate::game::Client::new(shared::DEFAULT_ADDRESS) {
-            super::Connecting::new(self.ui, client).into()
+            super::Connecting::new(client).into()
         } else {
             warn!("Could not connect to the sever..");
             self.into()

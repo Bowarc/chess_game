@@ -55,24 +55,28 @@ impl<T> Future<T> {
         &mut self,
         client: &mut super::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
     ) {
-
         self.changed = false;
         if self.requested {
-            if let Some(index) = client.received_msg().iter().position(|msg|(self.validator)(msg)){
+            if let Some(index) = client
+                .received_msg()
+                .iter()
+                .position(|msg| (self.validator)(msg))
+            {
                 let msg = client.received_msg_mut().remove(index);
 
                 if let Some(extracted) = (self.extractor)(msg) {
-                    self.inner = Some(extracted)
+                    self.inner = Some(extracted);
+                    debug!(
+                        "Future for request: {:?} has received it's data",
+                        self.request_msg
+                    );
                 } else {
                     error!(
                         "Future for request {:?} failled to unpack its data",
                         self.request_msg
                     )
                 }
-                debug!(
-                    "Future for request: {:?} has received it's data",
-                    self.request_msg
-                );
+
                 self.requested = false;
                 self.changed = true;
             }

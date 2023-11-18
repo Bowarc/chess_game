@@ -37,6 +37,7 @@ impl BitBoard {
 
     /// Used to see the other player's perspective
     pub fn flip(&mut self) {
+        // TODO https://github.com/Bowarc/chess_game/issues/29
         self.0 = self.0.swap_bytes()
     }
 }

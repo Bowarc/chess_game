@@ -48,7 +48,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Server<
             if let Err(e) = handle.update() {
                 error!(
                     "An error occured while updating client handle ({}) {e}, closing the handle",
-                    handle.ip
+                    handle.addr()
                 );
                 false
             } else {

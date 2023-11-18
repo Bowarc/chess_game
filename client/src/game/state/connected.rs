@@ -26,9 +26,14 @@ impl Connected {
 
 impl super::StateMachine for Connected {
     fn update(mut self, delta_time: f64) -> super::State {
-        if let Err(e) = self.client.update() {
-            return super::Disconnected::new().into();
+        // For clarity
+        if !self.client.is_connected() {
+            return super::Connecting::new(self.client).into();
         }
+        if let Err(e) = self.client.update() {
+            return super::Connecting::new(self.client).into();
+        }
+
         self.active_games.update(&mut self.client);
         if self.active_games.changed() {
             let text_id = self.ui.add_element(crate::ui::element::Element::new_text(

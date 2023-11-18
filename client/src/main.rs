@@ -71,7 +71,12 @@ impl Chess {
                 ui::element::GraphText::default()
                     .anchor(ui::Anchor::Topleft)
                     .offset(shared::maths::Vec2::ONE)
-                    .text(|val| -> String { format!("RTT: {}µs", val as i32) })
+                    .text(|val| -> String {
+                        format!(
+                            "RTT: {}",
+                            time::display_duration(std::time::Duration::from_secs_f64(val))
+                        )
+                    })
                     .size(8.)
                     .color(render::Color::random_rgb()),
             ),
@@ -212,7 +217,7 @@ impl ggez::event::EventHandler for Chess {
             .push(
                 self.game_state
                     .try_get_client_mut()
-                    .map(|client| client.stats().get_rtt().as_micros() as f64)
+                    .map(|client| client.stats().get_rtt().as_secs_f64())
                     .unwrap_or(0.),
             );
 
@@ -255,9 +260,13 @@ impl ggez::event::EventHandler for Chess {
             ctx,
             render_request,
             self.asset_mgr.get_loader().ongoing_requests(),
-            self.game_state
-                .try_get_client_mut()
-                .map(|client| client.stats()),
+            self.game_state.try_get_client_mut().and_then(|client| {
+                if client.is_connected() {
+                    Some(client.stats())
+                } else {
+                    None
+                }
+            }),
         )?;
         self.gui_menu.draw(ctx, render_request)?;
 
@@ -293,7 +302,7 @@ impl ggez::event::EventHandler for Chess {
     ) -> ggez::GameResult {
         self.global_ui.register_mouse_press(button, x, y);
         if let Some(ui) = self.game_state.try_get_ui_mgr_mut() {
-            ui.register_mouse_press(button, x, y);
+            ui.register_mouse_press(button, x, y)
         }
 
         Ok(())
@@ -326,7 +335,7 @@ impl ggez::event::EventHandler for Chess {
     ) -> ggez::GameResult {
         self.global_ui.register_mouse_motion(x, y, dx, dy);
         if let Some(ui) = self.game_state.try_get_ui_mgr_mut() {
-            ui.register_mouse_motion(x, y, dx, dy);
+            ui.register_mouse_motion(x, y, dx, dy)
         }
         Ok(())
     }
@@ -494,7 +503,7 @@ fn main() -> ggez::GameResult {
         .add_filter("wgpu_hal", log::LevelFilter::Error)
         .add_filter("gilrs", log::LevelFilter::Off)
         .add_filter("naga", log::LevelFilter::Warn)
-        .add_filter("networking", log::LevelFilter::Warn)
+        .add_filter("networking", log::LevelFilter::Debug)
         .add_filter("ggez", log::LevelFilter::Warn);
     logger::init(logger_config, Some("client.log"));
     logger::test();
