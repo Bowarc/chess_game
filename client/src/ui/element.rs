@@ -53,11 +53,8 @@ pub trait TElement: std::any::Any {
     ) -> shared::maths::Point {
         let posv = self.get_pos_value();
 
-        let size = if let Some(size) = size_opt {
-            size
-        } else {
-            self.get_computed_size(ctx)
-        };
+        let size = size_opt.unwrap_or_else(|| self.get_computed_size(ctx));
+
         posv.compute(ctx, size)
     }
 

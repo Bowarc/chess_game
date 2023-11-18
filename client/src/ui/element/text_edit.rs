@@ -46,15 +46,11 @@ impl super::TElement for TextEdit {
         let rect = self.get_computed_rect(ctx);
 
         if let Some(border) = style.get_border() {
-            if let Err(e) = border.draw(front_mesh, rect) {
-                error!("Error in text edit {} border draw {e}", self.get_id());
-            }
+            border.draw(front_mesh, rect)?;
         }
 
         if let Some(background) = style.get_bg() {
-            if let Err(e) = background.draw(back_mesh, render_request, rect) {
-                error!("Error in text edit {} background draw {e}", self.get_id());
-            }
+            background.draw(back_mesh, render_request, rect)?;
         }
 
         let txt = if self.state.focussed() {
@@ -160,6 +156,20 @@ impl super::TElement for TextEdit {
             '\u{8}' /* Delete */ => {
                 self.txt.pop();
             },
+            '\u{7f}' /* Delete word */ => {
+                if self.txt.is_empty(){
+                    return;
+                }
+                if let Some(last) = self.txt.chars().last().and_then(|last| if last == ' '{Some(last)}else{None}){
+                    self.txt.pop();
+                }
+                while let Some(last) = self.txt.chars().last(){
+                    if last == ' '{
+                        break;
+                    }
+                    self.txt.pop();
+                }
+            }
             _ => {
                 warn!("unhandled character: '{character}', '{}'", character.escape_unicode())
             }
