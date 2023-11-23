@@ -2,5 +2,7 @@
 pub enum SpriteId {
     #[default]
     MissingNo,
+    AbilityPower,
+    AttackDamage,
     ChessPiece(shared::chess::Piece),
 }

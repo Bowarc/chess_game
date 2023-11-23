@@ -123,36 +123,36 @@ impl Chess {
         //     ],
         // ));
 
-        let text_edit_id = global_ui.add_element(ui::element::Element::new_text_edit(
-            "Text edit 1",
-            ui::Position::new_anchor(ui::Anchor::TopCenter, (0., 2.)),
-            200.,
-            3,
-            40.,
-            ui::style::Bundle::new(
-                ui::Style::new(
-                    render::Color::default(),
-                    Some(ui::style::BackgroundStyle::new(
-                        render::Color::random_rgb(),
-                        None,
-                    )),
-                    Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
-                ),
-                Some(ui::Style::new(
-                    render::Color::random_rgb(),
-                    Some(ui::style::BackgroundStyle::new(
-                        render::Color::random_rgb(),
-                        None,
-                    )),
-                    Some(ui::style::BorderStyle::default()),
-                )),
-                Some(ui::Style::new(
-                    render::Color::random_rgb(),
-                    None,
-                    Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
-                )),
-            ),
-        ));
+        // let text_edit_id = global_ui.add_element(ui::element::Element::new_text_edit(
+        //     "Text edit 1",
+        //     ui::Position::new_anchor(ui::Anchor::TopCenter, (0., 2.)),
+        //     200.,
+        //     3,
+        //     40.,
+        //     ui::style::Bundle::new(
+        //         ui::Style::new(
+        //             render::Color::default(),
+        //             Some(ui::style::BackgroundStyle::new(
+        //                 render::Color::random_rgb(),
+        //                 None,
+        //             )),
+        //             Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+        //         ),
+        //         Some(ui::Style::new(
+        //             render::Color::random_rgb(),
+        //             Some(ui::style::BackgroundStyle::new(
+        //                 render::Color::random_rgb(),
+        //                 None,
+        //             )),
+        //             Some(ui::style::BorderStyle::default()),
+        //         )),
+        //         Some(ui::Style::new(
+        //             render::Color::random_rgb(),
+        //             None,
+        //             Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+        //         )),
+        //     ),
+        // ));
 
         let mp_id = global_ui.add_element(ui::element::Element::new_text(
             "mouse pos text",
@@ -168,6 +168,28 @@ impl Chess {
             ),
             vec![ui::element::TextBit::new_text("".to_string(), None)],
         ));
+
+        let test_t_id = global_ui.add_element(ui::element::Element::new_text(
+            "Test_image_id",
+            (ui::Anchor::TopCenter, shared::maths::Vec2::new(0., 100.)),
+            40.,
+            ui::Style::new(
+                render::Color::random_rgb(),
+                None,
+                Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+            ),
+
+                vec![
+                    ui::element::TextBit::new_text("15 ", Some(render::Color::from_rgb(186, 80, 40))),
+                    ui::element::TextBit::new_text("(+1.1", Some(render::Color::from_rgb(215, 148, 95))),
+                    ui::element::TextBit::new_img(assets::sprite::SpriteId::AttackDamage, Some(render::Color::from_rgb(215, 148, 95))),
+                    ui::element::TextBit::new_text(")", Some(render::Color::from_rgb(215, 148, 95))),
+                    ui::element::TextBit::new_text(" (+0.4", Some(render::Color::from_rgb(105, 255, 249))),
+                    ui::element::TextBit::new_img(assets::sprite::SpriteId::AbilityPower, Some(render::Color::from_rgb(105, 255, 249))),
+                    ui::element::TextBit::new_text(")", Some(render::Color::from_rgb(105, 255, 249))),
+                ],
+            ),
+        );
 
         Ok(Self {
             cfg,
@@ -226,7 +248,7 @@ impl ggez::event::EventHandler for Chess {
             .inner_mut::<ui::element::Text>()
             .replace_bits(vec![
                 ui::element::TextBit::new_text(format!("{:?}", ctx.mouse.position()), None),
-                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo),
+                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo, None),
             ]);
 
         self.asset_mgr.update(ctx);
@@ -247,13 +269,6 @@ impl ggez::event::EventHandler for Chess {
 
         let render_request = self.renderer.render_request();
 
-        render_request.add(
-            assets::sprite::SpriteId::default(),
-            render::DrawParam::default()
-                .pos(window_size * 0.5)
-                .size(shared::maths::Vec2::new(100., 100.)),
-            render::Layer::TopMost,
-        );
 
         self.frame_stats.draw(
             shared::maths::Point::ZERO,
