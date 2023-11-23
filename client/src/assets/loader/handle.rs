@@ -18,7 +18,7 @@ impl Handle {
     }
     pub fn request(&mut self, req: super::Request) {
         if self.ongoing.contains(&req) {
-            warn!("The request for {req:?} is already currently in process");
+            // warn!("The request for {req:?} is already currently in process");
             return;
         }
 

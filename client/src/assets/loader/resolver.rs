@@ -150,10 +150,11 @@ impl<
         Asset: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + std::fmt::Debug,
     {
         // The implicit .unwrap of resolver.get is fine as we test before if that resolver has the asset
+        // No it's not, see #36
         if internal_resolver.has(asset) {
-            Some(internal_resolver.get(asset))
+            internal_resolver.try_get(asset).ok()
         } else if external_resolver.has(asset) {
-            Some(external_resolver.get(asset))
+            external_resolver.try_get(asset).ok()
         } else {
             None
         }
