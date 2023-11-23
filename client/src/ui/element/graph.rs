@@ -7,7 +7,7 @@ pub struct Graph {
     style: crate::ui::Style,
 
     values: std::collections::VecDeque<f64>,
-    accept_timer: time::SystemTimeDelay,
+    accept_timer: time::DTDelay,
 
     text: Option<GraphText>,
 
@@ -28,27 +28,25 @@ impl Graph {
             size,
             style,
             values: Default::default(),
-            accept_timer: time::SystemTimeDelay::new(100),
+            accept_timer: time::DTDelay::new(0.1),
             text,
             max: 0.,
         }
     }
-    pub fn push(&mut self, v: f64) {
-        if let time::DelayState::Running = self.accept_timer.ended() {
+    pub fn push(&mut self, val: f64, dt: f64) {
+        self.accept_timer.update(dt);
+        if !self.accept_timer.ended() {
             return;
         }
         self.accept_timer.restart();
 
-        self.values.push_back(v);
+        self.values.push_back(val);
 
-        let mut max = f64::NEG_INFINITY;
-        self.values.iter().for_each(|v| {
-            if *v > max {
-                max = *v
-            }
-        });
-        max *= 1.50;
-        self.max = max;
+        self.max = self
+            .values
+            .iter()
+            .fold(std::f64::NEG_INFINITY, |max, &val| val.max(max))
+            * 1.50;
 
         while self.values.len() > NBR_OF_ELEMENTS {
             self.values.pop_front();

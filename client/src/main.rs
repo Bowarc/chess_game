@@ -178,18 +178,28 @@ impl Chess {
                 None,
                 Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
             ),
-
-                vec![
-                    ui::element::TextBit::new_text("15 ", Some(render::Color::from_rgb(186, 80, 40))),
-                    ui::element::TextBit::new_text("(+1.1", Some(render::Color::from_rgb(215, 148, 95))),
-                    ui::element::TextBit::new_img(assets::sprite::SpriteId::AttackDamage, Some(render::Color::from_rgb(215, 148, 95))),
-                    ui::element::TextBit::new_text(")", Some(render::Color::from_rgb(215, 148, 95))),
-                    ui::element::TextBit::new_text(" (+0.4", Some(render::Color::from_rgb(105, 255, 249))),
-                    ui::element::TextBit::new_img(assets::sprite::SpriteId::AbilityPower, Some(render::Color::from_rgb(105, 255, 249))),
-                    ui::element::TextBit::new_text(")", Some(render::Color::from_rgb(105, 255, 249))),
-                ],
-            ),
-        );
+            vec![
+                ui::element::TextBit::new_text("15 ", Some(render::Color::from_rgb(186, 80, 40))),
+                ui::element::TextBit::new_text(
+                    "(+1.1",
+                    Some(render::Color::from_rgb(215, 148, 95)),
+                ),
+                ui::element::TextBit::new_img(
+                    assets::sprite::SpriteId::AttackDamage,
+                    Some(render::Color::from_rgb(215, 148, 95)),
+                ),
+                ui::element::TextBit::new_text(")", Some(render::Color::from_rgb(215, 148, 95))),
+                ui::element::TextBit::new_text(
+                    " (+0.4",
+                    Some(render::Color::from_rgb(105, 255, 249)),
+                ),
+                ui::element::TextBit::new_img(
+                    assets::sprite::SpriteId::AbilityPower,
+                    Some(render::Color::from_rgb(105, 255, 249)),
+                ),
+                ui::element::TextBit::new_text(")", Some(render::Color::from_rgb(105, 255, 249))),
+            ],
+        ));
 
         Ok(Self {
             cfg,
@@ -231,7 +241,7 @@ impl ggez::event::EventHandler for Chess {
         self.global_ui
             .get_element("fps graph")
             .inner_mut::<ui::element::Graph>()
-            .push(ctx.time.fps());
+            .push(ctx.time.fps(), dt);
 
         self.global_ui
             .get_element("rtt graph")
@@ -241,6 +251,7 @@ impl ggez::event::EventHandler for Chess {
                     .try_get_client_mut()
                     .map(|client| client.stats().get_rtt().as_secs_f64())
                     .unwrap_or(0.),
+                dt,
             );
 
         self.global_ui
@@ -268,7 +279,6 @@ impl ggez::event::EventHandler for Chess {
         ggez::graphics::Canvas::from_frame(ctx, Some(render::Color::BLACK.into())).finish(ctx)?;
 
         let render_request = self.renderer.render_request();
-
 
         self.frame_stats.draw(
             shared::maths::Point::ZERO,

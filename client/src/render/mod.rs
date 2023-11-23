@@ -102,7 +102,7 @@ impl Renderer {
                         1) Return None when the given Id is not yet loaded,
                             But i like using default sprites for things that are not yet loaded.
                         2) Find a way for the renderer to know that the querry failled and the id isn't the right one.
-                    */                    
+                    */
                     let Some(ia) = sprite_bank.try_get_mut(id, loader_handle) else {
                         error!("Could not get instance array for sprite {id:?}");
                         continue;

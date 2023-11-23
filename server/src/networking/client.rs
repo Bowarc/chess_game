@@ -11,12 +11,12 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
     pub fn new(stream: std::net::TcpStream, addr: std::net::SocketAddr) -> Self {
         let cfg = networking::proxy::ProxyConfig {
             addr,
-            run_tps: 100000,
+            run_tps: 10_0000,
             stat_cfg: networking::stats::StatConfig {
-                bps: networking::stats::config::BpsConfig{ enabled: false },
+                bps: networking::stats::config::BpsConfig { enabled: false },
                 rtt: networking::stats::config::RttConfig {
-                    enabled: false,
-                    ping_request_delay: std::time::Duration::ZERO,
+                    enabled: true,
+                    ping_request_delay: std::time::Duration::from_secs(10),
                 },
             },
             keep_msg_while_disconnected: false,
