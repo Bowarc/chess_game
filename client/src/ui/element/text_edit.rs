@@ -135,12 +135,12 @@ impl super::TElement for TextEdit {
         // https://en.wikipedia.org/wiki/List_of_Unicode_characters
         match character{
             '\u{20}'            | /* space character */
-            '\u{21}'..='\u{2f}' | /* !"#$%&'()*+,-./ */ 
-            '\u{30}'..='\u{39}' | /* 0123456789 */ 
-            '\u{3A}'..='\u{40}' | /* :;<=>?@ */ 
-            '\u{41}'..='\u{5A}' | /* ABCDEFGHIJKLMNOPQRSTUVWXYZ */ 
-            '\u{5B}'..='\u{60}' | /* [\]^_` */ 
-            '\u{61}'..='\u{7A}' | /* abcdefghijklmnopqrstuvwxy */ 
+            '\u{21}'..='\u{2f}' | /* !"#$%&'()*+,-./ */
+            '\u{30}'..='\u{39}' | /* 0123456789 */
+            '\u{3A}'..='\u{40}' | /* :;<=>?@ */
+            '\u{41}'..='\u{5A}' | /* ABCDEFGHIJKLMNOPQRSTUVWXYZ */
+            '\u{5B}'..='\u{60}' | /* [\]^_` */
+            '\u{61}'..='\u{7A}' | /* abcdefghijklmnopqrstuvwxy */
             '\u{7B}'..='\u{7E}'   /* {|}~ */ => {
                 self.txt.push(character)
             },

@@ -11,7 +11,7 @@ pub enum Square {
 }
 
 impl Square {
-    #[rustfmt::skip]  
+    #[rustfmt::skip]
     pub fn file(&self) -> super::File{
         match self {
             Square::A1|Square::A2|Square::A3|Square::A4|Square::A5|Square::A6|Square::A7|Square::A8 => {
