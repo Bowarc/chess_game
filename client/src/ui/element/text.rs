@@ -15,17 +15,23 @@ pub enum TextBit {
         raw: String,
         color_opt: Option<crate::render::Color>,
     },
-    Image(crate::assets::sprite::SpriteId),
+    Image{
+        sprite_id: crate::assets::sprite::SpriteId,
+        color_opt: Option<crate::render::Color>,
+    },
     NewLine,
 }
 
 #[derive(Clone)]
 enum ComputedTextBit {
     Text(ggez::graphics::Text),
-    Image(crate::assets::sprite::SpriteId),
+    Image(crate::assets::sprite::SpriteId, Option<crate::render::Color>),
 }
 
 fn compute_text_bits(bits: Vec<TextBit>) -> Vec<TextBit> {
+    if bits.is_empty(){
+        return bits;
+    }
     let mut new_bits = Vec::new();
 
     for bit in bits {
@@ -50,6 +56,7 @@ fn compute_text_bits(bits: Vec<TextBit>) -> Vec<TextBit> {
         }
     }
 
+
     // Remove all empty strings
     let mut i = 0;
     while i < new_bits.len() {
@@ -69,11 +76,20 @@ fn compute_text_bits(bits: Vec<TextBit>) -> Vec<TextBit> {
 
     // Do we pop if the last bit is a new line ?
     /*unsure */
+    // NO THIS FUCKS UP THE last text rendering
+    // {
+    //     while let Some(TextBit::NewLine) = new_bits.last() {
+    //         new_bits.pop();
+    //     }
+    // }
+    // i need to make sure that the last bit is a new line (it makes the multibit render)
     {
-        while let Some(TextBit::NewLine) = new_bits.last() {
-            new_bits.pop();
+        if !matches!(new_bits.last(), Some(TextBit::NewLine)){
+            new_bits.push(TextBit::NewLine)
         }
     }
+    // debug!("{new_bits:?}");
+
     new_bits
 }
 
@@ -121,7 +137,7 @@ impl Text {
                 TextBit::NewLine => {
                     global_text.add('\n');
                 }
-                TextBit::Image(_) => {
+                TextBit::Image{..} => {
                     unreachable!("You're not supposed to draw images in this loop")
                 }
             }
@@ -168,7 +184,7 @@ impl Text {
                             );
                             x += w as f64;
                         }
-                        ComputedTextBit::Image(sprite_id) => {
+                        ComputedTextBit::Image(sprite_id, color_opt) => {
                             render_request.add(
                                 sprite_id,
                                 crate::render::DrawParam::default()
@@ -180,7 +196,9 @@ impl Text {
                                             )
                                             + shared::maths::Vec2::new(0.5, 0.5) * target_size,
                                     )
+                                    .color(color_opt.unwrap_or(crate::render::Color::WHITE))
                                     .size(target_size),
+
                                 crate::render::Layer::Ui,
                             );
                             x += target_size;
@@ -192,7 +210,6 @@ impl Text {
         let mut total_size = shared::maths::Vec2::ZERO;
 
         let mut curr_row = Vec::new();
-        let mut curr_width = 0.;
         let mut curr_height = 0.;
         let mut curr_text: Option<ggez::graphics::Text> = None;
         for (i, bit) in self.bits.iter().enumerate() {
@@ -204,20 +221,17 @@ impl Text {
 
                     if let Some(text) = &mut curr_text {
                         text.add(f);
-                        curr_width = text.dimensions(ctx).unwrap().w as f64
                     } else {
                         let text = ggez::graphics::Text::new(f);
-                        curr_width += text.dimensions(ctx).unwrap().w as f64;
                         curr_text = Some(text);
                     };
                 }
-                TextBit::Image(sprite_id) => {
+                TextBit::Image{sprite_id, color_opt} => {
                     if let Some(text) = curr_text {
                         curr_row.push(ComputedTextBit::Text(text));
                         curr_text = None;
                     }
-                    curr_row.push(ComputedTextBit::Image(*sprite_id));
-                    curr_width += target_size;
+                    curr_row.push(ComputedTextBit::Image(*sprite_id, *color_opt));
                 }
                 TextBit::NewLine => {
                     if let Some(text) = curr_text {
@@ -229,13 +243,18 @@ impl Text {
             }
 
             if need_draw || i == self.bits.len() - 1 {
-                draw_curr_row(curr_row, curr_width, curr_height);
+                let line_width: f64 = curr_row.iter().map(|elem|{
+                    match elem{
+                        ComputedTextBit::Text(t) => t.dimensions(ctx).unwrap().w as f64,
+                        ComputedTextBit::Image(_, _) => target_size,
+                    }
+                }).sum();
+                draw_curr_row(curr_row, line_width, curr_height);
                 curr_row = Vec::new();
 
-                if curr_width > total_size.x {
-                    total_size.x = curr_width;
+                if line_width > total_size.x {
+                    total_size.x = line_width;
                 }
-                curr_width = 0.;
                 curr_height += target_size;
             }
         }
@@ -275,7 +294,7 @@ impl super::TElement for Text {
         let image_count: i32 = self
             .bits
             .iter()
-            .map(|bit| if let TextBit::Image(_) = bit { 1 } else { 0 })
+            .map(|bit| if matches!(bit, TextBit::Image{..}) { 1 } else { 0 })
             .sum();
 
         if image_count > 0 {
@@ -304,7 +323,10 @@ impl TextBit {
             color_opt,
         }
     }
-    pub fn new_img(sprite_id: crate::assets::sprite::SpriteId) -> Self {
-        Self::Image(sprite_id)
+    pub fn new_img(sprite_id: crate::assets::sprite::SpriteId, color_opt: Option<crate::render::Color>) -> Self {
+        Self::Image{
+            sprite_id,
+            color_opt,
+        }
     }
 }
