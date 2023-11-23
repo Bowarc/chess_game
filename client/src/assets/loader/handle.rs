@@ -18,14 +18,14 @@ impl Handle {
     }
     pub fn request(&mut self, req: super::Request) {
         if self.ongoing.contains(&req) {
-            warn!("This request is already currently in process");
+            warn!("The request for {req:?} is already currently in process");
             return;
         }
 
         match self.channel.send(req) {
             Ok(_) => {
                 self.ongoing.push(req);
-                debug!("Rquested asset: {req:?}")
+                debug!("Requested asset: {req:?}")
             }
             Err(e) => {
                 error!("Asset loader got an error while requesting {req:?}\n{e:?}");

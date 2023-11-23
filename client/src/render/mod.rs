@@ -88,6 +88,21 @@ impl Renderer {
         for (bit, dp) in bits {
             match bit {
                 RenderRequestBit::Sprite(id) => {
+                    /*
+                        Here appends something interesing,
+                        If the requested id is not yet loaded, the default InstanceArray retrieved (auto by try_get_mut)
+
+                        And then the id (that we fail to fetch) is sent to sprites_used (BUT WE DIDDN'T USED THAT InstanceArray)
+                        Then, using the ids from sprites_used (that the renderer thinks it used) queries again (but faills)
+                        so the default InstanceArray is retrieved and cleaned.
+
+                        There is no sprite bank update between thoses queries, so it's working.
+
+                        This could be fixed by 2 things
+                        1) Return None when the given Id is not yet loaded,
+                            But i like using default sprites for things that are not yet loaded.
+                        2) Find a way for the renderer to know that the querry failled and the id isn't the right one.
+                    */                    
                     let Some(ia) = sprite_bank.try_get_mut(id, loader_handle) else {
                         error!("Could not get instance array for sprite {id:?}");
                         continue;
@@ -136,6 +151,7 @@ impl Renderer {
             let ia = sprite_bank.get_mut(id, loader_handle);
 
             canvas.draw(ia, DrawParam::default());
+            log.on_draw_call();
             ia.clear()
         }
 

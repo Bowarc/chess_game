@@ -48,18 +48,19 @@ impl RenderRequest {
     }
 }
 
-fn get_order_value_from_drawable(
-    d: &impl ggez::graphics::Drawable,
-    ctx: &mut ggez::Context,
-) -> i32 {
-    match d.dimensions(ctx) {
-        Some(d) => (d.y + (d.h * 0.5)) as i32,
-        None => {
-            error!("Could not get dimensions of Drawable");
-            0
-        }
-    }
-}
+// Not used anymore but was good so im keeping it
+// fn get_order_value_from_drawable(
+//     d: &impl ggez::graphics::Drawable,
+//     ctx: &mut ggez::Context,
+// ) -> i32 {
+//     match d.dimensions(ctx) {
+//         Some(d) => (d.y + (d.h * 0.5)) as i32,
+//         None => {
+//             error!("Could not get dimensions of Drawable");
+//             0
+//         }
+//     }
+// }
 
 impl std::ops::Deref for RenderRequest {
     type Target = hashbrown::HashMap<super::Layer, Vec<(RenderRequestBit, super::DrawParam)>>;
