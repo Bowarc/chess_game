@@ -1,6 +1,7 @@
 mod anchor;
 pub mod element;
 pub mod event;
+mod group;
 mod position;
 pub mod register;
 mod state;
@@ -8,6 +9,7 @@ pub mod style;
 pub mod value;
 
 pub use anchor::Anchor;
+pub use group::Group;
 pub use position::Position;
 pub use state::State;
 pub use style::Style;
@@ -20,17 +22,59 @@ pub type Id = String;
 pub struct UiManager {
     elements: Vec<element::Element>,
     events: Vec<event::Event>,
+    groups: Vec<Group>,
 }
 
 impl UiManager {
-    pub fn add_element(&mut self, elem: element::Element) -> Id {
+    pub fn add_element(
+        &mut self,
+        elem: element::Element,
+        group_id_opt: Option<impl Into<Id>>,
+    ) -> Id {
         let id = elem.get_id();
+        // The overhead is fine, as we don't create elements often
         assert!(
             self.try_get_element(id.clone()).is_none(),
             "Ui element id collision"
         );
         self.elements.push(elem);
         id
+    }
+
+    /// Removes an element from its id, if the id doesn't correspond to any element, returns an Err(())
+    pub fn remove_element(&mut self, id: impl Into<Id>) -> Result<(), ()> {
+        let id = id.into();
+        self.groups.iter().for_each(|g| {
+            // Ignore result
+            g.remove(id);
+        });
+
+        if let Some(index) = self.elements.iter().position(|el| el.get_id() == id) {
+            self.elements.remove(index);
+            return Ok(());
+        }
+        Err(())
+    }
+
+    /// Creates a new group with the given id, if there is already a group with that id, it returns Err(())
+    pub fn create_group(&mut self, id: impl Into<Id>) -> Result<(), ()> {
+        let id = id.into();
+        if self.groups.iter().find(|g| g.id() == &id).is_some() {
+            return Err(());
+        }
+
+        self.groups.push(Group::new(id));
+        Ok(())
+    }
+
+    /// Removes a group based on the given id, if no group exists with that id, returns an Err(())
+    pub fn remove_group(&mut self, id: impl Into<Id>) -> Result<(), ()> {
+        let id = id.into();
+        if let Some(index) = self.groups.iter().position(|g| g.id() == &id) {
+            self.groups.remove(index);
+            return Ok(());
+        }
+        Err(())
     }
 
     pub fn update(&mut self, ctx: &mut ggez::Context) {

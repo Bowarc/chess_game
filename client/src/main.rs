@@ -35,8 +35,6 @@ impl Chess {
 
         let mut global_ui = ui::UiManager::default();
 
-        ui::register::register_ui_elements(&mut global_ui);
-
         let id = global_ui.add_element(ui::element::Element::new_graph(
             "fps graph",
             ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 2.)),
