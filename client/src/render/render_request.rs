@@ -14,7 +14,7 @@ pub enum RenderRequestBit {
 impl RenderRequest {
     pub fn new() -> Self {
         Self {
-            inner: hashbrown::HashMap::with_capacity(1000),
+            inner: hashbrown::HashMap::with_capacity(10),
         }
     }
 
@@ -26,11 +26,7 @@ impl RenderRequest {
     ) {
         self.inner
             .entry(layer)
-            .or_insert_with(|| Vec::with_capacity(100));
-
-        self.inner
-            .get_mut(&layer)
-            .unwrap()
+            .or_insert_with(|| Vec::with_capacity(50))
             .push((render_request_bit.into(), dp))
     }
 
