@@ -35,8 +35,6 @@ impl Chess {
 
         let mut global_ui = ui::UiManager::default();
 
-        ui::register::register_ui_elements(&mut global_ui);
-
         let id = global_ui.add_element(ui::element::Element::new_graph(
             "fps graph",
             ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 2.)),
@@ -530,8 +528,8 @@ fn main() -> ggez::GameResult {
         .add_filter("naga", log::LevelFilter::Warn)
         .add_filter("networking", log::LevelFilter::Debug)
         .add_filter("ggez", log::LevelFilter::Warn);
-    logger::init(logger_config, Some("client.log"));
-    logger::test();
+    logger::init(logger_config, Some("./log/client.log"));
+    // logger::test();
 
     shared::file::list();
 

@@ -29,7 +29,11 @@ impl<T> Future<T> {
         // idfk
     }
 
-    pub fn inner(&mut self) -> Option<&mut T> {
+    pub fn inner(&self) -> Option<&T> {
+        self.inner.as_ref()
+    }
+
+    pub fn inner_mut(&mut self) -> Option<&mut T> {
         self.inner.as_mut()
     }
 

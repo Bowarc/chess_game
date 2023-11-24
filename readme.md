@@ -12,10 +12,10 @@ It's currently nowhere near finished
     - [x] Lots of usefull widgets
     - [x] Image in texts (Something like LoL does ![](assets/LoL_img_in_text.png))
 - [x] Gui windows (Stole from my game Vupa lol)
-- [ ] Asset loading
+- [x] Asset loading
     - [x] Config
     - [x] Sprites
-    - [ ] Strong error resistance
+    - [x] Strong error resistance
 - [ ] Gameplay
     - [ ] Can create, join and leave games
     - [ ] General and private chats
