@@ -36,7 +36,7 @@ impl super::StateMachine for Connected {
 
         self.active_games.update(&mut self.client);
         if self.active_games.changed() && self.active_games.inner().is_some() {
-            for games in self.active_games.inner() {}
+            for games in self.active_games.inner().unwrap() {}
 
             let text_id = self.ui.add_element(crate::ui::element::Element::new_text(
                 "Test text 1",
@@ -44,7 +44,7 @@ impl super::StateMachine for Connected {
                 20.,
                 crate::ui::Style::default(),
                 vec![crate::ui::element::TextBit::new_text("Salut", None)],
-            ));
+            ),"test");
             debug!("Added new text with id: {text_id}");
         }
         self.into()

@@ -29,24 +29,37 @@ impl UiManager {
     pub fn add_element(
         &mut self,
         elem: element::Element,
-        group_id_opt: Option<impl Into<Id>>,
+        group_id:impl Into<Id>,
     ) -> Id {
-        let id = elem.get_id();
+        let group_id = group_id.into();
+        let elem_id = elem.get_id();
         // The overhead is fine, as we don't create elements often
         assert!(
-            self.try_get_element(id.clone()).is_none(),
+            self.try_get_element(elem_id.clone()).is_none(),
             "Ui element id collision"
         );
         self.elements.push(elem);
-        id
+
+        let group = if let Some(group_index) = self.groups.iter().position(|g| g.id() == &group_id){
+            self.groups.get_mut(group_index).unwrap()
+        }else{
+            self.groups.push(Group::new(group_id));
+            self.groups.last_mut().unwrap()
+        };
+
+        // We just created the element, if this fails, it's pretty much the same as the element_id collision above
+        group.push(elem_id.clone()).unwrap();
+
+        // let group = self.groups.get_mut(self.groups.iter().position(|g| g.id() == group_id).unwrap_or(default));
+        elem_id
     }
 
     /// Removes an element from its id, if the id doesn't correspond to any element, returns an Err(())
     pub fn remove_element(&mut self, id: impl Into<Id>) -> Result<(), ()> {
         let id = id.into();
-        self.groups.iter().for_each(|g| {
+        self.groups.iter_mut().for_each(|g| {
             // Ignore result
-            g.remove(id);
+            let _ = g.remove(id.clone());
         });
 
         if let Some(index) = self.elements.iter().position(|el| el.get_id() == id) {
@@ -59,7 +72,7 @@ impl UiManager {
     /// Creates a new group with the given id, if there is already a group with that id, it returns Err(())
     pub fn create_group(&mut self, id: impl Into<Id>) -> Result<(), ()> {
         let id = id.into();
-        if self.groups.iter().find(|g| g.id() == &id).is_some() {
+        if self.groups.iter().any(|g| g.id() == &id) {
             return Err(());
         }
 
@@ -70,8 +83,11 @@ impl UiManager {
     /// Removes a group based on the given id, if no group exists with that id, returns an Err(())
     pub fn remove_group(&mut self, id: impl Into<Id>) -> Result<(), ()> {
         let id = id.into();
-        if let Some(index) = self.groups.iter().position(|g| g.id() == &id) {
-            self.groups.remove(index);
+        if let Some(g_index) = self.groups.iter().position(|g| g.id() == &id) {
+            for elem_id in self.groups.get(g_index).unwrap().elems().iter(){
+                self.elements.remove(self.elements.iter().position(|el| &el.get_id() == elem_id).unwrap());
+            }
+            self.groups.remove(g_index);
             return Ok(());
         }
         Err(())
@@ -186,7 +202,8 @@ impl UiManager {
 
 /// Getters
 impl UiManager {
-    pub fn try_get_element(&mut self, id: Id) -> Option<&mut element::Element> {
+    pub fn try_get_element(&mut self, id: impl Into<Id>) -> Option<&mut element::Element> {
+        let id = id.into();
         if let Some(index) = self
             .elements
             .iter()

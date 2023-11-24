@@ -55,7 +55,7 @@ impl Chess {
                     .size(5.)
                     .color(render::Color::random_rgb()),
             ),
-        ));
+        ), "");
         let id2 = global_ui.add_element(ui::element::Element::new_graph(
             "rtt graph",
             ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 52.)),
@@ -78,7 +78,7 @@ impl Chess {
                     .size(8.)
                     .color(render::Color::random_rgb()),
             ),
-        ));
+        ), "");
 
         // let text_id = global_ui.add_element(ui::element::Element::new_text(
         //     ui::Position::new_anchor(ui::Anchor::TopCenter, (0., 2.)),
@@ -165,7 +165,7 @@ impl Chess {
                 Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
             ),
             vec![ui::element::TextBit::new_text("".to_string(), None)],
-        ));
+        ), "");
 
         let test_t_id = global_ui.add_element(ui::element::Element::new_text(
             "Test_image_id",
@@ -197,7 +197,7 @@ impl Chess {
                 ),
                 ui::element::TextBit::new_text(")", Some(render::Color::from_rgb(105, 255, 249))),
             ],
-        ));
+        ),"");
 
         Ok(Self {
             cfg,
@@ -227,14 +227,14 @@ impl ggez::event::EventHandler for Chess {
 
         self.global_ui.update(ctx);
 
-        if self
-            .global_ui
-            .get_element("board square 0x0")
-            .inner::<ui::element::Button>()
-            .clicked_this_frame()
-        {
-            debug!("Clicked this frame")
-        }
+        // if self
+        //     .global_ui
+        //     .get_element("board square 0x0")
+        //     .inner::<ui::element::Button>()
+        //     .clicked_this_frame()
+        // {
+        //     debug!("Clicked this frame")
+        // }
 
         self.global_ui
             .get_element("fps graph")

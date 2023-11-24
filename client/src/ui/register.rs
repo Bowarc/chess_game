@@ -62,7 +62,7 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
                     style2
                 },
             );
-            ui.add_element(el);
+            ui.add_element(el, "chess_board");
         }
     }
 }
