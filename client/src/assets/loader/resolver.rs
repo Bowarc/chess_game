@@ -1,12 +1,12 @@
 pub struct ResolverManager<Sprite, Sound, Font> {
-    internal_sprite: Resolver<Sprite>,
-    external_sprite: Resolver<Sprite>,
+    internal_sprite: Option<Resolver<Sprite>>,
+    external_sprite: Option<Resolver<Sprite>>,
 
-    internal_sound: Resolver<Sound>,
-    external_sound: Resolver<Sound>,
+    internal_sound: Option<Resolver<Sound>>,
+    external_sound: Option<Resolver<Sound>>,
 
-    internal_font: Resolver<Font>,
-    external_font: Resolver<Font>,
+    internal_font: Option<Resolver<Font>>,
+    external_font: Option<Resolver<Font>>,
 }
 
 /// Im not sure about the type is should use here so i'll alis it until im sure
@@ -36,7 +36,7 @@ impl<AssetType: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + s
         let bytes = match shared::file::try_bytes(path.into()) {
             Ok(bytes) => bytes,
             Err(e) => {
-                // error!("Resolver could not open resolver file path: {e}");
+                error!("Could not create resolver for: {path_prefix:?}: {e}");
                 return Err(e.into());
             }
         };
@@ -57,6 +57,11 @@ impl<AssetType: serde::de::DeserializeOwned + std::cmp::Eq + std::hash::Hash + s
             path_prefix,
             inner,
         })
+    }
+
+    /// Same as new but ignore the error and return an option
+    fn try_new(path: shared::file::ConsPath, path_prefix: &str) -> Option<Self> {
+        Self::new(path, path_prefix).ok()
     }
 
     /// Checks if the resolver has the given asset
@@ -90,50 +95,49 @@ impl<
     /// Fails if any of the resolvers fails to initialise
     pub fn new() -> ggez::GameResult<Self> {
         Ok(Self {
-            internal_sprite: Resolver::<Sprite>::new(
+            internal_sprite: Resolver::<Sprite>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::Internal,
                     "sprite\\resolver.ron",
                 ),
                 "sprite\\",
-            )?,
-            external_sprite: Resolver::<Sprite>::new(
+            ),
+            external_sprite: Resolver::<Sprite>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::External,
                     "sprite\\resolver.ron",
                 ),
                 "sprite\\",
-            )?,
+            ),
 
-            internal_sound: Resolver::<Sound>::new(
+            internal_sound: Resolver::<Sound>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::Internal,
                     "sound\\resolver.ron",
                 ),
                 "sound\\",
-            )?,
-            external_sound: Resolver::<Sound>::new(
+            ),
+            external_sound: Resolver::<Sound>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::External,
                     "sound\\resolver.ron",
                 ),
                 "sound\\",
-            )?,
-
-            internal_font: Resolver::<Font>::new(
+            ),
+            internal_font: Resolver::<Font>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::Internal,
                     "font\\resolver.ron",
                 ),
                 "font\\",
-            )?,
-            external_font: Resolver::<Font>::new(
+            ),
+            external_font: Resolver::<Font>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::External,
                     "font\\resolver.ron",
                 ),
                 "font\\",
-            )?,
+            ),
         })
     }
 
@@ -142,8 +146,8 @@ impl<
     /// or None on fail
     fn get<Asset>(
         &self,
-        internal_resolver: &Resolver<Asset>,
-        external_resolver: &Resolver<Asset>,
+        internal_resolver: Option<&Resolver<Asset>>,
+        external_resolver: Option<&Resolver<Asset>>,
         asset: &Asset,
     ) -> Option<std::borrow::Cow<'static, [u8]>>
     where
@@ -151,10 +155,12 @@ impl<
     {
         // The implicit .unwrap of resolver.get is fine as we test before if that resolver has the asset
         // No it's not, see #36
-        if internal_resolver.has(asset) {
-            internal_resolver.try_get(asset).ok()
-        } else if external_resolver.has(asset) {
-            external_resolver.try_get(asset).ok()
+
+        // About the explicit one, we check if it is Some right before
+        if internal_resolver.is_some_and(|r| r.has(asset)) {
+            internal_resolver.unwrap().try_get(asset).ok()
+        } else if external_resolver.is_some_and(|r| r.has(asset)) {
+            external_resolver.unwrap().try_get(asset).ok()
         } else {
             None
         }
@@ -162,7 +168,11 @@ impl<
 
     /// Loads the given sprite from any of the filesystem
     pub fn get_sprite(&self, sprite: &Sprite) -> Option<std::borrow::Cow<'static, [u8]>> {
-        let res = self.get(&self.internal_sprite, &self.external_sprite, sprite);
+        let res = self.get(
+            self.internal_sprite.as_ref(),
+            self.external_sprite.as_ref(),
+            sprite,
+        );
 
         if res.is_none() {
             error!("None of the sprite resolvers have the asset: {sprite:?}");
@@ -172,7 +182,11 @@ impl<
 
     /// Loads the given sound from any of the filesystem
     pub fn get_sound(&self, sound: &Sound) -> Option<std::borrow::Cow<'static, [u8]>> {
-        let res = self.get(&self.internal_sound, &self.external_sound, sound);
+        let res = self.get(
+            self.internal_sound.as_ref(),
+            self.external_sound.as_ref(),
+            sound,
+        );
 
         if res.is_none() {
             error!("None of the sound resolvers have the asset: {sound:?}");
@@ -182,7 +196,11 @@ impl<
 
     /// Loads the given font from any of the filesystem
     pub fn get_font(&self, font: &Font) -> Option<std::borrow::Cow<'static, [u8]>> {
-        let res = self.get(&self.internal_font, &self.external_font, font);
+        let res = self.get(
+            self.internal_font.as_ref(),
+            self.external_font.as_ref(),
+            font,
+        );
 
         if res.is_none() {
             error!("None of the font resolvers have the asset: {font:?}");
