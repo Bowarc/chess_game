@@ -8,7 +8,7 @@ const TARGET_TPS: f32 = 10.;
 fn main() {
     let config = logger::LoggerConfig::default().set_level(log::LevelFilter::Debug);
 
-    logger::init(config, Some("server.log"));
+    logger::init(config, Some("./log/server.log"));
 
     let stopwatch = time::Stopwatch::start_new();
 
