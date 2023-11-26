@@ -1,6 +1,6 @@
 pub struct Text {
     id: crate::ui::Id,
-    position: crate::ui::Position,
+    position: crate::ui::Vector,
     // About the size, how do we make it fit as it's a text, do w use the total text len / size.x?
     // If so, how do we manage the image ? i mean, spacing, image size, etc..
     req_size: crate::ui::Value,
@@ -98,7 +98,7 @@ fn compute_text_bits(bits: Vec<TextBit>) -> Vec<TextBit> {
 impl Text {
     pub fn new(
         id: crate::ui::Id,
-        position: crate::ui::Position,
+        position: crate::ui::Vector,
         req_size: crate::ui::Value,
         style: crate::ui::Style,
         bits: Vec<TextBit>,
@@ -319,7 +319,7 @@ impl super::TElement for Text {
     fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value> {
         &self.real_size
     }
-    fn get_pos_value(&self) -> &crate::ui::Position {
+    fn get_pos_value(&self) -> &crate::ui::Vector {
         &self.position
     }
     fn get_id(&self) -> crate::ui::Id {

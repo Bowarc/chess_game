@@ -35,50 +35,56 @@ impl Chess {
 
         let mut global_ui = ui::UiManager::default();
 
-        let id = global_ui.add_element(ui::element::Element::new_graph(
-            "fps graph",
-            ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 2.)),
-            (200., 50.),
-            ui::Style::new(
-                render::Color::random_rgb(),
-                Some(ui::style::BackgroundStyle::new(
-                    render::Color::from_rgba(23, 23, 23, 150),
-                    Some(assets::sprite::SpriteId::MissingNo),
-                )),
-                Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
+        let id = global_ui.add_element(
+            ui::element::Element::new_graph(
+                "fps graph",
+                ui::Vector::new_anchor(ui::Anchor::TopRight, (-2., 2.)),
+                (200., 50.),
+                ui::Style::new(
+                    render::Color::random_rgb(),
+                    Some(ui::style::BackgroundStyle::new(
+                        render::Color::from_rgba(23, 23, 23, 150),
+                        Some(assets::sprite::SpriteId::MissingNo),
+                    )),
+                    Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
+                ),
+                Some(
+                    ui::element::GraphText::default()
+                        .anchor(ui::Anchor::Topleft)
+                        .offset(shared::maths::Vec2::ONE)
+                        .text(|val| -> String { format!("{}fps", val as i32) })
+                        .size(5.)
+                        .color(render::Color::random_rgb()),
+                ),
             ),
-            Some(
-                ui::element::GraphText::default()
-                    .anchor(ui::Anchor::Topleft)
-                    .offset(shared::maths::Vec2::ONE)
-                    .text(|val| -> String { format!("{}fps", val as i32) })
-                    .size(5.)
-                    .color(render::Color::random_rgb()),
+            "",
+        );
+        let id2 = global_ui.add_element(
+            ui::element::Element::new_graph(
+                "rtt graph",
+                ui::Vector::new_anchor(ui::Anchor::TopRight, (-2., 52.)),
+                (200., 50.),
+                ui::Style::new(
+                    render::Color::random_rgb(),
+                    None,
+                    Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
+                ),
+                Some(
+                    ui::element::GraphText::default()
+                        .anchor(ui::Anchor::Topleft)
+                        .offset(shared::maths::Vec2::ONE)
+                        .text(|val| -> String {
+                            format!(
+                                "RTT: {}",
+                                time::display_duration(std::time::Duration::from_secs_f64(val))
+                            )
+                        })
+                        .size(8.)
+                        .color(render::Color::random_rgb()),
+                ),
             ),
-        ), "");
-        let id2 = global_ui.add_element(ui::element::Element::new_graph(
-            "rtt graph",
-            ui::Position::new_anchor(ui::Anchor::TopRight, (-2., 52.)),
-            (200., 50.),
-            ui::Style::new(
-                render::Color::random_rgb(),
-                None,
-                Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
-            ),
-            Some(
-                ui::element::GraphText::default()
-                    .anchor(ui::Anchor::Topleft)
-                    .offset(shared::maths::Vec2::ONE)
-                    .text(|val| -> String {
-                        format!(
-                            "RTT: {}",
-                            time::display_duration(std::time::Duration::from_secs_f64(val))
-                        )
-                    })
-                    .size(8.)
-                    .color(render::Color::random_rgb()),
-            ),
-        ), "");
+            "",
+        );
 
         // let text_id = global_ui.add_element(ui::element::Element::new_text(
         //     ui::Position::new_anchor(ui::Anchor::TopCenter, (0., 2.)),
@@ -152,52 +158,67 @@ impl Chess {
         //     ),
         // ));
 
-        let mp_id = global_ui.add_element(ui::element::Element::new_text(
-            "mouse pos text",
-            (ui::Anchor::BotRight, shared::maths::Vec2::new(-1., -1.)),
-            20.,
-            ui::Style::new(
-                render::Color::random_rgb(),
-                Some(ui::style::BackgroundStyle::new(
-                    render::Color::from_rgba(20, 20, 20, 100),
-                    None,
-                )),
-                Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+        let mp_id = global_ui.add_element(
+            ui::element::Element::new_text(
+                "mouse pos text",
+                (ui::Anchor::BotRight, shared::maths::Vec2::new(-1., -1.)),
+                20.,
+                ui::Style::new(
+                    render::Color::random_rgb(),
+                    Some(ui::style::BackgroundStyle::new(
+                        render::Color::from_rgba(20, 20, 20, 100),
+                        None,
+                    )),
+                    Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+                ),
+                vec![ui::element::TextBit::new_text("".to_string(), None)],
             ),
-            vec![ui::element::TextBit::new_text("".to_string(), None)],
-        ), "");
+            "",
+        );
 
-        let test_t_id = global_ui.add_element(ui::element::Element::new_text(
-            "Test_image_id",
-            (ui::Anchor::TopCenter, shared::maths::Vec2::new(0., 100.)),
-            40.,
-            ui::Style::new(
-                render::Color::random_rgb(),
-                None,
-                Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+        let test_t_id = global_ui.add_element(
+            ui::element::Element::new_text(
+                "Test_image_id",
+                (ui::Anchor::TopCenter, shared::maths::Vec2::new(0., 100.)),
+                40.,
+                ui::Style::new(
+                    render::Color::random_rgb(),
+                    None,
+                    Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+                ),
+                vec![
+                    ui::element::TextBit::new_text(
+                        "15 ",
+                        Some(render::Color::from_rgb(186, 80, 40)),
+                    ),
+                    ui::element::TextBit::new_text(
+                        "(+1.1",
+                        Some(render::Color::from_rgb(215, 148, 95)),
+                    ),
+                    ui::element::TextBit::new_img(
+                        assets::sprite::SpriteId::AttackDamage,
+                        Some(render::Color::from_rgb(215, 148, 95)),
+                    ),
+                    ui::element::TextBit::new_text(
+                        ")",
+                        Some(render::Color::from_rgb(215, 148, 95)),
+                    ),
+                    ui::element::TextBit::new_text(
+                        " (+0.4",
+                        Some(render::Color::from_rgb(105, 255, 249)),
+                    ),
+                    ui::element::TextBit::new_img(
+                        assets::sprite::SpriteId::AbilityPower,
+                        Some(render::Color::from_rgb(105, 255, 249)),
+                    ),
+                    ui::element::TextBit::new_text(
+                        ")",
+                        Some(render::Color::from_rgb(105, 255, 249)),
+                    ),
+                ],
             ),
-            vec![
-                ui::element::TextBit::new_text("15 ", Some(render::Color::from_rgb(186, 80, 40))),
-                ui::element::TextBit::new_text(
-                    "(+1.1",
-                    Some(render::Color::from_rgb(215, 148, 95)),
-                ),
-                ui::element::TextBit::new_img(
-                    assets::sprite::SpriteId::AttackDamage,
-                    Some(render::Color::from_rgb(215, 148, 95)),
-                ),
-                ui::element::TextBit::new_text(")", Some(render::Color::from_rgb(215, 148, 95))),
-                ui::element::TextBit::new_text(
-                    " (+0.4",
-                    Some(render::Color::from_rgb(105, 255, 249)),
-                ),
-                ui::element::TextBit::new_img(
-                    assets::sprite::SpriteId::AbilityPower,
-                    Some(render::Color::from_rgb(105, 255, 249)),
-                ),
-                ui::element::TextBit::new_text(")", Some(render::Color::from_rgb(105, 255, 249))),
-            ],
-        ),"");
+            "",
+        );
 
         Ok(Self {
             cfg,

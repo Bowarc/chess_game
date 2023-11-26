@@ -183,6 +183,12 @@ impl BorderStyle {
     }
 }
 
+impl From<Style> for Bundle {
+    fn from(value: Style) -> Self {
+        Self::new(value, None, None)
+    }
+}
+
 impl Default for Style {
     fn default() -> Self {
         Style {

@@ -1,6 +1,6 @@
 pub struct TextEdit {
     id: crate::ui::Id,
-    position: crate::ui::Position,
+    position: crate::ui::Vector,
     width: crate::ui::Value,
     rows: usize, // Number of rows
     font_size: f64,
@@ -13,7 +13,7 @@ pub struct TextEdit {
 impl TextEdit {
     pub fn new(
         id: crate::ui::Id,
-        position: crate::ui::Position,
+        position: crate::ui::Vector,
         width: crate::ui::Value,
         rows: usize,
         font_size: f64,
@@ -35,7 +35,7 @@ impl TextEdit {
         &self.txt
     }
 
-    pub fn get_text_mut(&mut self) -> &mut String{
+    pub fn get_text_mut(&mut self) -> &mut String {
         &mut self.txt
     }
 }
@@ -87,7 +87,7 @@ impl super::TElement for TextEdit {
         &self.size
     }
 
-    fn get_pos_value(&self) -> &crate::ui::Position {
+    fn get_pos_value(&self) -> &crate::ui::Vector {
         &self.position
     }
 

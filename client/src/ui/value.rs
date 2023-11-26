@@ -25,7 +25,7 @@ impl Value {
     pub fn compute(&self, ctx: &mut ggez::Context) -> f64 {
         match self {
             Value::Fixed(v) => *v,
-            Value::Magic(v) => v.resolve(ctx),
+            Value::Magic(v) => v.compute(ctx),
             Value::Mutiple(v1, op, v2) => match op {
                 ValueOperation::Add => v1.compute(ctx) + v2.compute(ctx),
                 ValueOperation::Sub => v1.compute(ctx) - v2.compute(ctx),
@@ -48,7 +48,7 @@ impl Value {
 }
 
 impl MagicValue {
-    pub fn resolve(&self, ctx: &ggez::Context) -> f64 {
+    pub fn compute(&self, ctx: &ggez::Context) -> f64 {
         match self {
             MagicValue::ScreenSizeW => ctx.gfx.drawable_size().0 as f64,
             MagicValue::ScreenSizeH => ctx.gfx.drawable_size().1 as f64,

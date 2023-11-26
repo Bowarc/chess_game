@@ -2,15 +2,16 @@ mod anchor;
 pub mod element;
 pub mod event;
 mod group;
-mod position;
+mod vector;
 pub mod register;
 mod state;
 pub mod style;
 pub mod value;
 
+
 pub use anchor::Anchor;
 pub use group::Group;
-pub use position::Position;
+pub use vector::Vector;
 pub use state::State;
 pub use style::Style;
 pub use value::Value;
@@ -26,11 +27,7 @@ pub struct UiManager {
 }
 
 impl UiManager {
-    pub fn add_element(
-        &mut self,
-        elem: element::Element,
-        group_id:impl Into<Id>,
-    ) -> Id {
+    pub fn add_element(&mut self, elem: element::Element, group_id: impl Into<Id>) -> Id {
         let group_id = group_id.into();
         let elem_id = elem.get_id();
         // The overhead is fine, as we don't create elements often
@@ -40,9 +37,10 @@ impl UiManager {
         );
         self.elements.push(elem);
 
-        let group = if let Some(group_index) = self.groups.iter().position(|g| g.id() == &group_id){
+        let group = if let Some(group_index) = self.groups.iter().position(|g| g.id() == &group_id)
+        {
             self.groups.get_mut(group_index).unwrap()
-        }else{
+        } else {
             self.groups.push(Group::new(group_id));
             self.groups.last_mut().unwrap()
         };
@@ -84,8 +82,13 @@ impl UiManager {
     pub fn remove_group(&mut self, id: impl Into<Id>) -> Result<(), ()> {
         let id = id.into();
         if let Some(g_index) = self.groups.iter().position(|g| g.id() == &id) {
-            for elem_id in self.groups.get(g_index).unwrap().elems().iter(){
-                self.elements.remove(self.elements.iter().position(|el| &el.get_id() == elem_id).unwrap());
+            for elem_id in self.groups.get(g_index).unwrap().elems().iter() {
+                self.elements.remove(
+                    self.elements
+                        .iter()
+                        .position(|el| &el.get_id() == elem_id)
+                        .unwrap(),
+                );
             }
             self.groups.remove(g_index);
             return Ok(());

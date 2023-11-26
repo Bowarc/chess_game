@@ -29,7 +29,7 @@ pub trait TElement: std::any::Any {
 
     fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value>;
 
-    fn get_pos_value(&self) -> &super::Position;
+    fn get_pos_value(&self) -> &super::Vector;
 
     fn get_id(&self) -> super::Id;
 
@@ -108,7 +108,7 @@ pub trait TElement: std::any::Any {
 impl Element {
     pub fn new_button(
         id: impl Into<super::Id>,
-        position: impl Into<super::Position>,
+        position: impl Into<super::Vector>, // Center
         size: (impl Into<super::Value>, impl Into<super::Value>),
         style: super::style::Bundle,
     ) -> Self {
@@ -121,7 +121,7 @@ impl Element {
     }
     pub fn new_graph(
         id: impl Into<super::Id>,
-        position: impl Into<super::Position>,
+        position: impl Into<super::Vector>,// Center
         size: (impl Into<super::Value>, impl Into<super::Value>),
         style: super::Style,
         text: Option<graph::GraphText>,
@@ -136,7 +136,7 @@ impl Element {
     }
     pub fn new_text(
         id: impl Into<super::Id>,
-        position: impl Into<super::Position>,
+        position: impl Into<super::Vector>,// Center
         size: impl Into<super::Value>,
         style: super::Style,
         parts: Vec<TextBit>,
@@ -146,7 +146,7 @@ impl Element {
     }
     pub fn new_text_edit(
         id: impl Into<super::Id>,
-        position: impl Into<super::Position>,
+        position: impl Into<super::Vector>,// Center
         size: impl Into<super::Value>,
         rows: usize,
         font_size: f64,
@@ -287,7 +287,7 @@ impl Element {
 
     gen_trait_fn_ref!(
         get_pos_value
-        => &super::Position
+        => &super::Vector
     );
 
     gen_trait_fn_ref!(

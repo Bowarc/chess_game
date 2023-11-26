@@ -77,4 +77,19 @@ impl Anchor {
         // }
         // }
     }
+
+    pub fn as_value(&self) -> (super::Value, super::Value){
+        use super::value::MagicValue;
+        match self{
+            Anchor::CenterCenter => (MagicValue::ScreenSizeW*0.5, MagicValue::ScreenSizeH * 0.5),
+            Anchor::Topleft => (0f64.into(), 0f64.into()),
+            Anchor::TopCenter => (MagicValue::ScreenSizeW*0.5, 0f64.into()),
+            Anchor::TopRight => (MagicValue::ScreenSizeW.into(), 0f64.into()),
+            Anchor::RightCenter => (MagicValue::ScreenSizeW.into(), MagicValue::ScreenSizeH * 0.5),
+            Anchor::BotRight => (MagicValue::ScreenSizeW.into(), MagicValue::ScreenSizeH.into()),
+            Anchor::BotCenter =>(MagicValue::ScreenSizeW * 0.5, MagicValue::ScreenSizeH.into()),
+            Anchor::BotLeft =>(0f64.into(), MagicValue::ScreenSizeH.into()),
+            Anchor::LeftCenter => (0f64.into(), MagicValue::ScreenSizeH * 0.5),
+        }
+    }
 }

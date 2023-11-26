@@ -2,7 +2,7 @@ const NBR_OF_ELEMENTS: usize = 80;
 
 pub struct Graph {
     id: crate::ui::Id,
-    position: crate::ui::Position,
+    position: crate::ui::Vector,
     size: ggez::mint::Point2<crate::ui::Value>,
     style: crate::ui::Style,
 
@@ -17,7 +17,7 @@ pub struct Graph {
 impl Graph {
     pub fn new(
         id: crate::ui::Id,
-        position: crate::ui::Position,
+        position: crate::ui::Vector,
         size: ggez::mint::Point2<crate::ui::Value>,
         style: crate::ui::Style,
         text: Option<GraphText>,
@@ -147,7 +147,7 @@ impl super::TElement for Graph {
     fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value> {
         &self.size
     }
-    fn get_pos_value(&self) -> &crate::ui::Position {
+    fn get_pos_value(&self) -> &crate::ui::Vector {
         &self.position
     }
     fn get_id(&self) -> crate::ui::Id {

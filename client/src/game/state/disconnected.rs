@@ -11,16 +11,15 @@ impl Disconnected {
 }
 
 impl super::StateMachine for Disconnected {
-    fn update(mut self, delta_time: f64) -> super::State {
+    fn update(self, delta_time: f64) -> super::State {
         if let Ok(client) = crate::game::Client::new(shared::DEFAULT_ADDRESS) {
-            super::Connecting::new(client).into()
-        } else {
-            warn!("Could not connect to the sever..");
-            self.into()
+            return super::Connecting::new(client).into();
         }
+        warn!("Could not connect to the sever..");
+        self.into()
     }
 
-    fn draw(mut self, _: &mut crate::render::RenderRequest) -> super::State {
+    fn draw(self, _: &mut crate::render::RenderRequest) -> super::State {
         self.into()
     }
 

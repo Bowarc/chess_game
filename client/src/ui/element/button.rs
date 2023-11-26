@@ -1,6 +1,6 @@
 pub struct Button {
     id: crate::ui::Id,
-    position: crate::ui::Position,
+    position: crate::ui::Vector,
     size: ggez::mint::Point2<crate::ui::Value>,
     state: crate::ui::State,
     style: crate::ui::style::Bundle,
@@ -9,7 +9,7 @@ pub struct Button {
 impl Button {
     pub fn new(
         id: crate::ui::Id,
-        position: crate::ui::Position,
+        position: crate::ui::Vector,
         size: ggez::mint::Point2<crate::ui::Value>,
         style: crate::ui::style::Bundle,
     ) -> Self {
@@ -63,7 +63,7 @@ impl super::TElement for Button {
     fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value> {
         &self.size
     }
-    fn get_pos_value(&self) -> &crate::ui::Position {
+    fn get_pos_value(&self) -> &crate::ui::Vector {
         &self.position
     }
     fn get_id(&self) -> crate::ui::Id {
