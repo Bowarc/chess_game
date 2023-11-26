@@ -31,6 +31,13 @@ impl TextEdit {
             txt: String::new(),
         }
     }
+    pub fn get_text(&self) -> &String {
+        &self.txt
+    }
+
+    pub fn get_text_mut(&mut self) -> &mut String{
+        &mut self.txt
+    }
 }
 
 impl super::TElement for TextEdit {
