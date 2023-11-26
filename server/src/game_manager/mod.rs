@@ -14,7 +14,7 @@ pub struct GameManager {
 impl GameManager {
     pub fn new() -> Self {
         Self {
-            active_games: Vec::default(),
+            active_games: vec![Game::new(), Game::new()],
             inactive_players: Vec::new(),
         }
     }
@@ -23,7 +23,7 @@ impl GameManager {
         self.active_games.push(new_game)
     }
 
-    fn clean_inactive(&mut self) {
+    fn clean_inactive_games(&mut self) {
         let mut i = 0;
 
         while i < self.active_games.len() {
@@ -125,7 +125,7 @@ impl GameManager {
             shared::message::ServerMessage,
         >,
     ) {
-        self.clean_inactive();
+        // self.clean_inactive_games();
         self.clean_disconnected_players();
         self.register_new_players(server);
         self.update_connected_players();
