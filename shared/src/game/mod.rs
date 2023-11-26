@@ -19,6 +19,22 @@ impl Game {
             player2,
         }
     }
+
+    pub fn id(&self) -> crate::id::Id{
+        self.id
+    }
+
+    pub fn player_count(&self) -> i32{
+        let mut count = 0;
+        if self.player1.is_some(){
+            count+=1;
+        }
+        if self.player2.is_some(){
+            count+=1;
+        }
+
+        count
+    }
 }
 
 impl Player {
