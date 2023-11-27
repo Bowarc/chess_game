@@ -27,9 +27,9 @@ pub trait TElement: std::any::Any {
         _: &mut crate::render::RenderRequest,
     ) -> ggez::GameResult;
 
-    fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value>;
+    fn get_size_value(&self) -> &super::Vector;
 
-    fn get_pos_value(&self) -> &super::Vector;
+    fn get_pos_value(&self) -> &super::Position;
 
     fn get_id(&self) -> super::Id;
 
@@ -43,7 +43,7 @@ pub trait TElement: std::any::Any {
     fn get_computed_size(&self, ctx: &mut ggez::Context) -> shared::maths::Vec2 {
         let sizev = self.get_size_value();
 
-        shared::maths::Point::new(sizev.x.compute(ctx), sizev.y.compute(ctx))
+        shared::maths::Point::new(sizev.x().compute(ctx), sizev.y().compute(ctx))
     }
 
     fn get_computed_pos(
@@ -108,35 +108,35 @@ pub trait TElement: std::any::Any {
 impl Element {
     pub fn new_button(
         id: impl Into<super::Id>,
-        position: impl Into<super::Vector>, // Center
-        size: (impl Into<super::Value>, impl Into<super::Value>),
+        position: impl Into<super::Position>, // Center
+        size: impl Into<super::Vector>,
         style: super::style::Bundle,
     ) -> Self {
         Self::Button(button::Button::new(
             id.into(),
             position.into(),
-            ggez::mint::Point2::from([size.0.into(), size.1.into()]),
+        size.into(),
             style,
         ))
     }
     pub fn new_graph(
         id: impl Into<super::Id>,
-        position: impl Into<super::Vector>,// Center
-        size: (impl Into<super::Value>, impl Into<super::Value>),
+        position: impl Into<super::Position>,// Center
+        size: impl Into<super::Vector>,
         style: super::Style,
         text: Option<graph::GraphText>,
     ) -> Self {
         Self::Graph(graph::Graph::new(
             id.into(),
             position.into(),
-            ggez::mint::Point2::from([size.0.into(), size.1.into()]),
+        size.into(),
             style,
             text,
         ))
     }
     pub fn new_text(
         id: impl Into<super::Id>,
-        position: impl Into<super::Vector>,// Center
+        position: impl Into<super::Position>,// Center
         size: impl Into<super::Value>,
         style: super::Style,
         parts: Vec<TextBit>,
@@ -146,17 +146,16 @@ impl Element {
     }
     pub fn new_text_edit(
         id: impl Into<super::Id>,
-        position: impl Into<super::Vector>,// Center
-        size: impl Into<super::Value>,
+        position: impl Into<super::Position>,// Center
+        width: impl Into<super::Value>,
         rows: usize,
         font_size: f64,
         style: super::style::Bundle,
     ) -> Self {
-        let size = size.into();
         Self::TextEdit(TextEdit::new(
             id.into(),
             position.into(),
-            size,
+            width.into(),
             rows,
             font_size,
             style,
@@ -282,12 +281,12 @@ impl Element {
     );
     gen_trait_fn_ref!(
         get_size_value
-        => &ggez::mint::Point2<crate::ui::Value>
+        => &super::Vector
     );
 
     gen_trait_fn_ref!(
         get_pos_value
-        => &super::Vector
+        => &super::Position
     );
 
     gen_trait_fn_ref!(

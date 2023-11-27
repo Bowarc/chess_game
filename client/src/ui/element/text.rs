@@ -1,10 +1,10 @@
 pub struct Text {
     id: crate::ui::Id,
-    position: crate::ui::Vector,
+    position: crate::ui::Position,
     // About the size, how do we make it fit as it's a text, do w use the total text len / size.x?
     // If so, how do we manage the image ? i mean, spacing, image size, etc..
     req_size: crate::ui::Value,
-    real_size: ggez::mint::Point2<crate::ui::Value>,
+    real_size: crate::ui::Vector,
     style: crate::ui::Style,
     bits: Vec<TextBit>,
 }
@@ -98,7 +98,7 @@ fn compute_text_bits(bits: Vec<TextBit>) -> Vec<TextBit> {
 impl Text {
     pub fn new(
         id: crate::ui::Id,
-        position: crate::ui::Vector,
+        position: crate::ui::Position,
         req_size: crate::ui::Value,
         style: crate::ui::Style,
         bits: Vec<TextBit>,
@@ -109,7 +109,7 @@ impl Text {
             id,
             position,
             req_size,
-            real_size: ggez::mint::Point2::from([0f64.into(), 0f64.into()]),
+            real_size: crate::ui::Vector::new(0.,0.),
             style,
             bits: new_bits,
         }
@@ -146,10 +146,10 @@ impl Text {
         }
         let size = global_text.dimensions(ctx).unwrap().size();
 
-        self.real_size = ggez::mint::Point2::from([
+        self.real_size = crate::ui::Vector::new(
             crate::ui::Value::fixed(size.x.into()),
             crate::ui::Value::fixed(size.y.into()),
-        ]);
+        );
 
         render_request.add(
             global_text,
@@ -265,10 +265,10 @@ impl Text {
         }
         total_size.y = curr_height;
 
-        self.real_size = ggez::mint::Point2::from([
+        self.real_size = crate::ui::Vector::new(
             crate::ui::Value::fixed(total_size.x),
             crate::ui::Value::fixed(total_size.y),
-        ]);
+        );
     }
     pub fn replace_bits(&mut self, new_bits: Vec<TextBit>) {
         self.bits = compute_text_bits(new_bits)
@@ -316,10 +316,10 @@ impl super::TElement for Text {
 
         Ok(())
     }
-    fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value> {
+    fn get_size_value(&self) -> &crate::ui::Vector {
         &self.real_size
     }
-    fn get_pos_value(&self) -> &crate::ui::Vector {
+    fn get_pos_value(&self) -> &crate::ui::Position {
         &self.position
     }
     fn get_id(&self) -> crate::ui::Id {

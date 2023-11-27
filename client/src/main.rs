@@ -38,7 +38,7 @@ impl Chess {
         let id = global_ui.add_element(
             ui::element::Element::new_graph(
                 "fps graph",
-                ui::Vector::new_anchor(ui::Anchor::TopRight, (-2., 2.)),
+                (ui::Anchor::TopRight, (-2., 2.)),
                 (200., 50.),
                 ui::Style::new(
                     render::Color::random_rgb(),
@@ -62,7 +62,7 @@ impl Chess {
         let id2 = global_ui.add_element(
             ui::element::Element::new_graph(
                 "rtt graph",
-                ui::Vector::new_anchor(ui::Anchor::TopRight, (-2., 52.)),
+                (ui::Anchor::TopRight, (-2., 52.)),
                 (200., 50.),
                 ui::Style::new(
                     render::Color::random_rgb(),
@@ -161,7 +161,7 @@ impl Chess {
         let mp_id = global_ui.add_element(
             ui::element::Element::new_text(
                 "mouse pos text",
-                (ui::Anchor::BotRight, shared::maths::Vec2::new(-1., -1.)),
+                (ui::Anchor::BotRight, (-1., -1.)),
                 20.,
                 ui::Style::new(
                     render::Color::random_rgb(),
@@ -179,7 +179,7 @@ impl Chess {
         let test_t_id = global_ui.add_element(
             ui::element::Element::new_text(
                 "Test_image_id",
-                (ui::Anchor::TopCenter, shared::maths::Vec2::new(0., 100.)),
+                (ui::Anchor::TopCenter, (0., 100.)),
                 40.,
                 ui::Style::new(
                     render::Color::random_rgb(),

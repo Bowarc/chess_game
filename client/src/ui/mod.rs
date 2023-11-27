@@ -2,19 +2,20 @@ mod anchor;
 pub mod element;
 pub mod event;
 mod group;
-mod vector;
+mod position;
 pub mod register;
 mod state;
 pub mod style;
 pub mod value;
-
+mod vector;
 
 pub use anchor::Anchor;
 pub use group::Group;
-pub use vector::Vector;
+pub use position::Position;
 pub use state::State;
 pub use style::Style;
 pub use value::Value;
+pub use vector::Vector;
 
 // pub type Id = shared::id::Id;
 pub type Id = String;
