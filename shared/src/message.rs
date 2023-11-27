@@ -5,6 +5,9 @@ pub enum ClientMessage {
     Pong,
     // Get the games that the server is hosting
     RequestGames,
+    GameJoinRequest(super::id::Id),
+    GameInfoRequest(super::id::Id),
+    GameCreateRequest,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
@@ -14,6 +17,13 @@ pub enum ServerMessage {
     Pong,
     // Send a list of games (only send the useful informations, don't give everything)
     Games(Vec<crate::game::Game>),
+    GameJoin(super::game::Game),
+    GameJoinFaill(String),
+    GameInfoUpdate(crate::id::Id, crate::game::Game),
+    GameInfoUpdateFail(crate::id::Id, String),
+    GameCreateSucess(crate::id::Id),
+    GameCreatefail(String),
+
 }
 
 impl networking::Message for ClientMessage {

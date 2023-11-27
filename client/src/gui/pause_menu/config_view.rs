@@ -36,10 +36,10 @@ pub fn draw_config_menu(
 }
 
 fn draw_user_config_menu(
-    ctx: &mut ggez::Context,
+    _ctx: &mut ggez::Context,
     ui: &mut egui::Ui,
-    cfg: &mut config::UserConfig,
-    overtime_values: &mut pause_menu::OverTimeValues,
+    _cfg: &mut config::UserConfig,
+    _overtime_values: &mut pause_menu::OverTimeValues,
 ) {
     ui.label("User Config");
 }
@@ -124,19 +124,19 @@ fn draw_window_config_menu(
 }
 
 fn draw_render_config_menu(
-    ctx: &mut ggez::Context,
+    _ctx: &mut ggez::Context,
     ui: &mut egui::Ui,
-    cfg: &mut config::RenderConfig,
-    overtime_values: &mut pause_menu::OverTimeValues,
+    _cfg: &mut config::RenderConfig,
+    _overtime_values: &mut pause_menu::OverTimeValues,
 ) {
     ui.label("Render Config");
 }
 
 fn draw_audio_config_menu(
-    ctx: &mut ggez::Context,
+    _ctx: &mut ggez::Context,
     ui: &mut egui::Ui,
     cfg: &mut config::AudioConfig,
-    overtime_values: &mut pause_menu::OverTimeValues,
+    _overtime_values: &mut pause_menu::OverTimeValues,
 ) {
     ui.label("Audio Config");
     ui.horizontal(|ui| {
@@ -175,10 +175,10 @@ fn draw_audio_config_menu(
 }
 
 fn draw_optimisation_config_menu(
-    ctx: &mut ggez::Context,
+    _ctx: &mut ggez::Context,
     ui: &mut egui::Ui,
-    cfg: &mut config::OptimisationConfig,
-    overtime_values: &mut pause_menu::OverTimeValues,
+    _cfg: &mut config::OptimisationConfig,
+    _overtime_values: &mut pause_menu::OverTimeValues,
 ) {
     ui.label("Optimisation Config");
 }

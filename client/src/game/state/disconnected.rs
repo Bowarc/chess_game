@@ -11,7 +11,7 @@ impl Disconnected {
 }
 
 impl super::StateMachine for Disconnected {
-    fn update(self, delta_time: f64) -> super::State {
+    fn update(self, _ggctx: &mut ggez::Context, _delta_time: f64) -> super::State {
         if let Ok(client) = crate::game::Client::new(shared::DEFAULT_ADDRESS) {
             return super::Connecting::new(client).into();
         }

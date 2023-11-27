@@ -19,9 +19,10 @@ impl Game {
     pub fn try_get_ui_mgr_mut(&mut self) -> Option<&mut crate::ui::UiManager> {
         state::StateMachine::try_get_ui_mgr_mut(&mut self.state)
     }
-    pub fn update(&mut self, delta_time: f64) {
+    pub fn update(&mut self, ggctx: &mut ggez::Context, delta_time: f64) {
         self.state = state::StateMachine::update(
             std::mem::replace(&mut self.state, State::dummy()),
+            ggctx,
             delta_time,
         );
         self.verify_state()

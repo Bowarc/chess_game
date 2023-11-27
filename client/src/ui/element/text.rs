@@ -1,8 +1,12 @@
+/*
+    Maybe an optimisation could be to compute the rows only once ?
+
+    can't it change size and pos over time (magic values?)
+*/
+
 pub struct Text {
     id: crate::ui::Id,
     position: crate::ui::Position,
-    // About the size, how do we make it fit as it's a text, do w use the total text len / size.x?
-    // If so, how do we manage the image ? i mean, spacing, image size, etc..
     req_size: crate::ui::Value,
     real_size: crate::ui::Vector,
     style: crate::ui::Style,
@@ -109,7 +113,7 @@ impl Text {
             id,
             position,
             req_size,
-            real_size: crate::ui::Vector::new(0.,0.),
+            real_size: crate::ui::Vector::new(0., 0.),
             style,
             bits: new_bits,
         }
@@ -280,7 +284,7 @@ impl super::TElement for Text {
         &mut self,
         ctx: &mut ggez::Context,
         back_mesh: &mut ggez::graphics::MeshBuilder,
-        ui_mesh: &mut ggez::graphics::MeshBuilder,
+        _ui_mesh: &mut ggez::graphics::MeshBuilder,
         front_mesh: &mut ggez::graphics::MeshBuilder,
         render_request: &mut crate::render::RenderRequest,
     ) -> ggez::GameResult {

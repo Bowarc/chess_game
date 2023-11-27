@@ -14,7 +14,7 @@ use playing::Playing;
 
 #[enum_dispatch::enum_dispatch]
 pub trait StateMachine: Sized {
-    fn update(self, delta_time: f64) -> State;
+    fn update(self, ggctx: &mut ggez::Context, delta_time: f64) -> State;
     fn draw(self, _: &mut crate::render::RenderRequest) -> State;
 
     fn try_get_client_mut(&mut self) -> Option<&mut super::Client> {

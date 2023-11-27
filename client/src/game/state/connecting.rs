@@ -11,7 +11,7 @@ impl Connecting {
 }
 
 impl super::StateMachine for Connecting {
-    fn update(mut self, _: f64) -> super::State {
+    fn update(mut self, _ggctx: &mut ggez::Context, _: f64) -> super::State {
         if let Err(e) = self.client.update() {
             error!("Error while updating the client in Connecting state: {e}");
             return super::Disconnected::new().into();
@@ -24,7 +24,7 @@ impl super::StateMachine for Connecting {
             self.into()
         }
     }
-    fn draw(mut self, _: &mut crate::render::RenderRequest) -> super::State {
+    fn draw(self, _: &mut crate::render::RenderRequest) -> super::State {
         self.into()
     }
 

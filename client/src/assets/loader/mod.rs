@@ -57,12 +57,12 @@ impl Loader {
 
                     if let Some(bytes) = bytes_opt {
                         match self.channel.send(RawLoadedData { request, bytes }) {
-                            Ok(a) => {
+                            Ok(_) => {
                                 debug!("Successfully send data for {request:?}");
                             }
 
                             Err(e) => {
-                                error!("Asset loader could not send data, missed: {request:?}")
+                                error!("Asset loader could not send data, missed: {request:?}\n{e}")
                             }
                         }
                     }

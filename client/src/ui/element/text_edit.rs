@@ -45,7 +45,7 @@ impl super::TElement for TextEdit {
         &mut self,
         ctx: &mut ggez::Context,
         back_mesh: &mut ggez::graphics::MeshBuilder,
-        ui_mesh: &mut ggez::graphics::MeshBuilder,
+        _ui_mesh: &mut ggez::graphics::MeshBuilder,
         front_mesh: &mut ggez::graphics::MeshBuilder,
         render_request: &mut crate::render::RenderRequest,
     ) -> ggez::GameResult {
@@ -84,7 +84,7 @@ impl super::TElement for TextEdit {
         Ok(())
     }
 
-    fn get_size_value(&self) -> &crate::ui::Vector{
+    fn get_size_value(&self) -> &crate::ui::Vector {
         &self.size
     }
 
@@ -101,7 +101,7 @@ impl super::TElement for TextEdit {
     }
     fn on_mouse_press(
         &mut self,
-        button: ggez::input::mouse::MouseButton,
+        _button: ggez::input::mouse::MouseButton,
         position: shared::maths::Point,
         ctx: &mut ggez::Context,
     ) {
@@ -113,7 +113,7 @@ impl super::TElement for TextEdit {
     }
     fn on_mouse_release(
         &mut self,
-        button: ggez::input::mouse::MouseButton,
+        _button: ggez::input::mouse::MouseButton,
         position: shared::maths::Point,
         ctx: &mut ggez::Context,
     ) {
@@ -126,7 +126,7 @@ impl super::TElement for TextEdit {
     fn on_mouse_motion(
         &mut self,
         position: shared::maths::Point,
-        delta: shared::maths::Point,
+        _delta: shared::maths::Point,
         ctx: &mut ggez::Context,
     ) {
         if shared::maths::collision::point_rect(position, self.get_computed_rect(ctx)) {
@@ -136,7 +136,7 @@ impl super::TElement for TextEdit {
         }
     }
 
-    fn on_text_input(&mut self, character: char, ctx: &mut ggez::Context) {
+    fn on_text_input(&mut self, character: char, _ctx: &mut ggez::Context) {
         if !self.state.focussed() {
             return;
         }
@@ -168,7 +168,9 @@ impl super::TElement for TextEdit {
                 if self.txt.is_empty(){
                     return;
                 }
-                if let Some(last) = self.txt.chars().last().and_then(|last| if last == ' '{Some(last)}else{None}){
+                
+                // If last is a space
+                if self.txt.chars().last().and_then(|last| if last == ' '{Some(last)}else{None}).is_some(){
                     self.txt.pop();
                 }
                 while let Some(last) = self.txt.chars().last(){

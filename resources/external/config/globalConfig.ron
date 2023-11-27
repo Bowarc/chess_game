@@ -7,8 +7,9 @@
     window: (
         v_sync: false,
         size: (1366, 768),
-        fullscreen_type: Desktop,
+        fullscreen_type: Windowed,
         samples: Four,
         srgb: true,
+        resizable: true,
     )    
 )

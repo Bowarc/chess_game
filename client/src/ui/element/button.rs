@@ -60,7 +60,7 @@ impl super::TElement for Button {
         )?;
         Ok(())
     }
-    fn get_size_value(&self) -> &crate::ui::Vector{
+    fn get_size_value(&self) -> &crate::ui::Vector {
         &self.size
     }
     fn get_pos_value(&self) -> &crate::ui::Position {
@@ -76,7 +76,7 @@ impl super::TElement for Button {
     fn on_mouse_motion(
         &mut self,
         position: shared::maths::Point,
-        delta: shared::maths::Point,
+        _delta: shared::maths::Point,
         ctx: &mut ggez::Context,
     ) {
         if shared::maths::collision::point_rect(position, self.get_computed_rect(ctx)) {
@@ -88,7 +88,7 @@ impl super::TElement for Button {
 
     fn on_mouse_press(
         &mut self,
-        button: ggez::input::mouse::MouseButton,
+        _button: ggez::input::mouse::MouseButton,
         position: shared::maths::Point,
         ctx: &mut ggez::Context,
     ) {
@@ -100,7 +100,7 @@ impl super::TElement for Button {
     }
     fn on_mouse_release(
         &mut self,
-        button: ggez::input::mouse::MouseButton,
+        _button: ggez::input::mouse::MouseButton,
         position: shared::maths::Point,
         ctx: &mut ggez::Context,
     ) {

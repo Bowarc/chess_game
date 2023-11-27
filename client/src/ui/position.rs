@@ -13,11 +13,7 @@ impl Position {
         let value = value.into();
         Self::Value(value)
     }
-    pub fn new_anchor(
-        anchor: super::Anchor,
-        offset: impl Into<super::Vector>,
-    ) -> Self {
-        // let offset = offset.unwrap_or((0., 0.));
+    pub fn new_anchor(anchor: super::Anchor, offset: impl Into<super::Vector>) -> Self {
         Self::Anchor {
             anchor,
             offset: offset.into(),
@@ -30,7 +26,9 @@ impl Position {
         element_size: shared::maths::Point,
     ) -> shared::maths::Point {
         match self {
-            Position::Value(pt) => shared::maths::Point::new(pt.x().compute(ctx), pt.y().compute(ctx)),
+            Position::Value(pt) => {
+                shared::maths::Point::new(pt.x().compute(ctx), pt.y().compute(ctx))
+            }
             Position::Anchor { anchor, offset } => {
                 let offset =
                     shared::maths::Point::new(offset.x().compute(ctx), offset.y().compute(ctx));
@@ -50,21 +48,20 @@ impl From<super::Anchor> for Position {
     }
 }
 
-
 impl<T: Into<super::Vector>> From<T> for Position {
     fn from(value: T) -> Self {
         Self::new_value(value.into())
     }
 }
 
-impl From<(super::Anchor, super::Vector)> for Position {
-    fn from(value: (super::Anchor, super::Vector)) -> Self {
+impl<T: Into<super::Vector>> From<(super::Anchor, T)> for Position {
+    fn from(value: (super::Anchor, T)) -> Self {
         Self::new_anchor(value.0, value.1)
     }
 }
 
-impl From<(super::Anchor, (f64, f64))> for Position {
-    fn from(value: (super::Anchor, (f64, f64))) -> Self {
-        Self::new_anchor(value.0, value.1)
-    }
-}
+// impl From<(super::Anchor, (f64, f64))> for Position {
+//     fn from(value: (super::Anchor, (f64, f64))) -> Self {
+//         Self::new_anchor(value.0, value.1)
+//     }
+// }

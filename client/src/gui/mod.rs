@@ -45,7 +45,7 @@ impl Gui {
 
     pub fn draw(
         &mut self,
-        ctx: &mut ggez::Context,
+        _ctx: &mut ggez::Context,
         render_request: &mut crate::render::RenderRequest,
     ) -> ggez::GameResult {
         render_request.add(

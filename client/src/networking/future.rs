@@ -60,31 +60,33 @@ impl<T> Future<T> {
         client: &mut super::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
     ) {
         self.changed = false;
-        if self.requested {
-            if let Some(index) = client
-                .received_msg()
-                .iter()
-                .position(|msg| (self.validator)(msg))
-            {
-                let msg = client.received_msg_mut().remove(index);
+        
+        if let Some(index) = client
+            .received_msg()
+            .iter()
+            .position(|msg| (self.validator)(msg))
+        {
+            let msg = client.received_msg_mut().remove(index);
 
-                if let Some(extracted) = (self.extractor)(msg) {
-                    self.inner = Some(extracted);
-                    debug!(
-                        "Future for request: {:?} has received it's data",
-                        self.request_msg
-                    );
-                } else {
-                    error!(
-                        "Future for request {:?} failled to unpack its data",
-                        self.request_msg
-                    )
-                }
-
-                self.requested = false;
-                self.changed = true;
+            if let Some(extracted) = (self.extractor)(msg) {
+                self.inner = Some(extracted);
+                debug!(
+                    "Future for request: {:?} has received it's data",
+                    self.request_msg
+                );
+            } else {
+                error!(
+                    "Future for request {:?} failled to unpack its data",
+                    self.request_msg
+                )
             }
-        } else if self.inner.is_none() {
+
+            self.requested = false;
+            self.changed = true;
+        }
+        
+
+        if self.inner.is_none() && !self.requested {
             if let Err(e) = client.send(self.request_msg.clone()) {
                 error!(
                     "Future could not send request message: {:?}, {e}",

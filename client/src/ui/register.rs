@@ -47,10 +47,10 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
                     + size.y * 0.5,
             );
 
-            let pos = super::Vector::new_value((
+            let pos = super::Vector::new(
                 centering.0 + super::Value::from(size.x * i + spacing * i),
                 centering.1 + super::Value::from(size.y * j + spacing * j),
-            ));
+            );
 
             let el = super::element::Element::new_button(
                 format!("board square {i}x{j}"),

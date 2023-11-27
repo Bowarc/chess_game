@@ -49,6 +49,8 @@ pub struct WindowConfig {
     pub samples: ggez::conf::NumSamples,
     #[derivative(Default(value = "true"))]
     pub srgb: bool,
+    #[derivative(Default(value = "false"))]
+    pub resizable: bool,
 }
 #[derive(derivative::Derivative, serde::Deserialize, Debug, Clone, Copy)]
 #[serde(default)]
@@ -119,7 +121,7 @@ impl From<WindowConfig> for ggez::conf::WindowMode {
             max_width: 0.0,
             min_height: 1.0,
             max_height: 0.0,
-            resizable: false,
+            resizable: window_config.resizable,
             visible: true,
             transparent: false,
             resize_on_scale_factor_change: false,

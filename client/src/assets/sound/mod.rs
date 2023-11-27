@@ -6,7 +6,7 @@ pub use sound_id::SoundId;
 pub struct SoundBank {}
 
 impl SoundBank {
-    pub fn new(loader_handle: &mut super::loader::Handle) -> Self {
+    pub fn new(_loader_handle: &mut super::loader::Handle) -> Self {
         Self {}
     }
 }

@@ -1,8 +1,7 @@
 #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
 pub struct Game {
     id: crate::id::Id,
-    player1: Option<Player>,
-    player2: Option<Player>,
+    players: [Option<Player>; 2],
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
@@ -12,11 +11,10 @@ pub struct Player {
 }
 
 impl Game {
-    pub fn new(id: crate::id::Id, player1: Option<Player>, player2: Option<Player>) -> Self {
+    pub fn new(id: crate::id::Id, players: [Option<Player>; 2],) -> Self {
         Self {
             id,
-            player1,
-            player2,
+            players
         }
     }
 
@@ -24,16 +22,11 @@ impl Game {
         self.id
     }
 
-    pub fn player_count(&self) -> i32{
-        let mut count = 0;
-        if self.player1.is_some(){
-            count+=1;
-        }
-        if self.player2.is_some(){
-            count+=1;
-        }
-
-        count
+    pub fn player_count(&self) -> usize{
+        self.players.iter().filter(|&player| player.is_some()).count()
+    }
+    pub fn max_players(&self) -> usize{
+        2
     }
 }
 

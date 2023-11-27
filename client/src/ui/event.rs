@@ -13,7 +13,7 @@ pub enum Event {
         delta: shared::maths::Vec2,
     },
     MouseWheel {
-        delta: shared::maths::Point, // not sure of what to call it
+        delta: shared::maths::Point,
     },
     KeyDown {
         key: ggez::input::keyboard::KeyInput,

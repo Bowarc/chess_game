@@ -1,5 +1,3 @@
-use ggez::winit::error::NotSupportedError;
-
 /*
     Used to target an abstract position
 */

@@ -115,13 +115,13 @@ impl Element {
         Self::Button(button::Button::new(
             id.into(),
             position.into(),
-        size.into(),
+            size.into(),
             style,
         ))
     }
     pub fn new_graph(
         id: impl Into<super::Id>,
-        position: impl Into<super::Position>,// Center
+        position: impl Into<super::Position>, // Center
         size: impl Into<super::Vector>,
         style: super::Style,
         text: Option<graph::GraphText>,
@@ -129,14 +129,14 @@ impl Element {
         Self::Graph(graph::Graph::new(
             id.into(),
             position.into(),
-        size.into(),
+            size.into(),
             style,
             text,
         ))
     }
     pub fn new_text(
         id: impl Into<super::Id>,
-        position: impl Into<super::Position>,// Center
+        position: impl Into<super::Position>, // Center
         size: impl Into<super::Value>,
         style: super::Style,
         parts: Vec<TextBit>,
@@ -146,7 +146,7 @@ impl Element {
     }
     pub fn new_text_edit(
         id: impl Into<super::Id>,
-        position: impl Into<super::Position>,// Center
+        position: impl Into<super::Position>, // Center
         width: impl Into<super::Value>,
         rows: usize,
         font_size: f64,

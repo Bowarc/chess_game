@@ -1,5 +1,5 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
+// #![allow(dead_code)]
+// #![allow(unused_variables)]
 
 #[macro_use]
 extern crate log;
@@ -220,6 +220,38 @@ impl Chess {
             "",
         );
 
+        {
+            let anchors = [
+                ui::Anchor::CenterCenter,
+                ui::Anchor::Topleft,
+                ui::Anchor::TopCenter,
+                ui::Anchor::TopRight,
+                ui::Anchor::RightCenter,
+                ui::Anchor::BotRight,
+                ui::Anchor::BotCenter,
+                ui::Anchor::BotLeft,
+                ui::Anchor::LeftCenter,
+            ];
+
+            for anchor in anchors.iter() {
+                let new_game_button = ui::element::Element::new_button(
+                    format!("test{anchor:?}"),
+                    *anchor,
+                    ui::Vector::new(50., 50.),
+                    ui::Style::new(
+                        render::Color::from_rgba(100, 100, 100, 100),
+                        Some(ui::style::BackgroundStyle::new(
+                            render::Color::from_rgb(100, 100, 100),
+                            None,
+                        )),
+                        Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
+                    )
+                    .into(),
+                );
+                global_ui.add_element(new_game_button, "test");
+            }
+        }
+
         Ok(Self {
             cfg,
             renderer,
@@ -244,7 +276,7 @@ impl ggez::event::EventHandler for Chess {
 
         self.gui_menu.update(ctx, &mut self.cfg)?;
 
-        self.game_state.update(dt);
+        self.game_state.update(ctx,dt);
 
         self.global_ui.update(ctx);
 
@@ -293,8 +325,8 @@ impl ggez::event::EventHandler for Chess {
     /// maybe [`timer::yield_now()`](../timer/fn.yield_now.html).
     fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult {
         self.frame_stats.begin_draw();
-        let dt: f64 = ctx.time.delta().as_secs_f64();
-        let window_size: shared::maths::Vec2 = ctx.gfx.drawable_size().into();
+
+        // let window_size: shared::maths::Vec2 = ctx.gfx.drawable_size().into();
         ggez::graphics::Canvas::from_frame(ctx, Some(render::Color::BLACK.into())).finish(ctx)?;
 
         let render_request = self.renderer.render_request();

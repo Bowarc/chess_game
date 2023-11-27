@@ -10,6 +10,8 @@ pub enum ServerError {
 pub enum GameError {
     #[error("The session is full")]
     SessionIsFull,
+    #[error("A problem has occured while connecting the player to a game")]
+    FailledToAcceptPlayer
 }
 
 #[derive(thiserror::Error, Debug)]

@@ -147,7 +147,7 @@ impl super::TElement for Graph {
     fn get_size_value(&self) -> &crate::ui::Vector {
         &self.size
     }
-    fn get_pos_value(&self) -> &crate::ui::Position{
+    fn get_pos_value(&self) -> &crate::ui::Position {
         &self.position
     }
     fn get_id(&self) -> crate::ui::Id {
