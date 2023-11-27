@@ -1,10 +1,10 @@
 pub struct TextEdit {
     id: crate::ui::Id,
-    position: crate::ui::Vector,
+    position: crate::ui::Position,
     width: crate::ui::Value,
     rows: usize, // Number of rows
     font_size: f64,
-    size: ggez::mint::Point2<crate::ui::Value>,
+    size: crate::ui::Vector,
     state: crate::ui::State,
     style: crate::ui::style::Bundle,
     txt: String,
@@ -13,7 +13,7 @@ pub struct TextEdit {
 impl TextEdit {
     pub fn new(
         id: crate::ui::Id,
-        position: crate::ui::Vector,
+        position: crate::ui::Position,
         width: crate::ui::Value,
         rows: usize,
         font_size: f64,
@@ -25,7 +25,7 @@ impl TextEdit {
             width,
             rows,
             font_size,
-            size: ggez::mint::Point2::from([0f64.into(), 0f64.into()]),
+            size: crate::ui::Vector::new(0., 0.),
             state: crate::ui::State::default(),
             style,
             txt: String::new(),
@@ -76,18 +76,19 @@ impl super::TElement for TextEdit {
             crate::render::Layer::Ui,
         );
 
-        self.size = ggez::mint::Point2::from_slice(&[
+        self.size = crate::ui::Vector::new(
             self.width.clone(),
             crate::ui::Value::from(self.font_size * self.rows as f64),
-        ]);
+        );
+
         Ok(())
     }
 
-    fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value> {
+    fn get_size_value(&self) -> &crate::ui::Vector{
         &self.size
     }
 
-    fn get_pos_value(&self) -> &crate::ui::Vector {
+    fn get_pos_value(&self) -> &crate::ui::Position {
         &self.position
     }
 

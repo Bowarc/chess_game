@@ -2,8 +2,8 @@ const NBR_OF_ELEMENTS: usize = 80;
 
 pub struct Graph {
     id: crate::ui::Id,
-    position: crate::ui::Vector,
-    size: ggez::mint::Point2<crate::ui::Value>,
+    position: crate::ui::Position,
+    size: crate::ui::Vector,
     style: crate::ui::Style,
 
     values: std::collections::VecDeque<f64>,
@@ -17,8 +17,8 @@ pub struct Graph {
 impl Graph {
     pub fn new(
         id: crate::ui::Id,
-        position: crate::ui::Vector,
-        size: ggez::mint::Point2<crate::ui::Value>,
+        position: crate::ui::Position,
+        size: crate::ui::Vector,
         style: crate::ui::Style,
         text: Option<GraphText>,
     ) -> Self {
@@ -144,10 +144,10 @@ impl super::TElement for Graph {
 
         Ok(())
     }
-    fn get_size_value(&self) -> &ggez::mint::Point2<crate::ui::Value> {
+    fn get_size_value(&self) -> &crate::ui::Vector {
         &self.size
     }
-    fn get_pos_value(&self) -> &crate::ui::Vector {
+    fn get_pos_value(&self) -> &crate::ui::Position{
         &self.position
     }
     fn get_id(&self) -> crate::ui::Id {
