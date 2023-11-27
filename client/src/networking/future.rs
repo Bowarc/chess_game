@@ -60,7 +60,7 @@ impl<T> Future<T> {
         client: &mut super::Client<shared::message::ServerMessage, shared::message::ClientMessage>,
     ) {
         self.changed = false;
-        
+
         if let Some(index) = client
             .received_msg()
             .iter()
@@ -84,7 +84,6 @@ impl<T> Future<T> {
             self.requested = false;
             self.changed = true;
         }
-        
 
         if self.inner.is_none() && !self.requested {
             if let Err(e) = client.send(self.request_msg.clone()) {

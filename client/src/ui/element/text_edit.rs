@@ -168,7 +168,6 @@ impl super::TElement for TextEdit {
                 if self.txt.is_empty(){
                     return;
                 }
-                
                 // If last is a space
                 if self.txt.chars().last().and_then(|last| if last == ' '{Some(last)}else{None}).is_some(){
                     self.txt.pop();

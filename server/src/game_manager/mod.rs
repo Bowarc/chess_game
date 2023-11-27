@@ -14,7 +14,7 @@ pub struct GameManager {
 impl GameManager {
     pub fn new() -> Self {
         Self {
-            active_games: vec![Game::new(), Game::new()],
+            active_games: Vec::new(),
             inactive_players: Vec::new(),
         }
     }
@@ -91,7 +91,6 @@ impl GameManager {
         let mut player_index = 0;
 
         while player_index < self.inactive_players.len() {
-
             let Some(player) = self.inactive_players.get_mut(player_index) else{
                 error!("Dafuk");
                 break;
@@ -142,18 +141,20 @@ impl GameManager {
                         };
 
                         let game = self.active_games.get_mut(game_index).unwrap();
-                        if game.is_full(){
+                        if game.is_full() {
                             error!("Could not connect player ({player_id}) to game ({game_id}), the game is full");
                             continue;
                         }
 
-                        if let Err(e) = game.connect_player(self.inactive_players.swap_remove(player_index)){
+                        if let Err(e) =
+                            game.connect_player(self.inactive_players.swap_remove(player_index))
+                        {
                             error!("Got an error while connecting player ({player_id}) to game ({game_id}): {e}");
                             break;
-                        }else{
+                        } else {
                             removed = true;
-                            break
-                        } 
+                            break;
+                        }
                     }
                     shared::message::ClientMessage::GameInfoRequest(game_id) => {
                         if let Err(e) = player.send(shared::message::ServerMessage::Games(
@@ -175,28 +176,28 @@ impl GameManager {
                             ){
                                 error!("Could not inform player ({player_id}) that their request for game ({game_id})'s info failled due to: {e}", player_id = player.id())
                             }
-                            
                             break;
                         };
-                        if let Err(e) = player.send(
-                            shared::message::ServerMessage::GameInfoUpdate(game_id, self.active_games.get(game_index).unwrap().into())
-                            ){
-
+                        if let Err(e) = player.send(shared::message::ServerMessage::GameInfoUpdate(
+                            game_id,
+                            self.active_games.get(game_index).unwrap().into(),
+                        )) {
                             error!("Player ({player_id}) requested a info update on game ({game_id}) but server failled to send the data: {e}", player_id = player.id())
                         }
-                    },
+                    }
                     shared::message::ClientMessage::GameCreateRequest => {
                         let player_id = player.id();
                         debug!("Player ({player_id}) requested the creation of a game");
                         let mut game = Game::new();
-                        if let Err(e) = game.connect_player(self.inactive_players.swap_remove(player_index)){
+                        if let Err(e) =
+                            game.connect_player(self.inactive_players.swap_remove(player_index))
+                        {
                             error!("Could not connect player ({player_id}) due to: {e}");
-                        }else{
+                        } else {
                             self.active_games.push(game);
                         }
                         removed = true;
                         break;
-
                     }
                 }
             }

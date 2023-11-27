@@ -18,7 +18,7 @@ impl Playing {
                         // Cannot capture variables...
                         // if id !=game_id{
                         //     return None
-                        // } 
+                        // }
                         return Some(game);
                     }
                     None

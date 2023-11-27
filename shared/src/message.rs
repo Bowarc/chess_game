@@ -23,7 +23,6 @@ pub enum ServerMessage {
     GameInfoUpdateFail(crate::id::Id, String),
     GameCreateSucess(crate::id::Id),
     GameCreatefail(String),
-
 }
 
 impl networking::Message for ClientMessage {
