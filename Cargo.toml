@@ -8,6 +8,8 @@ members = [
 exclude = [
 ]
 
+[profile.dev.package."*"]
+opt-level = 3
 
 [workspace.dependencies]
 log = "0.4.20"
@@ -25,3 +27,4 @@ random = {git = "https://github.com/Bowarc/Crates.git", package = "random"}
 threading = {git = "https://github.com/Bowarc/Crates.git", package = "threading"}
 mem = {git = "https://github.com/Bowarc/Crates.git", package = "mem"}
 triple_buffer = {git = "https://github.com/Bowarc/triple-buffer"}
+enum_variant_name = {git = "https://github.com/Bowarc/Crates.git", package = "enum_variant_name"}

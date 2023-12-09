@@ -1,9 +1,10 @@
+#[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
 pub struct Board {
     active_player: super::Color,
     white_bb: super::BitBoard,
     black_bb: super::BitBoard,
 
-    piece_bb: hashbrown::HashMap<super::Piece, super::BitBoard>,
+    piece_bb: std::collections::HashMap<super::Piece, super::BitBoard>,
 }
 
 impl Board {
@@ -12,7 +13,7 @@ impl Board {
             active_player: super::Color::default(), // White always starts (Unless the FEN string says otherwise)
             white_bb: super::BitBoard::default(),
             black_bb: super::BitBoard::default(),
-            piece_bb: hashbrown::HashMap::default(),
+            piece_bb: std::collections::HashMap::default(),
         };
 
         // Initialize the pieces bitboards
@@ -82,7 +83,36 @@ impl Board {
         Some(board)
     }
 
-    pub fn set(&mut self, piece: super::Piece, color: super::Color, pos: super::Position) {
+    pub fn next_to_play(&self) -> super::Color{
+        self.active_player
+    }
+    
+    pub fn make_move(&mut self, color: super::Color, piece: super::Piece, pos: super::Position, target: super::Position) ->  Result<(), ()>{
+        if color != self.active_player{
+            return Err(())
+        }
+        let color_bb = match color{
+            super::Color::Black =>self.black_bb,
+            super::Color::White =>self.white_bb,
+        };
+
+        let bb = self.piece_bb.get(&piece).unwrap() & color_bb;
+
+        if !bb.read(pos){
+            // There is no given piece at that position
+            return Err(())
+        } 
+
+        // Just overwrite the target pos for now
+
+        self.unset(piece, color, pos);
+        self.set(piece, color, target);
+
+        Ok(())
+
+    }   
+
+    fn set(&mut self, piece: super::Piece, color: super::Color, pos: super::Position) {
         let color_bb = match color {
             super::Color::Black => &mut self.black_bb,
             super::Color::White => &mut self.white_bb,
@@ -94,7 +124,7 @@ impl Board {
         piece_bb.set(pos);
     }
 
-    pub fn unset(&mut self, piece: super::Piece, color: super::Color, pos: super::Position) {
+    fn unset(&mut self, piece: super::Piece, color: super::Color, pos: super::Position) {
         let color_bb = match color {
             super::Color::Black => &mut self.black_bb,
             super::Color::White => &mut self.white_bb,
@@ -155,6 +185,6 @@ mod tests {
 
         display(&b);
 
-        println!("{}", 554050781184u64.swap_bytes());
+        println!("{}", 554050781184u64.reverse_bits());
     }
 }

@@ -12,11 +12,12 @@ path = "src/main.rs"
 [dependencies]
 shared = {path = "../shared"}
 ctrlc = "3.4.1"
-spin_sleep.workspace= true
+spin_sleep.workspace = true
 log.workspace = true
 thiserror.workspace = true
 logger.workspace = true
 time.workspace = true
 networking.workspace = true
 threading.workspace = true
-triple_buffer.workspace =true
+triple_buffer.workspace = true
+enum_variant_name.workspace = true

@@ -110,7 +110,6 @@ impl Connected {
 
 impl super::StateMachine for Connected {
     fn update(mut self, ggctx: &mut ggez::Context, _delta_time: f64) -> super::State {
-        // For clarity
         if !self.client.is_connected() {
             return super::Connecting::new(self.client).into();
         }

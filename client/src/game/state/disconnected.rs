@@ -4,6 +4,7 @@ pub struct Disconnected {
 
 impl Disconnected {
     pub fn new() -> Self {
+        debug!("Creating Disconnected state");
         Self {
             ui: crate::ui::UiManager::default(),
         }

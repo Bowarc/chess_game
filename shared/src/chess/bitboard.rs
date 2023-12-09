@@ -1,4 +1,5 @@
 #[derive(Copy, Clone, PartialEq, Default)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct BitBoard(u64);
 
 // format!(":b", self.0) displays the raw bytes of the stored value
@@ -38,7 +39,8 @@ impl BitBoard {
     /// Used to see the other player's perspective
     pub fn flip(&mut self) {
         // TODO https://github.com/Bowarc/chess_game/issues/29
-        self.0 = self.0.swap_bytes()
+
+        self.0 = self.0.reverse_bits()
     }
 }
 
@@ -184,6 +186,8 @@ impl std::ops::Not for BitBoard {
 
 #[cfg(test)]
 mod tests {
+    use std::assert_eq;
+
     use super::*;
     #[test]
     fn set() {
@@ -228,5 +232,24 @@ mod tests {
         b.set((File::H, Rank::Eight));
 
         println!("{b}");
+    }
+
+    #[test]
+    fn flip(){
+        let mut b = BitBoard(0);
+
+        for i in 0..4{
+            let file = super::super::File::A;
+            let rank = super::super::Rank::from_index(i).unwrap();
+            b.set(super::super::Position::from_file_rank(file, rank));
+        }
+
+        // println!("{b}");
+        assert_eq!(b, BitBoard(16843009));
+        
+        b.flip();
+
+        // println!("{b}");
+        assert_eq!(b, BitBoard(9259542121117908992));
     }
 }

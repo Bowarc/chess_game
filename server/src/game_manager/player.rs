@@ -11,6 +11,7 @@ impl Player {
             shared::message::ClientMessage,
             shared::message::ServerMessage,
         >,
+
     ) -> Self {
         Self {
             name: format!("Player{}", client.id()),

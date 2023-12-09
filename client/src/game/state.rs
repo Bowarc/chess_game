@@ -26,6 +26,7 @@ pub trait StateMachine: Sized {
 }
 
 #[enum_dispatch::enum_dispatch(StateMachine)]
+#[derive(enum_variant_name::VariantName)]
 pub enum State {
     __Dummy,
     JustLaunched,
@@ -44,15 +45,5 @@ impl Default for State {
 impl State {
     pub fn dummy() -> Self {
         __Dummy.into()
-    }
-    pub fn name(&self) -> &'static str {
-        match self {
-            State::__Dummy(_) => "__Dummy",
-            State::JustLaunched(_) => "JustLaunched",
-            State::Disconnected(_) => "Disconnected",
-            State::Connecting(_) => "Connecting",
-            State::Connected(_) => "Connected",
-            State::Playing(_) => "Playing",
-        }
     }
 }

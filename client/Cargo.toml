@@ -29,3 +29,4 @@ time.workspace = true
 mem.workspace = true
 random.workspace = true
 enum_dispatch = "0.3.12"
+enum_variant_name.workspace = true

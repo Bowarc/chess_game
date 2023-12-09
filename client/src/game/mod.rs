@@ -36,7 +36,7 @@ impl Game {
     }
     pub fn verify_state(&self) {
         if let State::__Dummy(_) = self.state {
-            panic!("Dummy state detected, you might have forgot to switch it back",);
+            panic!("Dummy state detected, you might have forgot to switch it back");
         }
     }
 }

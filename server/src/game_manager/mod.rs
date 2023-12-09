@@ -19,10 +19,6 @@ impl GameManager {
         }
     }
 
-    pub fn register_new_game(&mut self, new_game: game::Game) {
-        self.active_games.push(new_game)
-    }
-
     fn clean_inactive_games(&mut self) {
         let mut i = 0;
 
@@ -85,27 +81,32 @@ impl GameManager {
     }
 
     fn update_connected_players(&mut self) {
-        // A good idea could be to not compute thye transformation of each games into spimpler game format (shared::game's format)
+        // A good idea could be to not compute the transformation of each games into simpler game format (shared::game's format)
         // and save them here instead of computing them for each player, that said, i highly doubt that multiple players will be requesting the game list in the same frame
 
         let mut player_index = 0;
 
+        // Loop over all players
         while player_index < self.inactive_players.len() {
             let Some(player) = self.inactive_players.get_mut(player_index) else{
-                error!("Dafuk");
                 break;
             };
 
-            debug!("updating player {}", player.id());
+            // debug!("updating player {}", player.id());
 
+            // Players are able to be moved out of the `self.incative_player` list, so we need to keep track of that
             let mut removed = false;
+            
+            // Loop over every message that the given player sent
             while let Ok(msg) = player.try_recv() {
-                debug!("Received {:?} from ({})", msg, player.id());
+                // debug!("Received {:?} from ({})", msg, player.id());
                 match msg {
-                    shared::message::ClientMessage::Text(txt) => debug!(
-                        "[Player {}] Sent message of type Text with text: {txt}",
-                        player.id()
-                    ),
+                    shared::message::ClientMessage::Ping | shared::message::ClientMessage::Pong => {
+                        // warn!("[Player {}] Uncaught Ping/Pong message", player.id())
+                    }
+                    shared::message::ClientMessage::Text(txt) => {
+                        debug!("[Player {}] Sent text: {txt}", player.id())
+                    }
                     shared::message::ClientMessage::RequestGames => {
                         debug!("[Player {}] Requested the list of games", player.id());
 
@@ -121,15 +122,11 @@ impl GameManager {
                             )
                         }
                     }
-                    shared::message::ClientMessage::Ping | shared::message::ClientMessage::Pong => {
-                        // warn!("[Player {}] Uncaught Ping/Pong message", player.id())
-                    }
                     shared::message::ClientMessage::GameJoinRequest(game_id) => {
-                        // drop(player);
-
                         let player_id = player.id();
 
-                        let Some(game_index) = self.active_games.iter().position(|g|g.id() == game_id)else{
+                        // Get the requested game index or continue
+                        let Some(game_index) = self.active_games.iter().position(|g|g.id() == game_id) else {
                             if let Err(e) = player.send(
                                 shared::message::ServerMessage::GameJoinFaill(
                                     "Could not find the requested game".to_string()
@@ -140,34 +137,41 @@ impl GameManager {
                             continue;
                         };
 
+                        // Get the mut game from the index
                         let game = self.active_games.get_mut(game_index).unwrap();
                         if game.is_full() {
                             error!("Could not connect player ({player_id}) to game ({game_id}), the game is full");
                             continue;
                         }
 
+                        // Here it's fine to use swap remove as the index doesn't move 
+                        // We only lose the player list order, which isn't important imo
+                        let moved_player =self.inactive_players.swap_remove(player_index);
+                        // Once the player is removed, we can't use continue anymore, as the next call to `player.try_recv()` would call a moved value
+                        removed = true; 
+
                         if let Err(e) =
-                            game.connect_player(self.inactive_players.swap_remove(player_index))
+                            game.connect_player(moved_player)
                         {
                             error!("Got an error while connecting player ({player_id}) to game ({game_id}): {e}");
                             break;
-                        } else {
-                            removed = true;
-                            break;
                         }
+
+                        break
                     }
                     shared::message::ClientMessage::GameInfoRequest(game_id) => {
-                        if let Err(e) = player.send(shared::message::ServerMessage::Games(
-                            self.active_games
-                                .iter()
-                                .map(|game| game.into())
-                                .collect::<Vec<shared::game::Game>>(),
-                        )) {
-                            error!(
-                                "[Player {}] Failled to send game list, reason: {e}",
-                                player.id()
-                            )
-                        }
+                        // What ?
+                        // if let Err(e) = player.send(shared::message::ServerMessage::Games(
+                        //     self.active_games
+                        //         .iter()
+                        //         .map(|game| game.into())
+                        //         .collect::<Vec<shared::game::Game>>(),
+                        // )) {
+                        //     error!(
+                        //         "[Player {}] Failled to send game list, reason: {e}",
+                        //         player.id()
+                        //     )
+                        // }
 
                         let Some(game_index) = self.active_games.iter().position(|g|g.id() == game_id)else{
                             error!("Player ({player_id}) requested info on game {game_id} but this game no longer exists", player_id = player.id());
@@ -189,14 +193,21 @@ impl GameManager {
                         let player_id = player.id();
                         debug!("Player ({player_id}) requested the creation of a game");
                         let mut game = Game::new();
+
+                        // Here it's fine to use swap remove as the index doesn't move 
+                        // We only lose the player list order, which isn't important imo
+                        let moved_player =self.inactive_players.swap_remove(player_index);
+                        // Once the player is removed, we can't use continue anymore, as the next call to `player.try_recv()` would call a moved value
+                        removed = true; 
+
                         if let Err(e) =
-                            game.connect_player(self.inactive_players.swap_remove(player_index))
+                            game.connect_player(moved_player)
                         {
                             error!("Could not connect player ({player_id}) due to: {e}");
                         } else {
                             self.active_games.push(game);
                         }
-                        removed = true;
+
                         break;
                     }
                 }

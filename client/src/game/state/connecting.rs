@@ -5,6 +5,7 @@ pub struct Connecting {
 
 impl Connecting {
     pub fn new(client: crate::game::Client) -> Self {
+        debug!("Creating Connecting state");
         let ui = crate::ui::UiManager::default();
         Self { ui, client }
     }

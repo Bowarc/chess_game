@@ -48,6 +48,10 @@ impl<T> Future<T> {
     ) -> Result<(), std::sync::mpsc::SendError<shared::message::ClientMessage>> {
         match client.send(self.request_msg.clone()) {
             Ok(_) => {
+                debug!(
+                    "Future for request: {:?} has requested its data.",
+                    self.request_msg
+                );
                 self.requested = true;
                 Ok(())
             }

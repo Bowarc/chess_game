@@ -23,3 +23,4 @@ time.workspace = true
 ron.workspace = true
 hashbrown.workspace = true
 lazy_static = "1.4.0"
+enum_variant_name.workspace = true

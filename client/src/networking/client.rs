@@ -12,7 +12,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
     pub fn new(addr: std::net::SocketAddr) -> ggez::GameResult<Self> {
         let cfg = networking::proxy::ProxyConfig {
             addr,
-            run_tps: 10_0000,
+            run_tps: 10_000,
             stat_cfg: networking::stats::StatConfig {
                 bps: networking::stats::config::BpsConfig { enabled: true },
                 rtt: networking::stats::config::RttConfig {
@@ -68,9 +68,11 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
                 networking::proxy::ProxyMessage::Forward(msg) => self.received_msg.push(msg),
                 networking::proxy::ProxyMessage::ConnectionResetError => {
                     warn!("Proxy's connection has been reset");
+                    return Err("ConnectionResetError".to_string());
                 }
                 networking::proxy::ProxyMessage::Exit => {
-                    error!("Proxy's thread exited.")
+                    error!("Proxy's thread exited.");
+                    return Err("Proxy's thread exited".to_string());
                 }
             }
         }
