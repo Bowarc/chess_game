@@ -17,7 +17,7 @@ pub enum State {
     #[default]
     Waiting,
     GameStart,
-    PLaying {
+    Playing {
         // infos about the games / board etc..
         board: crate::chess::Board
     },

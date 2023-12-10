@@ -43,6 +43,7 @@ impl Connected {
                     self.active_games.request(&mut self.client).unwrap();
                 }
                 shared::message::ServerMessage::GameJoin(game) => {
+                    debug!("We joined game ({})", game.id());
                     received_game_id = Some(game.id());
                     // Cannot return here as we have a borrow on self.client,
                     // Solutions are:
@@ -92,7 +93,7 @@ impl Connected {
 
             if let Some(el) = self
                 .ui
-                .try_get_element("Game_crate_button")
+                .try_get_element("Game_create_button")
                 .and_then(|el| el.try_inner_mut::<crate::ui::element::Button>())
             {
                 if el.clicked_this_frame() {
@@ -110,9 +111,9 @@ impl Connected {
 
 impl super::StateMachine for Connected {
     fn update(mut self, ggctx: &mut ggez::Context, _delta_time: f64) -> super::State {
-        if !self.client.is_connected() {
-            return super::Connecting::new(self.client).into();
-        }
+        // if !self.client.is_connected() {
+        //     return super::Connecting::new(self.client).into();
+        // }
 
         match self.update_client() {
             Ok(new) => self = new,
@@ -248,7 +249,7 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
 
     ui_mgr.add_element(
         ui::element::Element::new_button(
-            "Game_crate_button",
+            "Game_create_button",
             pos.clone(),
             new_b_size.xy(),
             style.into(),

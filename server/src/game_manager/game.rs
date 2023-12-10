@@ -192,11 +192,11 @@ impl Game {
                     }
                 }
 
-                self.set_state(super::State::PLaying {
+                self.set_state(super::State::Playing {
                     board: shared::chess::Board::default(),
                 });
             }
-            super::State::PLaying { board: _ } => {
+            super::State::Playing { board: _ } => {
                 use shared::message::{ClientMessage, ServerMessage};
                 // if let Some(winner_id) = self.winner {
                 //     debug!("{winner_id} won");

@@ -2486,7 +2486,6 @@ name = "server"
 version = "0.1.0"
 dependencies = [
  "ctrlc",
- "enum_variant_name",
  "log",
  "logger",
  "networking",
@@ -2515,7 +2514,6 @@ version = "0.1.0"
 dependencies = [
  "enum_variant_name",
  "ggez",
- "hashbrown 0.14.3",
  "lazy_static",
  "log",
  "networking",
