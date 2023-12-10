@@ -61,7 +61,7 @@ impl super::StateMachine for Playing {
             shared::game::State::GameStart => {
                 debug!("game is stating! poggers");
             },
-            shared::game::State::PLaying { board } =>{
+            shared::game::State::Playing { board } =>{
                 // debug!("Player turn: {:?}", board.next_to_play());
             } 
             shared::game::State::GameEnd { winner } => {
