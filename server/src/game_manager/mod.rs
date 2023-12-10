@@ -141,6 +141,9 @@ impl GameManager {
                         let game = self.games.get_mut(game_index).unwrap();
                         if game.is_full() {
                             error!("Could not connect player ({player_id}) to game ({game_id}), the game is full");
+                            if let Err(e) = player.send(shared::message::ServerMessage::GameJoinFaill("Could not connect to game {game_id}: This game is full".to_string())){
+                                error!("Could not send game join error to player ({player_id}): {e}")
+                            } 
                             continue;
                         }
 
