@@ -27,7 +27,7 @@ impl Connected {
 
         if let Err(e) = self.client.update() {
             warn!(
-                "Connected state got an error on it's client update, backking to Connecting: {e}"
+                "Connected state got an error on it's client update: {e}"
             );
             return Err(super::Connecting::new(self.client).into());
         }

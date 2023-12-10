@@ -7,52 +7,52 @@ pub use player::Player;
 pub use state::State;
 
 pub struct GameManager {
-    active_games: Vec<game::Game>,
-    inactive_players: Vec<player::Player>,
+    games: Vec<game::Game>,
+    players: Vec<player::Player>, // every player that is connected to this server
 }
 
 impl GameManager {
     pub fn new() -> Self {
         Self {
-            active_games: Vec::new(),
-            inactive_players: Vec::new(),
+            games: Vec::new(),
+            players: Vec::new(),
         }
     }
 
     fn clean_inactive_games(&mut self) {
         let mut i = 0;
 
-        while i < self.active_games.len() {
-            let game = self.active_games.get_mut(i).unwrap();
+        while i < self.games.len() {
+            let game = self.games.get_mut(i).unwrap();
 
             if !game.is_active() {
-                println!("Removing game {} koz it's empty", game.id());
-                self.active_games.remove(i);
+                debug!("Deleting game {} (Empty)", game.id());
+                drop(self.games.remove(i));
             } else {
                 i += 1;
             }
         }
-        // self.active_games.retain(|game| game.is_active())
+        // self.games.retain(|game| game.is_active())
     }
 
     fn clean_disconnected_players(&mut self) {
         let mut i = 0;
 
-        while i < self.inactive_players.len() {
-            let p = self.inactive_players.get(i).unwrap(); // this shouls be fine
+        while i < self.players.len() {
+            let p = self.players.get(i).unwrap(); // this should be fine
             if !p.is_connected() {
                 debug!(
                     "Player ({}) has been removed from the games due to client disonnection",
                     p.id()
                 );
-                self.inactive_players.remove(i);
+                self.players.remove(i);
             } else {
                 i += 1
             };
         }
     }
 
-    /// 'Steals' the clients from the server and registers them as player to store them in the list of inactive players
+    /// 'Steals' the clients from the server and registers them as player to store them in the list of players
     fn register_new_players(
         &mut self,
         server: &mut crate::networking::Server<
@@ -70,12 +70,12 @@ impl GameManager {
                 new_player.id()
             );
 
-            self.inactive_players.push(new_player);
+            self.players.push(new_player);
         }
     }
 
     fn update_games(&mut self) {
-        for game in &mut self.active_games {
+        for game in &mut self.games {
             game.update();
         }
     }
@@ -87,8 +87,8 @@ impl GameManager {
         let mut player_index = 0;
 
         // Loop over all players
-        while player_index < self.inactive_players.len() {
-            let Some(player) = self.inactive_players.get_mut(player_index) else{
+        while player_index < self.players.len() {
+            let Some(player) = self.players.get_mut(player_index) else{
                 break;
             };
 
@@ -111,7 +111,7 @@ impl GameManager {
                         debug!("[Player {}] Requested the list of games", player.id());
 
                         if let Err(e) = player.send(shared::message::ServerMessage::Games(
-                            self.active_games
+                            self.games
                                 .iter()
                                 .map(|game| game.into())
                                 .collect::<Vec<shared::game::Game>>(),
@@ -126,7 +126,7 @@ impl GameManager {
                         let player_id = player.id();
 
                         // Get the requested game index or continue
-                        let Some(game_index) = self.active_games.iter().position(|g|g.id() == game_id) else {
+                        let Some(game_index) = self.games.iter().position(|g|g.id() == game_id) else {
                             if let Err(e) = player.send(
                                 shared::message::ServerMessage::GameJoinFaill(
                                     "Could not find the requested game".to_string()
@@ -138,7 +138,7 @@ impl GameManager {
                         };
 
                         // Get the mut game from the index
-                        let game = self.active_games.get_mut(game_index).unwrap();
+                        let game = self.games.get_mut(game_index).unwrap();
                         if game.is_full() {
                             error!("Could not connect player ({player_id}) to game ({game_id}), the game is full");
                             continue;
@@ -146,7 +146,7 @@ impl GameManager {
 
                         // Here it's fine to use swap remove as the index doesn't move 
                         // We only lose the player list order, which isn't important imo
-                        let moved_player =self.inactive_players.swap_remove(player_index);
+                        let moved_player =self.players.swap_remove(player_index);
                         // Once the player is removed, we can't use continue anymore, as the next call to `player.try_recv()` would call a moved value
                         removed = true; 
 
@@ -162,7 +162,7 @@ impl GameManager {
                     shared::message::ClientMessage::GameInfoRequest(game_id) => {
                         // What ?
                         // if let Err(e) = player.send(shared::message::ServerMessage::Games(
-                        //     self.active_games
+                        //     self.games
                         //         .iter()
                         //         .map(|game| game.into())
                         //         .collect::<Vec<shared::game::Game>>(),
@@ -173,7 +173,7 @@ impl GameManager {
                         //     )
                         // }
 
-                        let Some(game_index) = self.active_games.iter().position(|g|g.id() == game_id)else{
+                        let Some(game_index) = self.games.iter().position(|g|g.id() == game_id)else{
                             error!("Player ({player_id}) requested info on game {game_id} but this game no longer exists", player_id = player.id());
                             if let Err(e) = player.send(
                                 shared::message::ServerMessage::GameInfoUpdateFail(game_id, "Could not fetch active game with the give id".to_string())
@@ -184,7 +184,7 @@ impl GameManager {
                         };
                         if let Err(e) = player.send(shared::message::ServerMessage::GameInfoUpdate(
                             game_id,
-                            self.active_games.get(game_index).unwrap().into(),
+                            self.games.get(game_index).unwrap().into(),
                         )) {
                             error!("Player ({player_id}) requested a info update on game ({game_id}) but server failled to send the data: {e}", player_id = player.id())
                         }
@@ -196,7 +196,7 @@ impl GameManager {
 
                         // Here it's fine to use swap remove as the index doesn't move 
                         // We only lose the player list order, which isn't important imo
-                        let moved_player =self.inactive_players.swap_remove(player_index);
+                        let moved_player =self.players.swap_remove(player_index);
                         // Once the player is removed, we can't use continue anymore, as the next call to `player.try_recv()` would call a moved value
                         removed = true; 
 
@@ -205,7 +205,7 @@ impl GameManager {
                         {
                             error!("Could not connect player ({player_id}) due to: {e}");
                         } else {
-                            self.active_games.push(game);
+                            self.games.push(game);
                         }
 
                         break;

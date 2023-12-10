@@ -15,15 +15,13 @@ impl super::StateMachine for Connecting {
     fn update(mut self, _ggctx: &mut ggez::Context, _: f64) -> super::State {
         if let Err(e) = self.client.update() {
             error!("Error while updating the client in Connecting state: {e}");
-            return super::Disconnected::new().into();
+            return super::Connecting::new(self.client).into();
         }
         if self.client.is_connected() {
             debug!("Client is now connected, switching State to connected");
-            super::Connected::new(self.client).into()
-        } else {
-            // warn!("Still trying to connect");
-            self.into()
+            return super::Connected::new(self.client).into();
         }
+        self.into()
     }
     fn draw(self, _: &mut crate::render::RenderRequest) -> super::State {
         self.into()

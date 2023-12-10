@@ -37,7 +37,7 @@ impl Game {
             return Err(shared::error::server::GameError::FailledToAcceptPlayer);
         }
 
-        debug!("Connected player ({}) to game {}", new_player.id(), self.id);
+        debug!("Connected player ({}) to game {}", new_player.name(), self.id);
         for player_opt in &mut self.players {
             if player_opt.is_none() {
                 *player_opt = Some(new_player);
@@ -102,8 +102,8 @@ impl Game {
             super::State::PlayerDisconnected => {
                 // Explanation of why not `.flatten` can be found at Playing variant match
                 for player_opt in self.players.iter_mut(){ 
-                    let Some(player) = player_opt else{
-                        self.set_state(super::State::PlayerDisconnected);
+                    let Some(_player) = player_opt else{
+                        // self.set_state(super::State::PlayerDisconnected);
                         break;
                     };
                     // "A player has disconnected"

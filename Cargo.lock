@@ -498,11 +498,10 @@ checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 
 [[package]]
 name = "colored"
-version = "2.0.4"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2674ec482fbc38012cf31e6c42ba0177b431a0cb6f15fe40efa5aab1bda516f6"
+checksum = "cbf2150cce219b664a8a70df7a1f933836724b503f8a413af9365b4dcc4d90b8"
 dependencies = [
- "is-terminal",
  "lazy_static",
  "windows-sys 0.48.0",
 ]
@@ -853,7 +852,7 @@ dependencies = [
 [[package]]
 name = "enum_variant_name"
 version = "0.1.0"
-source = "git+https://github.com/Bowarc/Crates.git#fa9b6eceb49b6f31fd96e2192bba47349ac888fe"
+source = "git+https://github.com/Bowarc/Crates.git#943e4317ef37b815df960a3908d744ac4082889b"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -1230,12 +1229,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hermit-abi"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d77f7ec81a6d05a3abb01ab6eb7590f6083d08449fe5a1c8b1e620283546ccb7"
-
-[[package]]
 name = "hexf-parse"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1350,17 +1343,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "is-terminal"
-version = "0.4.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb0889898416213fab133e1d33a0e5858a48177452750691bde3666d0fdbaf8b"
-dependencies = [
- "hermit-abi",
- "rustix",
- "windows-sys 0.48.0",
-]
-
-[[package]]
 name = "itoa"
 version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1460,9 +1442,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.150"
+version = "0.2.151"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89d92a4743f9a61002fae18374ed11e7973f530cb3a3255fb354818118b2203c"
+checksum = "302d7ab3130588088d277783b1e2d2e10c9e9e4a16dd9050e6ec93fb3e7048f4"
 
 [[package]]
 name = "libloading"
@@ -1563,7 +1545,7 @@ dependencies = [
 [[package]]
 name = "logger"
 version = "0.1.0"
-source = "git+https://github.com/Bowarc/Crates.git#fa9b6eceb49b6f31fd96e2192bba47349ac888fe"
+source = "git+https://github.com/Bowarc/Crates.git#943e4317ef37b815df960a3908d744ac4082889b"
 dependencies = [
  "chrono",
  "colored",
@@ -1645,7 +1627,7 @@ dependencies = [
 [[package]]
 name = "mem"
 version = "0.1.0"
-source = "git+https://github.com/Bowarc/Crates.git#fa9b6eceb49b6f31fd96e2192bba47349ac888fe"
+source = "git+https://github.com/Bowarc/Crates.git#943e4317ef37b815df960a3908d744ac4082889b"
 
 [[package]]
 name = "memchr"
@@ -1789,7 +1771,7 @@ dependencies = [
 [[package]]
 name = "networking"
 version = "0.1.0"
-source = "git+https://github.com/Bowarc/Crates.git#fa9b6eceb49b6f31fd96e2192bba47349ac888fe"
+source = "git+https://github.com/Bowarc/Crates.git#943e4317ef37b815df960a3908d744ac4082889b"
 dependencies = [
  "bincode",
  "log",
@@ -2215,7 +2197,7 @@ dependencies = [
 [[package]]
 name = "random"
 version = "0.1.0"
-source = "git+https://github.com/Bowarc/Crates.git#fa9b6eceb49b6f31fd96e2192bba47349ac888fe"
+source = "git+https://github.com/Bowarc/Crates.git#943e4317ef37b815df960a3908d744ac4082889b"
 dependencies = [
  "rand",
 ]
@@ -2754,7 +2736,7 @@ dependencies = [
 [[package]]
 name = "threading"
 version = "0.1.0"
-source = "git+https://github.com/Bowarc/Crates.git#fa9b6eceb49b6f31fd96e2192bba47349ac888fe"
+source = "git+https://github.com/Bowarc/Crates.git#943e4317ef37b815df960a3908d744ac4082889b"
 
 [[package]]
 name = "tiff"
@@ -2770,7 +2752,7 @@ dependencies = [
 [[package]]
 name = "time"
 version = "0.1.0"
-source = "git+https://github.com/Bowarc/Crates.git#fa9b6eceb49b6f31fd96e2192bba47349ac888fe"
+source = "git+https://github.com/Bowarc/Crates.git#943e4317ef37b815df960a3908d744ac4082889b"
 dependencies = [
  "derivative",
  "serde",
@@ -3525,12 +3507,9 @@ dependencies = [
 
 [[package]]
 name = "xcursor"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "463705a63313cd4301184381c5e8042f0a7e9b4bb63653f216311d4ae74690b7"
-dependencies = [
- "nom",
-]
+checksum = "6a0ccd7b4a5345edfcd0c3535718a4e9ff7798ffc536bb5b5a0e26ff84732911"
 
 [[package]]
 name = "xi-unicode"
