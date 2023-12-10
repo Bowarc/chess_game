@@ -102,7 +102,7 @@ impl Game {
             super::State::PlayerDisconnected => {
                 // Explanation of why not `.flatten` can be found at Playing variant match
                 for player_opt in self.players.iter_mut(){ 
-                    let Some(_player) = player_opt else{
+                    let Some(player) = player_opt else{
                         self.set_state(super::State::PlayerDisconnected);
                         break;
                     };

@@ -20,4 +20,3 @@ time.workspace = true
 networking.workspace = true
 threading.workspace = true
 triple_buffer.workspace = true
-enum_variant_name.workspace = true
