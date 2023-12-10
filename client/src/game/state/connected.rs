@@ -26,9 +26,7 @@ impl Connected {
         self.client.received_msg_mut().clear();
 
         if let Err(e) = self.client.update() {
-            warn!(
-                "Connected state got an error on it's client update: {e}"
-            );
+            warn!("Connected state got an error on it's client update: {e}");
             return Err(super::Connecting::new(self.client).into());
         }
 
@@ -103,6 +101,19 @@ impl Connected {
                         .unwrap();
                 }
             }
+
+            if let Some(el) = self
+                .ui
+                .try_get_element("game_list_refresh_button")
+                .and_then(|el| el.try_inner_mut::<crate::ui::element::Button>())
+            {
+                if el.clicked_this_frame() {
+                    debug!("It's refresh time");
+                    self.client
+                        .send(shared::message::ClientMessage::RequestGames)
+                        .unwrap();
+                }
+            }
         }
 
         Ok(self)
@@ -148,21 +159,21 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
 
     let group_name = "game_list_display";
 
-    // Remove all displayed games if there is any
+    // Remove old displayed games if there is any
     let _ = ui_mgr.remove_group(group_name);
 
-    let size = ui::Vector::new(MagicValue::ScreenSizeW * 0.3, MagicValue::ScreenSizeH * 0.1);
+    let card_size = ui::Vector::new(MagicValue::ScreenSizeW * 0.3, MagicValue::ScreenSizeH * 0.1);
 
     // Remember that the position here is the center of the element
-    let pos = ui::Vector::new(
+    let first_card_pos = ui::Vector::new(
         MagicValue::ScreenSizeW * 0.5,
-        MagicValue::ScreenSizeH * 0.2 + size.y() * 0.5,
+        MagicValue::ScreenSizeH * 0.2 + card_size.h() * 0.5,
     );
 
-    let style = ui::Style::new(
+    let card_style = ui::Style::new(
         render::Color::from_rgba(100, 100, 100, 100),
         Some(ui::style::BackgroundStyle::new(
-            render::Color::from_rgb(100, 100, 100),
+            render::Color::from_rgb(0, 0, 0),
             None,
         )),
         Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
@@ -170,24 +181,27 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
 
     for (i, game) in games.iter().enumerate() {
         let i = i as f64;
-        let offset = ui::Vector::new(0f64, MagicValue::ScreenSizeH * (0.03) * i + size.y() * i);
+        let offset = ui::Vector::new(
+            0f64,
+            MagicValue::ScreenSizeH * (0.03) * i + card_size.h() * i,
+        );
 
-        let position = pos.clone() + offset.clone();
-        let text_size = (size.y() + size.x()) * 0.024;
+        let card_pos = first_card_pos.clone() + offset.clone();
+        let text_size = (card_size.h() + card_size.w()) * 0.024;
 
         ui_mgr.add_element(
             ui::element::Element::new_button(
                 format!("Game{i}"),
-                position.clone(),
-                size.xy(),
-                style.into(),
+                card_pos.clone(),
+                card_size.wh(),
+                card_style.into(),
             ),
             group_name,
         );
         ui_mgr.add_element(
             ui::element::Element::new_text(
                 format!("Game{i}id_text"),
-                position.clone() - size.clone() * 0.4,
+                card_pos.clone() - card_size.clone() * 0.4,
                 text_size.clone(),
                 ui::Style::new(render::Color::random_rgb(), None, None),
                 vec![ui::element::TextBit::new_text(
@@ -201,7 +215,7 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
         ui_mgr.add_element(
             ui::element::Element::new_text(
                 format!("Game{i}player_count_text"),
-                position.clone() + (size.x() * 0.4, 0. - size.y() * 0.4),
+                card_pos.clone() + (card_size.w() * 0.4, 0. - card_size.h() * 0.4),
                 text_size,
                 ui::Style::new(render::Color::random_rgb(), None, None),
                 vec![ui::element::TextBit::new_text(
@@ -212,15 +226,15 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
             group_name,
         );
 
-        let button_size = (size.y() + size.x()) * 0.08;
+        let button_size = (card_size.h() + card_size.w()) * 0.08;
         let button_size = ui::Vector::new(button_size.clone(), button_size);
-        let join_button_pos = position + size.clone() * 0.5 - button_size.clone() * 0.5;
+        let join_button_pos = card_pos + card_size.clone() * 0.5 - button_size.clone() * 0.5;
         ui_mgr.add_element(
             ui::element::Element::new_button(
                 format!("Game{}join_button", game.id()),
                 join_button_pos.clone(),
                 button_size.clone(),
-                style.into(),
+                card_style.into(),
             ),
             group_name,
         );
@@ -229,7 +243,7 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
             ui::element::Element::new_text(
                 format!("Game{i}join_button_text"),
                 join_button_pos,
-                (button_size.x() + button_size.y()) * 0.2,
+                (button_size.w() + button_size.h()) * 0.2,
                 ui::Style::new(render::Color::default(), None, None),
                 vec![ui::element::TextBit::new_text(
                     "Join".to_string(),
@@ -241,29 +255,65 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
     }
 
     // Add a new game button
-    let new_b_size = ui::Vector::new(size.x() * 0.3, size.y());
-    let pos = ui::Vector::new(
-        pos.x() + size.x() * 0.5 + new_b_size.x() * 0.5 + MagicValue::ScreenSizeW * 0.01,
-        pos.y(),
+    let new_b_size = ui::Vector::new(card_size.w() * 0.3, card_size.h());
+    let new_b_pos = ui::Vector::new(
+        first_card_pos.x()
+            + card_size.w() * 0.5
+            + new_b_size.w() * 0.5
+            + MagicValue::ScreenSizeW * 0.01,
+        first_card_pos.y(),
     );
 
     ui_mgr.add_element(
         ui::element::Element::new_button(
             "Game_create_button",
-            pos.clone(),
-            new_b_size.xy(),
-            style.into(),
+            new_b_pos.clone(),
+            new_b_size.wh(),
+            card_style.into(),
         ),
         group_name,
     );
     ui_mgr.add_element(
         ui::element::Element::new_text(
             "New game button text",
-            pos,
-            new_b_size.x() * 0.1,
+            new_b_pos,
+            new_b_size.w() * 0.1,
             ui::Style::new(render::Color::default(), None, None),
             vec![ui::element::TextBit::new_text(
                 "Create new",
+                Some(render::Color::random_rgb()),
+            )],
+        ),
+        group_name,
+    );
+
+    // Adding a refresh button
+    let refresh_button_size = ui::Vector::new(card_size.x() * 0.1, card_size.x() * 0.1);
+    let refresh_button_vertical_margin =
+        ui::Vector::new(0., card_size.h() * 0.1);
+    let refresh_button_pos = ui::Vector::new(
+        first_card_pos.x() + card_size.w() * 0.5 - refresh_button_size.w() * 0.5,
+        first_card_pos.y() - card_size.h() * 0.5 - refresh_button_size.h() * 0.5,
+    ) - refresh_button_vertical_margin;
+
+    debug!("{card_size:?}");
+    ui_mgr.add_element(
+        ui::element::Element::new_button(
+            "game_list_refresh_button",
+            refresh_button_pos.clone(),
+            refresh_button_size.wh(),
+            card_style.into(),
+        ),
+        group_name,
+    );
+    ui_mgr.add_element(
+        ui::element::Element::new_text(
+            "game_list_refresh_text",
+            refresh_button_pos,
+            refresh_button_size.w() * 0.25,
+            ui::Style::new(render::Color::default(), None, None),
+            vec![ui::element::TextBit::new_text(
+                "refresh",
                 Some(render::Color::random_rgb()),
             )],
         ),

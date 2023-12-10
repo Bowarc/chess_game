@@ -42,7 +42,7 @@ impl GameManager {
             let p = self.players.get(i).unwrap(); // this should be fine
             if !p.is_connected() {
                 debug!(
-                    "Player ({}) has been removed from the games due to client disonnection",
+                    "Player ({}) has been removed due to client disonnection",
                     p.id()
                 );
                 self.players.remove(i);
