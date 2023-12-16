@@ -35,6 +35,7 @@ It's currently nowhere near finished
 - [ ] Chess
     - [x] Boards and Bitboards
     - [x] Colors, Pieces, Square, Positions
+    - [ ] Move validation
     - [ ] Move generation 
 - [ ] Strong error handling
 
