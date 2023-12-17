@@ -24,15 +24,19 @@ impl Connected {
     }
     fn update_client(mut self) -> Result<Self, super::State> {
         self.client.received_msg_mut().clear();
-
+        
+        if !self.client.is_connected() {
+            warn!("Client has been disconnected");
+            return Err(super::State::on_disconnect());
+        }
         if let Err(e) = self.client.update() {
-            warn!("Connected state got an error on it's client update: {e}");
-            return Err(super::Connecting::new(self.client).into());
+            error!("Got an error while updating the connection with the server: {e}");
+            return Err(super::State::on_disconnect());
         }
 
-        let mut received_game_id = None;
-
-        for msg in self.client.received_msg().clone().iter() {
+        let mut index = 0;
+        while let Some(msg) = self.client.received_msg().get(index).cloned(){
+            index +=1;
             match msg {
                 // shared::message::ServerMessage::Games(games) => create_games_ui(&mut self.ui, games),
                 shared::message::ServerMessage::GameJoinFaill(emsg) => {
@@ -41,14 +45,13 @@ impl Connected {
                     self.active_games.request(&mut self.client).unwrap();
                 }
                 shared::message::ServerMessage::GameJoin(game) => {
-                    debug!("We joined game ({})", game.id());
-                    received_game_id = Some(game.id());
                     // Cannot return here as we have a borrow on self.client,
                     // Solutions are:
                     //      Storing optional return value before the loop and breaking
                     //      Cloning the message before looping through them
                     //      Using a while let Some() with .pop on the received messages, but this would require doing that at the end of the client update cycle, therefore having a 1 frame delay on messages
-                    break;
+                    debug!("We joined a game ({})", game.id());
+                    return Err(crate::game::state::GameJoin::new(self.client, game).into())
                 }
                 shared::message::ServerMessage::GameInfoUpdateFail(id, emsg) => {
                     warn!("Server failled to send back the data for game {id} due to: {emsg}");
@@ -56,10 +59,6 @@ impl Connected {
                 }
                 _ => (),
             }
-        }
-
-        if let Some(game_id) = received_game_id {
-            return Err(super::Playing::new(self.client, game_id).into());
         }
 
         Ok(self)

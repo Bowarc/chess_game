@@ -2,15 +2,27 @@ mod connected;
 mod connecting;
 mod disconnected;
 mod dummy;
+mod game_end;
+mod game_join;
+mod game_leave;
+mod game_start;
 mod just_launched;
+mod player_left;
 mod playing;
+mod waiting_for_opponent;
 
 use connected::Connected;
 use connecting::Connecting;
 use disconnected::Disconnected;
 use dummy::__Dummy;
+use game_end::GameEnd;
+use game_join::GameJoin;
+use game_leave::GameLeave;
+use game_start::GameStart;
 use just_launched::JustLaunched;
+use player_left::PlayerLeft;
 use playing::Playing;
+use waiting_for_opponent::WaitingForOpponent;
 
 #[enum_dispatch::enum_dispatch]
 pub trait StateMachine: Sized {
@@ -33,7 +45,14 @@ pub enum State {
     Disconnected,
     Connecting,
     Connected,
+
+    GameJoin,
+    WaitingForOpponent,
+    GameStart,
     Playing,
+    GameEnd,
+    PlayerLeft,
+    GameLeave,
 }
 
 impl Default for State {
@@ -45,5 +64,19 @@ impl Default for State {
 impl State {
     pub fn dummy() -> Self {
         __Dummy.into()
+    }
+
+    pub fn from_shared_state(client: super::Client, game: shared::game::Game) -> Self {
+        match game.state() {
+            shared::game::State::PlayerDisconnected => PlayerLeft::new(client).into(),
+            shared::game::State::Waiting => WaitingForOpponent::new(client, game).into(),
+            shared::game::State::GameStart => GameStart::new(client, game).into(),
+            shared::game::State::Playing { board } => Playing::new(client, game.id()).into(),
+            shared::game::State::GameEnd { winner } => GameEnd::new(client, game).into(),
+        }
+    }
+
+    pub fn on_disconnect() -> Self {
+        Disconnected::new().into()
     }
 }

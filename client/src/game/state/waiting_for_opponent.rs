@@ -1,18 +1,15 @@
-pub struct Playing {
-    ui: crate::ui::UiManager,
+pub struct WaitingForOpponent {
     client: crate::game::Client,
     current_game: crate::networking::Future<shared::game::Game>,
-    // current_board: crate::networking::Future<shared::chess::Board>,
 }
 
-impl Playing {
-    pub fn new(client: crate::game::Client, game_id: shared::id::Id) -> Self {
-        debug!("Creating Playing State");
+impl WaitingForOpponent {
+    pub fn new(client: crate::game::Client, game: shared::game::Game) -> Self {
+        debug!("Creating WaitingForOpponent State");
         Self {
-            ui: crate::ui::UiManager::default(),
             client,
             current_game: crate::networking::Future::new(
-                shared::message::ClientMessage::GameInfoRequest(game_id),
+                shared::message::ClientMessage::GameInfoRequest(game.id()),
                 |msg| matches!(msg, shared::message::ServerMessage::GameInfoUpdate(..)),
                 |msg| {
                     if let shared::message::ServerMessage::GameInfoUpdate(_id, game) = msg {
@@ -29,7 +26,7 @@ impl Playing {
     }
 }
 
-impl super::StateMachine for Playing {
+impl super::StateMachine for WaitingForOpponent {
     fn update(mut self, _ggctx: &mut ggez::Context, _delta_time: f64) -> super::State {
         /* Heavy boilerplate, i don't like it but idk how to do it another way execpt macro but it's a bit overkill */
         if !self.client.is_connected() {
@@ -46,7 +43,7 @@ impl super::StateMachine for Playing {
         if self.current_game.changed()
             && !matches!(
                 self.current_game.inner().unwrap().state(),
-                shared::game::State::Playing { .. }
+                &shared::game::State::Waiting
             )
         {
             return super::State::from_shared_state(
@@ -59,14 +56,8 @@ impl super::StateMachine for Playing {
     }
 
     fn draw(self, _: &mut crate::render::RenderRequest) -> super::State {
+        // Waiting for an opponent
+        debug!("Waiting for an opponent");
         self.into()
-    }
-
-    fn try_get_client_mut(&mut self) -> Option<&mut crate::game::Client> {
-        Some(&mut self.client)
-    }
-
-    fn try_get_ui_mgr_mut(&mut self) -> Option<&mut crate::ui::UiManager> {
-        Some(&mut self.ui)
     }
 }

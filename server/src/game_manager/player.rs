@@ -27,7 +27,7 @@ impl Player {
     }
 
     pub fn is_connected(&self) -> bool {
-        self.client.is_connected()
+        self.client.is_connected() && self.client.is_running()
     }
 
     pub fn try_recv(
@@ -39,8 +39,8 @@ impl Player {
     pub fn send(
         &mut self,
         msg: shared::message::ServerMessage,
-    ) -> Result<(), std::sync::mpsc::SendError<shared::message::ServerMessage>> {
-        self.client.send(msg)
+    ) -> Result<(), std::boxed::Box<std::sync::mpsc::SendError<shared::message::ServerMessage>>>{
+        Ok(self.client.send(msg)?)
     }
 }
 

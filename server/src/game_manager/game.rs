@@ -4,17 +4,19 @@ pub struct Game {
     // player2: Option<super::Player>,
     players: [Option<super::Player>; 2],
     state: super::State,
+    lobby_sender: std::sync::mpsc::Sender<super::Player>,
 }
 
 impl Game {
     #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
+    pub fn new(lobby_sender: std::sync::mpsc::Sender<super::Player>) -> Self {
         Self {
             id: shared::id::Id::new(),
             // player1: None,
             // player2: None,
             players: [None, None],
             state: super::State::default(),
+            lobby_sender,
         }
     }
     pub fn id(&self) -> shared::id::Id {
@@ -37,7 +39,11 @@ impl Game {
             return Err(shared::error::server::GameError::FailledToAcceptPlayer);
         }
 
-        debug!("Connected player ({}) to game {}", new_player.name(), self.id);
+        debug!(
+            "Connected player ({}) to game {}",
+            new_player.name(),
+            self.id
+        );
         for player_opt in &mut self.players {
             if player_opt.is_none() {
                 *player_opt = Some(new_player);
@@ -85,24 +91,30 @@ impl Game {
         self.update_state();
     }
 
-    fn clean_players(&mut self){
-        let mut index= 0;
-        while index < self.players.len(){
-            if let Some(player) = self.players.get(index).and_then(|inner_option| inner_option.as_ref()){
-                if !player.is_connected(){
+    // Set disconnected player to None
+    fn clean_players(&mut self) {
+        let mut index = 0;
+        while index < self.players.len() {
+            if let Some(player) = self
+                .players
+                .get(index)
+                .and_then(|inner_option| inner_option.as_ref())
+            {
+                if !player.is_connected() {
                     *self.players.get_mut(index).unwrap() = None;
+                    error!("Player is disconnected");
                     self.set_state(super::State::PlayerDisconnected)
                 }
             }
             index += 1;
         }
     }
-    fn update_state(&mut self){
+    fn update_state(&mut self) {
         match &mut self.state {
             super::State::PlayerDisconnected => {
                 // Explanation of why not `.flatten` can be found at Playing variant match
-                for player_opt in self.players.iter_mut(){ 
-                    let Some(_player) = player_opt else{
+                for player_opt in self.players.iter_mut() {
+                    let Some(_player) = player_opt else {
                         // self.set_state(super::State::PlayerDisconnected);
                         break;
                     };
@@ -117,55 +129,77 @@ impl Game {
                 // Just wait for new player
                 let game_image = shared::game::Game::from(&*self);
 
-                for player_opt in &mut self.players {
-                    if let Some(player) = player_opt.as_mut() {
-                        if !player.is_connected() {
-                            *player_opt = None;
-                            continue;
-                        }
-                        while let Ok(msg) = player.try_recv() {
-                            match msg {
-                                shared::message::ClientMessage::Text(_)
-                                | shared::message::ClientMessage::Ping
-                                | shared::message::ClientMessage::Pong
-                                | shared::message::ClientMessage::RequestGames
-                                | shared::message::ClientMessage::GameJoinRequest(_)
-                                | shared::message::ClientMessage::GameCreateRequest => (),
-                                shared::message::ClientMessage::GameInfoRequest(id) => {
-                                    if id == self.id {
-                                        if let Err(e) = player.send(
-                                            shared::message::ServerMessage::GameInfoUpdate(
-                                                self.id,
-                                                game_image.clone(),
-                                            ),
-                                        ) {
-                                            error!(
-                                                "Game {} failled to comunicate with player ({}): {e}",
-                                                self.id,
-                                                player.id()
-                                            );
-                                            *player_opt = None;
-                                            break;
-                                        }
-                                    } else {
-                                        /*
-                                            Player requested info about a different game.
-                                            What do we do ..?
-                                            we could just disconnect that player by dropping it
-                                        */
-                                        if let Err(e) = player.send(
-                                            shared::message::ServerMessage::GameInfoUpdateFail(id, String::from("Wrong game !")),
-                                        ) {
-                                            error!(
-                                                "Game {} failled to comunicate with player ({}): {e}",
-                                                self.id,
-                                                player.id()
-                                            );
-                                            *player_opt = None;
-                                            break;
-                                        }
+                for (_i, player_opt) in self.players.iter_mut().enumerate() {
+                    let Some(player) = player_opt.as_mut() else {
+                        // error!("Player {i} is none");
+                        continue;
+                    };
+
+                    if !player.is_connected() {
+                        *player_opt = None;
+                        continue;
+                    }
+                    while let Ok(msg) = player.try_recv() {
+                        match msg {
+                            shared::message::ClientMessage::Text(_)
+                            | shared::message::ClientMessage::Ping
+                            | shared::message::ClientMessage::Pong
+                            | shared::message::ClientMessage::RequestGames
+                            | shared::message::ClientMessage::GameJoinRequest(_)
+                            | shared::message::ClientMessage::GameCreateRequest => (),
+                            shared::message::ClientMessage::GameInfoRequest(id) => {
+                                if id == self.id {
+                                    if let Err(e) =
+                                        player.send(shared::message::ServerMessage::GameInfoUpdate(
+                                            self.id,
+                                            game_image.clone(),
+                                        ))
+                                    {
+                                        error!(
+                                            "Game {} failled to comunicate with player ({}): {e}",
+                                            self.id,
+                                            player.id()
+                                        );
+                                        *player_opt = None;
+                                        break;
+                                    }
+                                } else {
+                                    /*
+                                        Player requested info about a different game.
+                                        What do we do ..?
+                                        we could just disconnect that player by dropping it
+                                    */
+                                    if let Err(e) = player.send(
+                                        shared::message::ServerMessage::GameInfoUpdateFail(
+                                            id,
+                                            String::from("Wrong game !"),
+                                        ),
+                                    ) {
+                                        error!(
+                                            "Game {} failled to comunicate with player ({}): {e}",
+                                            self.id,
+                                            player.id()
+                                        );
+                                        *player_opt = None;
+                                        break;
                                     }
                                 }
+                            }
+                            shared::message::ClientMessage::LeaveGameRequest => {
+                                let player_id = player.id();
+
+                                if let Err(e) =
+                                    player.send(shared::message::ServerMessage::GameLeave)
+                                {
+                                    error!("Could not send Gameleave confirmation to player ({}) due to {e}", player_id);
+                                }
+                                if let Err(e) = self.lobby_sender.send(player_opt.take().unwrap()) {
+                                    error!(
+                                        "Could not send back player ({}) to lobby due to {e}",
+                                        player_id
+                                    )
+                                }
+                                break;
                             }
                         }
                     }
@@ -175,8 +209,8 @@ impl Game {
                 let game_image = shared::game::Game::from(&*self);
 
                 // Explanation of why not `.flatten` can be found at Playing variant match
-                for player_opt in self.players.iter_mut(){ 
-                    let Some(player) = player_opt else{
+                for player_opt in self.players.iter_mut() {
+                    let Some(player) = player_opt else {
                         self.set_state(super::State::PlayerDisconnected);
                         break;
                     };
@@ -206,15 +240,14 @@ impl Game {
                 let game_image = shared::game::Game::from(&*self);
                 /*
                     Using `self.players.iter_mut().flatten()` here is tempting but
-                    it would open the gate for a problem to happend, what if one of the player is None ?
+                    it would open the gate for a problem to happen, what if one of the player is None ?
                     It will never be caught as it's filtered out by flatten, insead just add a let else.
                 */
-                for player_opt in self.players.iter_mut(){ 
-                    let Some(player) = player_opt else{
+                for player_opt in self.players.iter_mut() {
+                    let Some(player) = player_opt else {
                         self.set_state(super::State::PlayerDisconnected);
                         break;
                     };
-
 
                     // Send game update to each player
                     if let Err(e) =
@@ -239,9 +272,23 @@ impl Game {
                             | ClientMessage::GameInfoRequest(_)
                             | ClientMessage::GameCreateRequest => {
                                 // raf + tg
-                            } // ClientMessage::MakeMove(game_id, chess_move) =>  {
+                            }
+                            ClientMessage::LeaveGameRequest => {
+                                let player_id = player.id();
 
-                              // }
+                                if let Err(e) =
+                                    player.send(shared::message::ServerMessage::GameLeave)
+                                {
+                                    error!("Could not send Gameleave confirmation to player ({}) due to {e}", player_id);
+                                }
+                                if let Err(e) = self.lobby_sender.send(player_opt.take().unwrap()) {
+                                    error!(
+                                        "Could not send back player ({}) to lobby due to {e}",
+                                        player_id
+                                    )
+                                }
+                                break;
+                            } // ClientMessage::MakeMove(game_id, chess_move) =>  {}
                         }
                     }
                 }

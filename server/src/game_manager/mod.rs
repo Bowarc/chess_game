@@ -9,14 +9,28 @@ pub use state::State;
 pub struct GameManager {
     games: Vec<game::Game>,
     players: Vec<player::Player>, // every player that is connected to this server
+
+    // used to send back player to the lobby
+    lobby_receiver: std::sync::mpsc::Receiver<Player>,
+    lobby_sender: std::sync::mpsc::Sender<Player>,
+
 }
 
 impl GameManager {
     pub fn new() -> Self {
+        let (sender, receiver) = std::sync::mpsc::channel::<Player>();
+
         Self {
             games: Vec::new(),
             players: Vec::new(),
+            lobby_receiver: receiver,
+            lobby_sender: sender,
         }
+    }
+
+    fn create_new_game(&mut self) -> &mut Game{
+        self.games.push(Game::new(self.lobby_sender.clone()));
+        self.games.last_mut().unwrap() // Unless big problem, this will never panic 
     }
 
     fn clean_inactive_games(&mut self) {
@@ -49,6 +63,14 @@ impl GameManager {
             } else {
                 i += 1
             };
+        }
+    }
+
+    /// Retrieve players sent back to the lobby by games
+    fn catch_returning_players(&mut self){
+        while let Ok(player) = self.lobby_receiver.try_recv(){
+            debug!("Player ({}) has been retrieved by the game manager", player.id());
+            self.players.push(player);
         }
     }
 
@@ -195,11 +217,12 @@ impl GameManager {
                     shared::message::ClientMessage::GameCreateRequest => {
                         let player_id = player.id();
                         debug!("Player ({player_id}) requested the creation of a game");
-                        let mut game = Game::new();
+                        let moved_player = self.players.swap_remove(player_index);
+
+                        let game = self.create_new_game();
 
                         // Here it's fine to use swap remove as the index doesn't move 
                         // We only lose the player list order, which isn't important imo
-                        let moved_player =self.players.swap_remove(player_index);
                         // Once the player is removed, we can't use continue anymore, as the next call to `player.try_recv()` would call a moved value
                         removed = true; 
 
@@ -207,15 +230,20 @@ impl GameManager {
                             game.connect_player(moved_player)
                         {
                             error!("Could not connect player ({player_id}) due to: {e}");
-                        } else {
-                            self.games.push(game);
                         }
 
                         break;
+                    },
+                    shared::message::ClientMessage::LeaveGameRequest => {
+                        // The player is not in a game, but i can see a world where it's just states that are not synched
+                        // So let's just fix that by fake removing it from an imaginary game
+                        if let Err(e) = player.send(shared::message::ServerMessage::GameLeave){
+                            error!("Could not send Gameleave confirmation to player ({}) due to {e}", player.id());
+
+                        }
                     }
                 }
             }
-
             if !removed {
                 player_index += 1;
             }
@@ -229,6 +257,7 @@ impl GameManager {
             shared::message::ServerMessage,
         >,
     ) {
+        self.catch_returning_players();
         self.clean_inactive_games();
         self.clean_disconnected_players();
         self.register_new_players(server);

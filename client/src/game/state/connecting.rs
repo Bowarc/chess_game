@@ -14,8 +14,8 @@ impl Connecting {
 impl super::StateMachine for Connecting {
     fn update(mut self, _ggctx: &mut ggez::Context, _: f64) -> super::State {
         if let Err(e) = self.client.update() {
-            error!("Error while updating the client in Connecting state: {e}");
-            return super::Connecting::new(self.client).into();
+            error!("Got an error while updating the connection with the server: {e}");
+            return super::State::on_disconnect();
         }
         if self.client.is_connected() {
             debug!("Client is now connected, switching State to connected");

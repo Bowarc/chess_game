@@ -49,7 +49,11 @@ impl Game {
         &self.players
     }
 
-    pub fn state(&mut self) -> &mut State{
+    pub fn state(&self) -> &State{
+        &self.state
+    }
+
+    pub fn state_mut(&mut self) -> &mut State{
         &mut self.state
     }
 }
