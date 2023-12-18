@@ -225,4 +225,13 @@ impl UiManager {
     pub fn get_element(&mut self, id: impl Into<Id>) -> &mut element::Element {
         self.try_get_element(id.into()).unwrap()
     }
+
+    pub fn get_group(&self, id: impl Into<Id>) -> Option<&Group>{
+        let id = id.into();
+        if let Some(index) = self.groups.iter().position(|group| group.id() == &id) {
+            return self.groups.get(index)
+        }
+        return None
+
+    }
 }

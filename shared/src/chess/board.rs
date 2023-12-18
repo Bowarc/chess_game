@@ -61,7 +61,7 @@ impl Board {
             board.set(
                 piece,
                 super::Color::from_fen_char(p),
-                super::Position::from_file_rank(pos.file(), pos.rank()),
+                pos,
             );
             pos.move_right(1);
         }
@@ -134,6 +134,36 @@ impl Board {
 
         let piece_bb = self.piece_bb.get_mut(&piece).unwrap();
         piece_bb.unset(pos);
+    }
+
+    pub fn read(&self, pos: super::Position) -> Option<(super::Color, super::Piece)>{
+        if !(self.white_bb | self.black_bb).read(pos){
+            // Not in any board
+            return None
+        }
+
+        let piece: Vec<&super::Piece> = self.piece_bb.iter().flat_map(|(p, bb)| if bb.read(pos){Some(p)}else{None}).collect();
+
+        if piece.is_empty(){
+            panic!("Could not query the piece for position: {pos:?} with board: {self:?}")
+        }
+
+        let mut color = None;
+
+        // We could assume that if it's not one it's the other, but i wanna make sure that i did not fuck up something in board sync
+
+        if self.white_bb.read(pos){
+            color = Some(super::Color::White);
+        }
+
+        if self.black_bb.read(pos){
+            if color.is_some(){
+                panic!("The position {pos} for board {self:?} is black and white");
+            }
+            color = Some(super::Color::Black);
+        }
+
+        Some((color.unwrap(), **piece.get(0).unwrap())) 
     }
 
     pub fn flip(&mut self) {

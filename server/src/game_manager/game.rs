@@ -102,7 +102,7 @@ impl Game {
             {
                 if !player.is_connected() {
                     *self.players.get_mut(index).unwrap() = None;
-                    error!("Player is disconnected");
+                    // error!("Player is disconnected");
                     self.set_state(super::State::PlayerDisconnected)
                 }
             }

@@ -22,7 +22,7 @@ impl BitBoard {
 
         let mask = BitBoard(1 << index);
 
-        println!("Mask: {mask}");
+        // println!("Mask: {mask}");
 
         (self & mask).0 != 0
 

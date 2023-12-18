@@ -1,4 +1,5 @@
 pub fn register_ui_elements(ui: &mut super::UiManager) {
+    let _ = ui.remove_group("chess_board");
     let build_style = |main_color: &str| -> super::style::Bundle {
         super::style::Bundle::new(
             super::Style::new(crate::render::Color::from_hex(main_color), None, None),
