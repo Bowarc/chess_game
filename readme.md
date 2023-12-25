@@ -28,7 +28,7 @@ It's currently nowhere near finished
 - [ ] Basic security (https)
 - [ ] Game manager
     - [x] Stores players and handle their disconnection cleanly
-    - [ ] Game creation & joining
+    - [x] Game creation & joining
     - [ ] Actual gameplay 
 
 ### Shared
