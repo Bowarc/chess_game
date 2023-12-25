@@ -114,6 +114,8 @@ impl GameManager {
                 break;
             };
 
+            let player_id = player.id();
+
             // debug!("updating player {}", player.id());
 
             // Players are able to be moved out of the `self.incative_player` list, so we need to keep track of that
@@ -123,6 +125,15 @@ impl GameManager {
             while let Ok(msg) = player.try_recv() {
                 // debug!("Received {:?} from ({})", msg, player.id());
                 match msg {
+                    shared::message::ClientMessage::MyIdRequest => {
+                        if let Err(e) = player.send(
+                            shared::message::ServerMessage::PlayerIdResponse(player_id)
+
+                        ){
+                            // TODO: Error handleing
+                            panic!("Couldn't send player ({player_id}) id confirmation message")
+                        }
+                    }
                     shared::message::ClientMessage::Ping | shared::message::ClientMessage::Pong => {
                         // warn!("[Player {}] Uncaught Ping/Pong message", player.id())
                     }
@@ -139,13 +150,11 @@ impl GameManager {
                                 .collect::<Vec<shared::game::Game>>(),
                         )) {
                             error!(
-                                "[Player {}] Failled to send game list, reason: {e}",
-                                player.id()
+                                "[Player {player_id}] Failled to send game list, reason: {e}",
                             )
                         }
                     }
                     shared::message::ClientMessage::GameJoinRequest(game_id) => {
-                        let player_id = player.id();
 
                         // Get the requested game index or continue
                         let Some(game_index) = self.games.iter().position(|g|g.id() == game_id) else {
@@ -215,7 +224,6 @@ impl GameManager {
                         }
                     }
                     shared::message::ClientMessage::GameCreateRequest => {
-                        let player_id = player.id();
                         debug!("Player ({player_id}) requested the creation of a game");
                         let moved_player = self.players.swap_remove(player_index);
 
@@ -238,10 +246,22 @@ impl GameManager {
                         // The player is not in a game, but i can see a world where it's just states that are not synched
                         // So let's just fix that by fake removing it from an imaginary game
                         if let Err(e) = player.send(shared::message::ServerMessage::GameLeave){
-                            error!("Could not send Gameleave confirmation to player ({}) due to {e}", player.id());
+                            error!("Could not send Gameleave confirmation to player ({player_id}) due to {e}");
 
                         }
                     }
+                    shared::message::ClientMessage::MakeMove(mv) => {
+                        // Must be a desync, try to resync it ? 
+                        // Send a move denied and game leave message
+                        if let Err(e) = player.send(
+                            shared::message::ServerMessage::MoveResponse { chess_move: mv, valid: false }
+                        ).and_then(|_| player.send(shared::message::ServerMessage::GameLeave)){
+
+                            error!("Could not send error msg to client ({player_id}) due to: {e}")
+                        }
+                    },
+
+
                 }
             }
             if !removed {

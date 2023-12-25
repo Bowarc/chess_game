@@ -4,11 +4,17 @@ pub enum ClientMessage {
     Ping,
     Pong,
     // Get the games that the server is hosting
+    MyIdRequest,
+
     RequestGames,
     GameJoinRequest(super::id::Id),
     GameInfoRequest(super::id::Id),
     GameCreateRequest,
     LeaveGameRequest,
+
+    // Gaming time
+    MakeMove(super::chess::ChessMove),
+    
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
@@ -17,6 +23,8 @@ pub enum ServerMessage {
     Ping,
     Pong,
     // Send a list of games (only send the useful informations, don't give everything)
+    PlayerIdResponse(crate::id::Id),
+
     Games(Vec<crate::game::Game>),
     GameJoin(super::game::Game),
     GameLeave,
@@ -25,6 +33,13 @@ pub enum ServerMessage {
     GameInfoUpdateFail(crate::id::Id, String),
     GameCreateSucess(crate::id::Id),
     GameCreatefail(String),
+
+    // Game time
+    MoveResponse{
+        chess_move: super::chess::ChessMove,
+        valid: bool,
+    }
+
 }
 
 impl networking::Message for ClientMessage {

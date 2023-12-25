@@ -1,11 +1,12 @@
 pub struct PlayerLeft {
     client: crate::game::Client,
+    my_id: shared::id::Id
 }
 
 impl PlayerLeft {
-    pub fn new(client: crate::game::Client) -> Self {
+    pub fn new(client: crate::game::Client, my_id: shared::id::Id) -> Self {
         debug!("Creating PlayerLeft State");
-        Self { client }
+        Self { client, my_id }
     }
 }
 

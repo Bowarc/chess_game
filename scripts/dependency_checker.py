@@ -36,7 +36,7 @@ def get_dependencies(package):
     if package == "":
         file = "cargo.toml"
     else:
-        file = f"{package}\\cargo.toml"
+        file = f"{package}/cargo.toml"
 
     dependencies = DependencyList(package)
 
@@ -86,7 +86,7 @@ def check_unused_dependency(dep_lst):
         s2 = f"use {dep}"
         s3 = f"extern crate {dep}"
 
-        if os.popen(f'rg "{s1}|{s2}|{s3}" {package}\\src\\').read() != "":
+        if os.popen(f'rg "{s1}|{s2}|{s3}" {package}/src/').read() != "":
             return
         print(f"{package} appear to not use the {dep} dependency")
 

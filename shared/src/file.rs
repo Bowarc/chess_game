@@ -1,5 +1,5 @@
 #[derive(rust_embed::RustEmbed)]
-#[folder = "$CARGO_MANIFEST_DIR\\..\\resources\\internal\\"]
+#[folder = "$CARGO_MANIFEST_DIR/../resources/internal/"]
 struct Resolver;
 
 #[derive(Debug, Copy, Clone)]
@@ -90,7 +90,7 @@ pub fn try_bytes(path: Path) -> Result<std::borrow::Cow<'static, [u8]>, std::io:
             }
         },
         FileSystem::External => {
-            match std::fs::File::open(format!("resources\\external\\{}", path.p)) {
+            match std::fs::File::open(format!("resources/external/{}", path.p)) {
                 Ok(mut file) => {
                     use std::io::Read as _;
 

@@ -1,10 +1,11 @@
 pub struct GameEnd {
     client: crate::game::Client,
     current_game: crate::networking::Future<shared::game::Game>,
+    my_id: shared::id::Id,
 }
 
 impl GameEnd {
-    pub fn new(client: crate::game::Client, game: shared::game::Game) -> Self {
+    pub fn new(client: crate::game::Client, game: shared::game::Game, my_id: shared::id::Id,) -> Self {
         debug!("Creating GameEnd State");
         Self {
             client,
@@ -22,6 +23,7 @@ impl GameEnd {
                     None
                 },
             ),
+            my_id
         }
     }
 }
@@ -49,6 +51,7 @@ impl super::StateMachine for GameEnd {
             return super::State::from_shared_state(
                 self.client,
                 self.current_game.inner().cloned().unwrap(),
+                self.my_id
             );
         }
 

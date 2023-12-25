@@ -2,6 +2,7 @@ pub struct Connected {
     ui: crate::ui::UiManager,
     client: crate::game::Client,
     active_games: crate::networking::Future<Vec<shared::game::Game>>,
+    my_id: crate::networking::Future<shared::id::Id>
 }
 
 impl Connected {
@@ -16,6 +17,16 @@ impl Connected {
                 |msg| {
                     if let shared::message::ServerMessage::Games(games) = msg {
                         return Some(games);
+                    }
+                    None
+                },
+            ),
+            my_id: crate::networking::Future::new(
+                shared::message::ClientMessage::MyIdRequest,
+                |msg| matches!(msg, shared::message::ServerMessage::PlayerIdResponse(_)),
+                |msg| {
+                    if let shared::message::ServerMessage::PlayerIdResponse(id) = msg {
+                        return Some(id);
                     }
                     None
                 },
@@ -51,7 +62,8 @@ impl Connected {
                     //      Cloning the message before looping through them
                     //      Using a while let Some() with .pop on the received messages, but this would require doing that at the end of the client update cycle, therefore having a 1 frame delay on messages
                     debug!("We joined a game ({})", game.id());
-                    return Err(crate::game::state::GameJoin::new(self.client, game).into())
+                    // TODO: Redo this better, i want the unwrap removed
+                    return Err(crate::game::state::GameJoin::new(self.client, game, *self.my_id.inner().expect("Should have received by now, ")).into())
                 }
                 shared::message::ServerMessage::GameInfoUpdateFail(id, emsg) => {
                     warn!("Server failled to send back the data for game {id} due to: {emsg}");
@@ -68,6 +80,7 @@ impl Connected {
         self.ui.update(ggctx);
 
         self.active_games.update(&mut self.client);
+        self.my_id.update(&mut self.client);
 
         if self.active_games.changed() && self.active_games.inner().is_some() {
             create_games_ui(&mut self.ui, self.active_games.inner().unwrap());

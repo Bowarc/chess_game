@@ -110,6 +110,8 @@ impl Game {
         }
     }
     fn update_state(&mut self) {
+        let game_image = shared::game::Game::from(&*self);
+        let mut broad_update = false;
         match &mut self.state {
             super::State::PlayerDisconnected => {
                 // Explanation of why not `.flatten` can be found at Playing variant match
@@ -127,7 +129,6 @@ impl Game {
 
             super::State::Waiting => {
                 // Just wait for new player
-                let game_image = shared::game::Game::from(&*self);
 
                 for (_i, player_opt) in self.players.iter_mut().enumerate() {
                     let Some(player) = player_opt.as_mut() else {
@@ -141,12 +142,6 @@ impl Game {
                     }
                     while let Ok(msg) = player.try_recv() {
                         match msg {
-                            shared::message::ClientMessage::Text(_)
-                            | shared::message::ClientMessage::Ping
-                            | shared::message::ClientMessage::Pong
-                            | shared::message::ClientMessage::RequestGames
-                            | shared::message::ClientMessage::GameJoinRequest(_)
-                            | shared::message::ClientMessage::GameCreateRequest => (),
                             shared::message::ClientMessage::GameInfoRequest(id) => {
                                 if id == self.id {
                                     if let Err(e) =
@@ -201,19 +196,27 @@ impl Game {
                                 }
                                 break;
                             }
+                            _ => (),
                         }
                     }
                 }
             }
             super::State::GameStart => {
-                let game_image = shared::game::Game::from(&*self);
-
+                let mut all_colors = vec![shared::chess::Color::Black, shared::chess::Color::White];
                 // Explanation of why not `.flatten` can be found at Playing variant match
                 for player_opt in self.players.iter_mut() {
                     let Some(player) = player_opt else {
                         self.set_state(super::State::PlayerDisconnected);
                         break;
                     };
+
+                    // Need to assign a color to players
+                    let color = random::pick(&all_colors);
+
+                    all_colors.remove(all_colors.iter().position(|c| c == &color).unwrap());
+
+                    player.set_color(color);
+                    
                     if let Err(e) = player.send(shared::message::ServerMessage::GameInfoUpdate(
                         self.id,
                         game_image.clone(),
@@ -230,51 +233,43 @@ impl Game {
                     board: shared::chess::Board::default(),
                 });
             }
-            super::State::Playing { board: _ } => {
+            super::State::Playing { board } => {
                 use shared::message::{ClientMessage, ServerMessage};
                 // if let Some(winner_id) = self.winner {
                 //     debug!("{winner_id} won");
                 //     self.set_state(super::State::Waiting);
                 //     return;
                 // }
-                let game_image = shared::game::Game::from(&*self);
+
                 /*
                     Using `self.players.iter_mut().flatten()` here is tempting but
                     it would open the gate for a problem to happen, what if one of the player is None ?
                     It will never be caught as it's filtered out by flatten, insead just add a let else.
                 */
+
                 for player_opt in self.players.iter_mut() {
+                    // Check if the player is a Some()
                     let Some(player) = player_opt else {
                         self.set_state(super::State::PlayerDisconnected);
                         break;
                     };
 
-                    // Send game update to each player
-                    if let Err(e) =
-                        player.send(ServerMessage::GameInfoUpdate(self.id, game_image.clone()))
-                    {
-                        error!(
-                            "Game {} failled to comunicate with player ({}): {e}",
-                            self.id,
-                            player.id()
-                        );
-                        self.set_state(super::State::PlayerDisconnected);
-                        return;
-                    }
+                    let player_id = player.id();
 
                     while let Ok(msg) = player.try_recv() {
                         match msg {
-                            ClientMessage::Text(_)
-                            | ClientMessage::Ping
-                            | ClientMessage::Pong
-                            | ClientMessage::RequestGames
-                            | ClientMessage::GameJoinRequest(_)
-                            | ClientMessage::GameInfoRequest(_)
-                            | ClientMessage::GameCreateRequest => {
-                                // raf + tg
+                            ClientMessage::GameInfoRequest(game_id) => {
+                                if game_id != self.id{
+                                    //TODO: disconnect player and reset game state
+                                    panic!();
+                                }
+                                if let Err(e) = player.send(
+                                    shared::message::ServerMessage::GameInfoUpdate(self.id, game_image.clone())    
+                                ){
+                                    error!("Failled to send game update to player ({player_id}) due to: {e}")
+                                }
                             }
                             ClientMessage::LeaveGameRequest => {
-                                let player_id = player.id();
 
                                 if let Err(e) =
                                     player.send(shared::message::ServerMessage::GameLeave)
@@ -288,7 +283,50 @@ impl Game {
                                     )
                                 }
                                 break;
-                            } // ClientMessage::MakeMove(game_id, chess_move) =>  {}
+                            }
+                            ClientMessage::MakeMove(chess_move) => {
+                                // Check validity
+
+                                if board.make_move(chess_move).is_err() {
+                                    // If the move isn't good, tell the player and go next
+                                    if let Err(e) =
+                                        player.send(shared::message::ServerMessage::MoveResponse {
+                                            chess_move,
+                                            valid: false,
+                                        })
+                                    {
+                                        // TODO Fix
+                                        panic!("Could not send move upate to player: ({id}), idk what to do: {e}", id = player.id())
+                                        // continue;
+                                    } else {
+                                        broad_update = true;
+                                    }
+                                }
+                            }
+                            _ => {
+                                // raf + tg
+                            }
+                        }
+                    }
+                }
+
+                // Broadcast update
+                if broad_update {
+                    for player_opt in self.players.iter_mut() {
+                        let Some(player) = player_opt else {
+                            unimplemented!()
+                        };
+
+                        if let Err(e) =
+                            player.send(ServerMessage::GameInfoUpdate(self.id, game_image.clone()))
+                        {
+                            error!(
+                                "Game {} failled to comunicate with player ({}): {e}",
+                                self.id,
+                                player.id()
+                            );
+                            self.set_state(super::State::PlayerDisconnected);
+                            return;
                         }
                     }
                 }

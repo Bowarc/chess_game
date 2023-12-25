@@ -39,6 +39,6 @@ fn main() {
 
     debug!(
         "Stopping loop. The server ran {}",
-        time::display_duration(stopwatch.read())
+        time::format(stopwatch.read())
     );
 }

@@ -98,45 +98,45 @@ impl<
             internal_sprite: Resolver::<Sprite>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::Internal,
-                    "sprite\\resolver.ron",
+                    "sprite/resolver.ron",
                 ),
-                "sprite\\",
+                "sprite/",
             ),
             external_sprite: Resolver::<Sprite>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::External,
-                    "sprite\\resolver.ron",
+                    "sprite/resolver.ron",
                 ),
-                "sprite\\",
+                "sprite/",
             ),
 
             internal_sound: Resolver::<Sound>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::Internal,
-                    "sound\\resolver.ron",
+                    "sound/resolver.ron",
                 ),
-                "sound\\",
+                "sound/",
             ),
             external_sound: Resolver::<Sound>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::External,
-                    "sound\\resolver.ron",
+                    "sound/resolver.ron",
                 ),
-                "sound\\",
+                "sound/",
             ),
             internal_font: Resolver::<Font>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::Internal,
-                    "font\\resolver.ron",
+                    "font/resolver.ron",
                 ),
-                "font\\",
+                "font/",
             ),
             external_font: Resolver::<Font>::try_new(
                 shared::file::ConsPath::new(
                     shared::file::FileSystem::External,
-                    "font\\resolver.ron",
+                    "font/resolver.ron",
                 ),
-                "font\\",
+                "font/",
             ),
         })
     }

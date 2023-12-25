@@ -7,8 +7,9 @@ pub struct Game {
 
 #[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, )]
 pub struct Player {
-    id: crate::id::Id,
-    name: String,
+    pub id: crate::id::Id,
+    pub name: String,
+    pub color: Option<crate::chess::Color>,
 }
 
 #[derive(Default, Debug, Clone, enum_variant_name::VariantName, PartialEq, serde::Serialize, serde::Deserialize, )]
@@ -59,7 +60,7 @@ impl Game {
 }
 
 impl Player {
-    pub fn new(id: crate::id::Id, name: String) -> Self {
-        Self { id, name }
+    pub fn new(id: crate::id::Id, name: String, color: Option<crate::chess::Color>) -> Self {
+        Self { id, name, color }
     }
 }

@@ -1,1 +1,13 @@
-{}
+{
+    Pawn: (
+        normal: [
+
+        ],
+        eat: [
+
+        ],
+        specific: [
+
+        ],
+    )
+}

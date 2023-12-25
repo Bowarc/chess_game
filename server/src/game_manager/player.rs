@@ -3,6 +3,7 @@ pub struct Player {
     client:
         crate::networking::Client<shared::message::ClientMessage, shared::message::ServerMessage>,
     name: String,
+    color: Option<shared::chess::Color>,
 }
 
 impl Player {
@@ -16,6 +17,7 @@ impl Player {
         Self {
             name: format!("Player{}", client.id()),
             client,
+            color: None
         }
     }
 
@@ -42,10 +44,14 @@ impl Player {
     ) -> Result<(), std::boxed::Box<std::sync::mpsc::SendError<shared::message::ServerMessage>>>{
         Ok(self.client.send(msg)?)
     }
+
+    pub fn set_color(&mut self, color: shared::chess::Color) {
+        self.color = Some(color)
+    }
 }
 
 impl From<&Player> for shared::game::Player {
     fn from(server_player: &Player) -> Self {
-        shared::game::Player::new(server_player.id(), server_player.name())
+        shared::game::Player::new(server_player.id(), server_player.name(), server_player.color)
     }
 }

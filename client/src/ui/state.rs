@@ -1,10 +1,10 @@
-#[derive(Default)]
+#[derive(Default, Copy, Clone)]
 pub struct SpecificState {
     inner: bool,
     thisframe: bool,
 }
 
-#[derive(Default)]
+#[derive(Default, Copy, Clone)]
 pub struct State {
     hovered: SpecificState,
     clicked: SpecificState,

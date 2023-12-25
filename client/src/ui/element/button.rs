@@ -29,6 +29,10 @@ impl Button {
     fn get_correct_style(&self) -> &crate::ui::style::Bundle {
         &self.style
     }
+
+    pub fn get_state(&self) -> crate::ui::State{
+        self.state
+    }
 }
 
 impl super::TElement for Button {

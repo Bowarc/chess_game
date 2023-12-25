@@ -6,10 +6,16 @@ pub struct Playing {
     client: crate::game::Client,
     current_game: crate::networking::Future<shared::game::Game>,
     // current_board: crate::networking::Future<shared::chess::Board>,
+    current_drag: Option<crate::ui::Id>,
+    my_id: shared::id::Id,
 }
 
 impl Playing {
-    pub fn new(client: crate::game::Client, game_id: shared::id::Id) -> Self {
+    pub fn new(
+        client: crate::game::Client,
+        game_id: shared::id::Id,
+        my_id: shared::id::Id,
+    ) -> Self {
         debug!("Creating Playing State");
         Self {
             ui: crate::ui::UiManager::default(),
@@ -28,6 +34,8 @@ impl Playing {
                     None
                 },
             ),
+            current_drag: None,
+            my_id,
         }
     }
 }
@@ -46,22 +54,120 @@ impl super::StateMachine for Playing {
 
         self.current_game.update(&mut self.client);
 
+        if self.current_game.changed() {
+            let Some(data) = self.current_game.inner() else {
+                // TODO: Good error handleing
+                panic!("")
+            };
+            let color = data
+                .players()
+                .iter()
+                .flatten()
+                .flat_map(|p| {
+                    if p.id == self.my_id {
+                        Some(p.color)
+                    } else {
+                        None
+                    }
+                })
+                .flatten()
+                .next().unwrap();
 
-        if self.current_game.changed(){
-            if let shared::game::State::Playing { board } = self.current_game.inner().unwrap().state(){
+            if let shared::game::State::Playing { board } =
+                self.current_game.inner().unwrap().state()
+            {
                 if self.ui.get_group(BOARD_UI_GROUP).is_none() {
                     create_board(&mut self.ui);
-                    create_board_pieces(&mut self.ui, board)
+
+                    // How do i know what player i am
+                    create_board_pieces(&mut self.ui, board, color)
                 }
-            }else{
+            } else {
                 return super::State::from_shared_state(
                     self.client,
                     self.current_game.inner().cloned().unwrap(),
+                    self.my_id
                 );
             }
         }
 
         self.ui.update(ggctx);
+
+        if self.current_game.inner().is_some() {
+            // Handle ui events
+
+            // hmm
+            // First we need to check if a tile is clicked or dragged
+
+            let get_pos_from_id = |id: &crate::ui::Id| -> (i8, i8) {
+                let id = id.replace("board_square_", "").replace('x', "");
+                debug!("{id}");
+                assert_eq!(id.len(), 2);
+                // Id should then have a len of 2
+                let (y, x) = id.split_at(1);
+                (x.parse().unwrap(), y.parse().unwrap())
+            };
+
+            if let Some(id) = &self.current_drag {
+                // Get the currently dragged button
+                let element = self.ui.get_element(id);
+                let Some(button) = element.try_inner::<crate::ui::element::Button>() else {
+                    panic!("Hmmm not good it is");
+                    // return self.into();
+                };
+                let (x, y) = get_pos_from_id(id);
+
+                // Find a way to get the chess move resulting
+
+                // Maybe ok key release, check the currently hovered tile ?
+                if !button.get_state().clicked() {
+                    // Get the currently hovered square
+                    let mut currently_hovered = None;
+
+                    // Loop over pieces
+
+                    for y in 0..8 {
+                        for x in 0..8 {
+                            let square_id = format!("board_square_{y}x{x}");
+
+                            // TODO: error handleing
+                            let element2 = self.ui.try_get_element(square_id.clone()).unwrap();
+
+                            // TODO: error handleing
+                            let button2 = element2
+                                .try_inner_mut::<crate::ui::element::Button>()
+                                .unwrap();
+
+                            if button2.get_state().hovered() {
+                                currently_hovered = Some(square_id);
+                                break;
+                            }
+                        }
+                    }
+
+                    if let Some(id) = currently_hovered {
+                        let (x2, y2) = get_pos_from_id(&id);
+                        let delta = (x2 - x, y2 - y);
+                        info!("{delta:?}");
+                    }
+                }
+            } else {
+                for y in 0..8 {
+                    for x in 0..8 {
+                        let square_id = format!("board_square_{y}x{x}");
+
+                        // Explicit unwrap is better than implicit
+                        let element = self.ui.try_get_element(square_id.clone()).unwrap();
+
+                        let element = element.inner_mut::<crate::ui::element::Button>();
+
+                        if element.clicked_this_frame() {
+                            self.current_drag = Some(square_id);
+                        }
+                    }
+                }
+            }
+        }
 
         self.into()
     }
@@ -79,11 +185,20 @@ impl super::StateMachine for Playing {
     }
 }
 
-fn create_board_pieces(ui: &mut crate::ui::UiManager, board: &shared::chess::Board) {
+fn create_board_pieces(
+    ui: &mut crate::ui::UiManager,
+    board: &shared::chess::Board,
+    color: shared::chess::Color,
+) {
     use crate::{
         assets::sprite::SpriteId,
         ui::{element::Element, element::TextBit, Style},
     };
+    let mut board = board.clone();
+
+    if color == shared::chess::Color::Black {
+        board.flip()
+    }
 
     let _ = ui.remove_group(BOARD_SPRITE_UI_GROUP);
 
@@ -104,9 +219,7 @@ fn create_board_pieces(ui: &mut crate::ui::UiManager, board: &shared::chess::Boa
                     pos.clone(),
                     size.x() * 0.8,
                     Style::default(),
-                    vec![
-                        TextBit::new_img(sprite_id, None)
-                    ],
+                    vec![TextBit::new_img(sprite_id, None)],
                 );
 
                 ui.add_element(el, BOARD_SPRITE_UI_GROUP);

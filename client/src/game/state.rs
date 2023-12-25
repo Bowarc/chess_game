@@ -66,14 +66,15 @@ impl State {
         __Dummy.into()
     }
 
-    pub fn from_shared_state(client: super::Client, game: shared::game::Game) -> Self {
+    pub fn from_shared_state(client: super::Client, game: shared::game::Game, my_id: shared::id::Id) -> Self {
         match game.state() {
-            shared::game::State::PlayerDisconnected => PlayerLeft::new(client).into(),
-            shared::game::State::Waiting => WaitingForOpponent::new(client, game).into(),
-            shared::game::State::GameStart => GameStart::new(client, game).into(),
-            shared::game::State::Playing { board } => Playing::new(client, game.id()).into(),
-            shared::game::State::GameEnd { winner } => GameEnd::new(client, game).into(),
+            shared::game::State::PlayerDisconnected => PlayerLeft::new(client, my_id).into(),
+            shared::game::State::Waiting => WaitingForOpponent::new(client, game, my_id).into(),
+            shared::game::State::GameStart => GameStart::new(client, game, my_id).into(),
+            shared::game::State::Playing { board: _ /* hmm */ } => Playing::new(client, game.id(), my_id).into(),
+            shared::game::State::GameEnd { winner: _ /* hmm */} => GameEnd::new(client, game, my_id).into(),
         }
+        // Might not be a bad idea to include those in the .new declaration
     }
 
     pub fn on_disconnect() -> Self {

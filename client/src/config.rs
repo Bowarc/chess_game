@@ -2,7 +2,7 @@
 
 const USER_CONFIG_FILE: shared::file::ConsPath = shared::file::ConsPath::new(
     shared::file::FileSystem::External,
-    "config\\globalConfig.ron",
+    "config/globalConfig.ron",
 );
 
 #[derive(derivative::Derivative, serde::Deserialize, Debug, Clone)]

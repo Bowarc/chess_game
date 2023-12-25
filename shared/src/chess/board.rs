@@ -87,26 +87,25 @@ impl Board {
         self.active_player
     }
     
-    pub fn make_move(&mut self, color: super::Color, piece: super::Piece, pos: super::Position, target: super::Position) ->  Result<(), ()>{
-        if color != self.active_player{
+    pub fn make_move(&mut self, mv: super::movement::ChessMove) ->  Result<(), ()>{
+        if mv.color != self.active_player{
             return Err(())
         }
-        let color_bb = match color{
+        let color_bb = match mv.color{
             super::Color::Black =>self.black_bb,
             super::Color::White =>self.white_bb,
         };
 
-        let bb = self.piece_bb.get(&piece).unwrap() & color_bb;
+        let bb = self.piece_bb.get(&mv.piece).unwrap() & color_bb;
 
-        if !bb.read(pos){
+        if !bb.read(mv.origin){
             // There is no given piece at that position
             return Err(())
         } 
 
         // Just overwrite the target pos for now
-
-        self.unset(piece, color, pos);
-        self.set(piece, color, target);
+        self.unset(mv.piece, mv.color, mv.origin);
+        self.set(mv.piece, mv.color, mv.target);
 
         Ok(())
 
@@ -193,23 +192,33 @@ impl Default for Board {
 mod tests {
     use super::*;
 
+    fn display(b: &Board) {
+        println!("Whites: {}", b.white_bb);
+        println!("Blacks: {}", b.black_bb);
+
+        for piece in super::super::piece::ALL_PIECES {
+            println!("{piece:?} {}", b.piece_bb.get(&piece).unwrap())
+        }
+    }
+
     #[test]
     fn fen() {
+        let b =
+            Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap();
+
+        assert_eq!(b.active_player, super::super::Color::White);
+
+        display(&b);
+    }
+
+    #[test]
+    fn flip(){
         let mut b =
             Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap();
 
         assert_eq!(b.active_player, super::super::Color::White);
 
-        fn display(b: &Board) {
-            println!("Whites: {}", b.white_bb);
-            println!("Blacks: {}", b.black_bb);
-
-            for piece in super::super::piece::ALL_PIECES {
-                println!("{piece:?} {}", b.piece_bb.get(&piece).unwrap())
-            }
-        }
         display(&b);
-
         println!("Flipping");
         b.flip();
 
