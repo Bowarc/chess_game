@@ -71,7 +71,8 @@ impl super::StateMachine for Playing {
                     }
                 })
                 .flatten()
-                .next().unwrap();
+                .next()
+                .unwrap();
 
             if let shared::game::State::Playing { board } =
                 self.current_game.inner().unwrap().state()
@@ -86,87 +87,16 @@ impl super::StateMachine for Playing {
                 return super::State::from_shared_state(
                     self.client,
                     self.current_game.inner().cloned().unwrap(),
-                    self.my_id
+                    self.my_id,
                 );
             }
         }
 
         self.ui.update(ggctx);
 
-        if self.current_game.inner().is_some() {
-            // Handle ui events
-
-            // hmm
-            // First we need to check if a tile is clicked or dragged
-
-            let get_pos_from_id = |id: &crate::ui::Id| -> (i8, i8) {
-                let id = id.replace("board_square_", "").replace('x', "");
-                debug!("{id}");
-                assert_eq!(id.len(), 2);
-                // Id should then have a len of 2
-                let (y, x) = id.split_at(1);
-                (x.parse().unwrap(), y.parse().unwrap())
-            };
-
-            if let Some(id) = &self.current_drag {
-                // Get the currently dragged button
-                let element = self.ui.get_element(id);
-                let Some(button) = element.try_inner::<crate::ui::element::Button>() else {
-                    panic!("Hmmm not good it is");
-                    // return self.into();
-                };
-                let (x, y) = get_pos_from_id(id);
-
-                // Find a way to get the chess move resulting
-
-                // Maybe ok key release, check the currently hovered tile ?
-                if !button.get_state().clicked() {
-                    // Get the currently hovered square
-                    let mut currently_hovered = None;
-
-                    // Loop over pieces
-
-                    for y in 0..8 {
-                        for x in 0..8 {
-                            let square_id = format!("board_square_{y}x{x}");
-
-                            // TODO: error handleing
-                            let element2 = self.ui.try_get_element(square_id.clone()).unwrap();
-
-                            // TODO: error handleing
-                            let button2 = element2
-                                .try_inner_mut::<crate::ui::element::Button>()
-                                .unwrap();
-
-                            if button2.get_state().hovered() {
-                                currently_hovered = Some(square_id);
-                                break;
-                            }
-                        }
-                    }
-
-                    if let Some(id) = currently_hovered {
-                        let (x2, y2) = get_pos_from_id(&id);
-                        let delta = (x2 - x, y2 - y);
-                        info!("{delta:?}");
-                    }
-                }
-            } else {
-                for y in 0..8 {
-                    for x in 0..8 {
-                        let square_id = format!("board_square_{y}x{x}");
-
-                        // Explicit unwrap is better than implicit
-                        let element = self.ui.try_get_element(square_id.clone()).unwrap();
-
-                        let element = element.inner_mut::<crate::ui::element::Button>();
-
-                        if element.clicked_this_frame() {
-                            self.current_drag = Some(square_id);
-                        }
-                    }
-                }
-            }
+        if let Some(delta) =
+            get_current_move_delta(&mut self.current_drag, &mut self.current_game, &mut self.ui)
+        {
         }
 
         self.into()
@@ -183,6 +113,106 @@ impl super::StateMachine for Playing {
     fn try_get_ui_mgr_mut(&mut self) -> Option<&mut crate::ui::UiManager> {
         Some(&mut self.ui)
     }
+}
+
+
+
+
+
+
+/// Retrun delta if a move was played by the player this frame
+fn get_current_move_delta(
+    current_drag: &mut Option<crate::ui::Id>,
+    current_game: &mut crate::networking::Future<shared::game::Game>,
+    ui: &mut crate::ui::UiManager,
+) -> Option<(usize, usize)> {
+
+    // Check that the board is received, we're using the asumpion that if a game is received and it's not the right one, the state machine turns
+    if current_game.inner().is_none() {
+        warn!("A current game is needed for this operation");
+        return None;
+    }
+
+    let get_pos_from_id = |id: &crate::ui::Id| -> (i8, i8) {
+        let id = id.replace("board_square_", "").replace('x', "");
+        // debug!("{id}");
+        assert_eq!(id.len(), 2);
+        // Id should then have a len of 2
+        let (y, x) = id.split_at(1);
+        (x.parse().unwrap(), y.parse().unwrap())
+    };
+    let out = None;
+
+    // Handle ui events
+
+    // hmm
+    // First we need to check if a tile is clicked or dragged
+
+    let Some(dragged_id) = &current_drag else  {
+        // For every square, check if it's currently clicked, if so, save the id as currently dragged
+        for y in 0..8 {
+            for x in 0..8 {
+                let square_id = format!("board_square_{y}x{x}");
+
+                // Explicit unwrap is better than implicit
+                let element = ui.try_get_element(square_id.clone()).unwrap();
+
+                let element = element.inner_mut::<crate::ui::element::Button>();
+
+                if element.clicked_this_frame() {
+                    *current_drag = Some(square_id);
+                }
+            }
+        };
+        return None;
+    };
+
+
+    // Get the currently dragged button
+    let element = ui.get_element(dragged_id);
+    let Some(button) = element.try_inner::<crate::ui::element::Button>() else {
+        panic!("Hmmm not good it is");
+        // return self.into();
+    };
+    let (x, y) = get_pos_from_id(dragged_id);
+
+    // Find a way to get the chess move resulting
+
+    // Maybe on key release, check the currently hovered tile ?
+    if !button.get_state().clicked() {
+        // Get the currently hovered square
+        let mut currently_hovered = None;
+
+        // Loop over pieces
+
+        for y in 0..8 {
+            for x in 0..8 {
+                let square_id = format!("board_square_{y}x{x}");
+
+                // TODO: error handleing
+                let element2 = ui.try_get_element(square_id.clone()).unwrap();
+
+                // TODO: error handleing
+                let button2 = element2
+                    .try_inner_mut::<crate::ui::element::Button>()
+                    .unwrap();
+
+                if button2.get_state().hovered() {
+                    currently_hovered = Some(square_id);
+                    break;
+                }
+            }
+        }
+
+        if let Some(id) = currently_hovered {
+            let (x2, y2) = get_pos_from_id(&id);
+            let delta = (x2 - x, y2 - y);
+            info!("{delta:?}");
+            *current_drag = None;
+        }
+    }
+
+    out
 }
 
 fn create_board_pieces(
@@ -202,13 +232,17 @@ fn create_board_pieces(
 
     let _ = ui.remove_group(BOARD_SPRITE_UI_GROUP);
 
-    for i in 0..8 {
-        for j in 0..8 {
+    for j in 0..8 {
+        for i in 0..8 {
             let position = shared::chess::Position::from_index(i, j).unwrap();
             if let Some((color, piece)) = board.read(position) {
                 let sprite_id = SpriteId::ChessPiece(color, piece);
 
-                let button = ui.get_element(format!("board_square_{i}x{j}"));
+                let id = format!("board_square_{i}x{j}");
+
+                debug!("Updating square with id: {id}");
+
+                let button = ui.get_element(id);
 
                 let pos = button.get_pos_value();
 
@@ -231,7 +265,10 @@ fn create_board_pieces(
 fn create_board(ui: &mut crate::ui::UiManager) {
     use crate::{
         render::Color,
-        ui::{element::Element, style, value, Style, Vector},
+        ui::{
+            element::{self, Element},
+            style, value, Style, Vector,
+        },
     };
     let build_style = |main_color: &str| -> style::Bundle {
         style::Bundle::new(
@@ -282,8 +319,10 @@ fn create_board(ui: &mut crate::ui::UiManager) {
                 + (square_size.y() + square_spacing) * j, // Then add the i times the size of a square + the spacing
             );
 
+            let id = format!("board_square_{i}x{}", 7 - j as u8); // This is nessesary due to the direction of the board vs the dierction of the nested loop
+
             let el = Element::new_button(
-                format!("board_square_{i}x{}", 7 - j as u8), // This is nessesary due to the direction of the board vs the dierction of the nested loop
+                id,
                 square_center,
                 square_size.clone(),
                 if (i + j) as i32 % 2 == 0 {
@@ -292,6 +331,18 @@ fn create_board(ui: &mut crate::ui::UiManager) {
                     style2
                 },
             );
+
+            // Debug, displays the short id
+            // debug!("Creating button for square {i}x{j} with id: {id}");
+            // let short_id = id.split_at(13).1;
+
+            // let el = Element::new_text(
+            //     id.clone(),
+            //     square_center,
+            //     22.,
+            //     Style::new(Color::from_hex("#b88b4a"), None, None),
+            //     vec![element::TextBit::new_text(short_id, None)]
+            // );
 
             ui.add_element(el, BOARD_UI_GROUP);
         }
