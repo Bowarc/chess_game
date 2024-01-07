@@ -13,7 +13,6 @@ pub struct GameManager {
     // used to send back player to the lobby
     lobby_receiver: std::sync::mpsc::Receiver<Player>,
     lobby_sender: std::sync::mpsc::Sender<Player>,
-
 }
 
 impl GameManager {
@@ -28,9 +27,9 @@ impl GameManager {
         }
     }
 
-    fn create_new_game(&mut self) -> &mut Game{
+    fn create_new_game(&mut self) -> &mut Game {
         self.games.push(Game::new(self.lobby_sender.clone()));
-        self.games.last_mut().unwrap() // Unless big problem, this will never panic 
+        self.games.last_mut().unwrap() // Unless big problem, this will never panic
     }
 
     fn clean_inactive_games(&mut self) {
@@ -67,9 +66,12 @@ impl GameManager {
     }
 
     /// Retrieve players sent back to the lobby by games
-    fn catch_returning_players(&mut self){
-        while let Ok(player) = self.lobby_receiver.try_recv(){
-            debug!("Player ({}) has been retrieved by the game manager", player.id());
+    fn catch_returning_players(&mut self) {
+        while let Ok(player) = self.lobby_receiver.try_recv() {
+            debug!(
+                "Player ({}) has been retrieved by the game manager",
+                player.id()
+            );
             self.players.push(player);
         }
     }
@@ -110,7 +112,7 @@ impl GameManager {
 
         // Loop over all players
         while player_index < self.players.len() {
-            let Some(player) = self.players.get_mut(player_index) else{
+            let Some(player) = self.players.get_mut(player_index) else {
                 break;
             };
 
@@ -120,16 +122,15 @@ impl GameManager {
 
             // Players are able to be moved out of the `self.incative_player` list, so we need to keep track of that
             let mut removed = false;
-            
+
             // Loop over every message that the given player sent
             while let Ok(msg) = player.try_recv() {
                 // debug!("Received {:?} from ({})", msg, player.id());
                 match msg {
                     shared::message::ClientMessage::MyIdRequest => {
-                        if let Err(e) = player.send(
-                            shared::message::ServerMessage::PlayerIdResponse(player_id)
-
-                        ){
+                        if let Err(e) =
+                            player.send(shared::message::ServerMessage::PlayerIdResponse(player_id))
+                        {
                             // TODO: Error handleing
                             panic!("Couldn't send player ({player_id}) id confirmation message")
                         }
@@ -149,21 +150,21 @@ impl GameManager {
                                 .map(|game| game.into())
                                 .collect::<Vec<shared::game::Game>>(),
                         )) {
-                            error!(
-                                "[Player {player_id}] Failled to send game list, reason: {e}",
-                            )
+                            error!("[Player {player_id}] Failled to send game list, reason: {e}",)
                         }
                     }
                     shared::message::ClientMessage::GameJoinRequest(game_id) => {
-
                         // Get the requested game index or continue
-                        let Some(game_index) = self.games.iter().position(|g|g.id() == game_id) else {
-                            if let Err(e) = player.send(
-                                shared::message::ServerMessage::GameJoinFaill(
-                                    "Could not find the requested game".to_string()
+                        let Some(game_index) = self.games.iter().position(|g| g.id() == game_id)
+                        else {
+                            if let Err(e) =
+                                player.send(shared::message::ServerMessage::GameJoinFaill(
+                                    "Could not find the requested game".to_string(),
+                                ))
+                            {
+                                error!(
+                                    "Could not send game join error to player ({player_id}): {e}"
                                 )
-                            ){
-                                error!("Could not send game join error to player ({player_id}): {e}")
                             }
                             continue;
                         };
@@ -172,26 +173,31 @@ impl GameManager {
                         let game = self.games.get_mut(game_index).unwrap();
                         if game.is_full() {
                             error!("Could not connect player ({player_id}) to game ({game_id}), the game is full");
-                            if let Err(e) = player.send(shared::message::ServerMessage::GameJoinFaill("Could not connect to game {game_id}: This game is full".to_string())){
-                                error!("Could not send game join error to player ({player_id}): {e}")
-                            } 
+                            if let Err(e) =
+                                player.send(shared::message::ServerMessage::GameJoinFaill(
+                                    "Could not connect to game {game_id}: This game is full"
+                                        .to_string(),
+                                ))
+                            {
+                                error!(
+                                    "Could not send game join error to player ({player_id}): {e}"
+                                )
+                            }
                             continue;
                         }
 
-                        // Here it's fine to use swap remove as the index doesn't move 
+                        // Here it's fine to use swap remove as the index doesn't move
                         // We only lose the player list order, which isn't important imo
-                        let moved_player =self.players.swap_remove(player_index);
+                        let moved_player = self.players.swap_remove(player_index);
                         // Once the player is removed, we can't use continue anymore, as the next call to `player.try_recv()` would call a moved value
-                        removed = true; 
+                        removed = true;
 
-                        if let Err(e) =
-                            game.connect_player(moved_player)
-                        {
+                        if let Err(e) = game.connect_player(moved_player) {
                             error!("Got an error while connecting player ({player_id}) to game ({game_id}): {e}");
                             break;
                         }
 
-                        break
+                        break;
                     }
                     shared::message::ClientMessage::GameInfoRequest(game_id) => {
                         // What ?
@@ -207,11 +213,15 @@ impl GameManager {
                         //     )
                         // }
 
-                        let Some(game_index) = self.games.iter().position(|g|g.id() == game_id)else{
+                        let Some(game_index) = self.games.iter().position(|g| g.id() == game_id)
+                        else {
                             error!("Player ({player_id}) requested info on game {game_id} but this game no longer exists", player_id = player.id());
-                            if let Err(e) = player.send(
-                                shared::message::ServerMessage::GameInfoUpdateFail(game_id, "Could not fetch active game with the give id".to_string())
-                            ){
+                            if let Err(e) =
+                                player.send(shared::message::ServerMessage::GameInfoUpdateFail(
+                                    game_id,
+                                    "Could not fetch active game with the give id".to_string(),
+                                ))
+                            {
                                 error!("Could not inform player ({player_id}) that their request for game ({game_id})'s info failled due to: {e}", player_id = player.id())
                             }
                             break;
@@ -229,39 +239,37 @@ impl GameManager {
 
                         let game = self.create_new_game();
 
-                        // Here it's fine to use swap remove as the index doesn't move 
+                        // Here it's fine to use swap remove as the index doesn't move
                         // We only lose the player list order, which isn't important imo
                         // Once the player is removed, we can't use continue anymore, as the next call to `player.try_recv()` would call a moved value
-                        removed = true; 
+                        removed = true;
 
-                        if let Err(e) =
-                            game.connect_player(moved_player)
-                        {
+                        if let Err(e) = game.connect_player(moved_player) {
                             error!("Could not connect player ({player_id}) due to: {e}");
                         }
 
                         break;
-                    },
+                    }
                     shared::message::ClientMessage::LeaveGameRequest => {
                         // The player is not in a game, but i can see a world where it's just states that are not synched
                         // So let's just fix that by fake removing it from an imaginary game
-                        if let Err(e) = player.send(shared::message::ServerMessage::GameLeave){
+                        if let Err(e) = player.send(shared::message::ServerMessage::GameLeave) {
                             error!("Could not send Gameleave confirmation to player ({player_id}) due to {e}");
-
                         }
                     }
                     shared::message::ClientMessage::MakeMove(mv) => {
-                        // Must be a desync, try to resync it ? 
+                        // Must be a desync, try to resync it ?
                         // Send a move denied and game leave message
-                        if let Err(e) = player.send(
-                            shared::message::ServerMessage::MoveResponse { chess_move: mv, valid: false }
-                        ).and_then(|_| player.send(shared::message::ServerMessage::GameLeave)){
-
+                        if let Err(e) = player
+                            .send(shared::message::ServerMessage::MoveResponse {
+                                chess_move: mv,
+                                valid: false,
+                            })
+                            .and_then(|_| player.send(shared::message::ServerMessage::GameLeave))
+                        {
                             error!("Could not send error msg to client ({player_id}) due to: {e}")
                         }
-                    },
-
-
+                    }
                 }
             }
             if !removed {

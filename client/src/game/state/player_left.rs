@@ -1,6 +1,6 @@
 pub struct PlayerLeft {
     client: crate::game::Client,
-    my_id: shared::id::Id
+    my_id: shared::id::Id,
 }
 
 impl PlayerLeft {

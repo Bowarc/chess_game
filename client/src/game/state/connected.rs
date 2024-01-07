@@ -2,7 +2,7 @@ pub struct Connected {
     ui: crate::ui::UiManager,
     client: crate::game::Client,
     active_games: crate::networking::Future<Vec<shared::game::Game>>,
-    my_id: crate::networking::Future<shared::id::Id>
+    my_id: crate::networking::Future<shared::id::Id>,
 }
 
 impl Connected {
@@ -35,7 +35,7 @@ impl Connected {
     }
     fn update_client(mut self) -> Result<Self, super::State> {
         self.client.received_msg_mut().clear();
-        
+
         if !self.client.is_connected() {
             warn!("Client has been disconnected");
             return Err(super::State::on_disconnect());
@@ -46,8 +46,8 @@ impl Connected {
         }
 
         let mut index = 0;
-        while let Some(msg) = self.client.received_msg().get(index).cloned(){
-            index +=1;
+        while let Some(msg) = self.client.received_msg().get(index).cloned() {
+            index += 1;
             match msg {
                 // shared::message::ServerMessage::Games(games) => create_games_ui(&mut self.ui, games),
                 shared::message::ServerMessage::GameJoinFaill(emsg) => {
@@ -63,7 +63,12 @@ impl Connected {
                     //      Using a while let Some() with .pop on the received messages, but this would require doing that at the end of the client update cycle, therefore having a 1 frame delay on messages
                     debug!("We joined a game ({})", game.id());
                     // TODO: Redo this better, i want the unwrap removed
-                    return Err(crate::game::state::GameJoin::new(self.client, game, *self.my_id.inner().expect("Should have received by now, ")).into())
+                    return Err(crate::game::state::GameJoin::new(
+                        self.client,
+                        game,
+                        *self.my_id.inner().expect("Should have received by now, "),
+                    )
+                    .into());
                 }
                 shared::message::ServerMessage::GameInfoUpdateFail(id, emsg) => {
                     warn!("Server failled to send back the data for game {id} due to: {emsg}");
@@ -90,7 +95,11 @@ impl Connected {
         // Check if ui has been clicked
         if let Some(active_games) = self.active_games.inner() {
             for game in active_games.iter() {
-                let Some(el) = self.ui.try_get_element(format!("Game{}join_button", game.id())).and_then(|el|el.try_inner_mut::<crate::ui::element::Button>()) else{
+                let Some(el) = self
+                    .ui
+                    .try_get_element(format!("Game{}join_button", game.id()))
+                    .and_then(|el| el.try_inner_mut::<crate::ui::element::Button>())
+                else {
                     continue;
                 };
                 if el.clicked_this_frame() {
@@ -301,8 +310,7 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
 
     // Adding a refresh button
     let refresh_button_size = ui::Vector::new(card_size.x() * 0.1, card_size.x() * 0.1);
-    let refresh_button_vertical_margin =
-        ui::Vector::new(0., card_size.h() * 0.1);
+    let refresh_button_vertical_margin = ui::Vector::new(0., card_size.h() * 0.1);
     let refresh_button_pos = ui::Vector::new(
         first_card_pos.x() + card_size.w() * 0.5 - refresh_button_size.w() * 0.5,
         first_card_pos.y() - card_size.h() * 0.5 - refresh_button_size.h() * 0.5,

@@ -26,18 +26,17 @@ impl Vector {
     }
 
     #[inline]
-    pub fn w(&self) -> super::Value{
+    pub fn w(&self) -> super::Value {
         self.x()
     }
     #[inline]
-    pub fn h(&self) -> super::Value{
+    pub fn h(&self) -> super::Value {
         self.y()
     }
 
-    pub fn wh(&self) -> (super::Value, super::Value){
+    pub fn wh(&self) -> (super::Value, super::Value) {
         self.xy()
     }
-
 }
 
 // impl From<(super::Value, super::Value)> for Vector {

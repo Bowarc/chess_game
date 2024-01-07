@@ -21,5 +21,4 @@ pub use shared::game::State;
 //         Self::PLaying { board: shared::chess::Board::default() }
 //     }
 
-
 // }

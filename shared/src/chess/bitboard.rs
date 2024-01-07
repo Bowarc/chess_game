@@ -1,5 +1,4 @@
-#[derive(Copy, Clone, PartialEq, Default)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Copy, Clone, PartialEq, Default, serde::Serialize, serde::Deserialize)]
 pub struct BitBoard(u64);
 
 // format!(":b", self.0) displays the raw bytes of the stored value
@@ -235,10 +234,10 @@ mod tests {
     }
 
     #[test]
-    fn flip(){
+    fn flip() {
         let mut b = BitBoard(0);
 
-        for i in 0..4{
+        for i in 0..4 {
             let file = super::super::File::A;
             let rank = super::super::Rank::from_index(i).unwrap();
             b.set(super::super::Position::from_file_rank(file, rank));
@@ -246,7 +245,7 @@ mod tests {
 
         // println!("{b}");
         assert_eq!(b, BitBoard(16843009));
-        
+
         b.flip();
 
         // println!("{b}");

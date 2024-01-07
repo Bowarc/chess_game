@@ -4,5 +4,5 @@ pub enum SpriteId {
     MissingNo,
     AbilityPower,
     AttackDamage,
-    ChessPiece(shared::chess::Color,shared::chess::Piece),
+    ChessPiece(shared::chess::Color, shared::chess::Piece),
 }

@@ -5,7 +5,11 @@ pub struct WaitingForOpponent {
 }
 
 impl WaitingForOpponent {
-    pub fn new(client: crate::game::Client, game: shared::game::Game, my_id: shared::id::Id) -> Self {
+    pub fn new(
+        client: crate::game::Client,
+        game: shared::game::Game,
+        my_id: shared::id::Id,
+    ) -> Self {
         debug!("Creating WaitingForOpponent State");
         Self {
             client,
@@ -23,7 +27,7 @@ impl WaitingForOpponent {
                     None
                 },
             ),
-            my_id
+            my_id,
         }
     }
 }
@@ -51,7 +55,7 @@ impl super::StateMachine for WaitingForOpponent {
             return super::State::from_shared_state(
                 self.client,
                 self.current_game.inner().cloned().unwrap(),
-                self.my_id
+                self.my_id,
             );
         }
 

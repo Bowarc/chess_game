@@ -30,7 +30,7 @@ impl Button {
         &self.style
     }
 
-    pub fn get_state(&self) -> crate::ui::State{
+    pub fn get_state(&self) -> crate::ui::State {
         self.state
     }
 }

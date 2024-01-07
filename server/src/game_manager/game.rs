@@ -216,7 +216,7 @@ impl Game {
                     all_colors.remove(all_colors.iter().position(|c| c == &color).unwrap());
 
                     player.set_color(color);
-                    
+
                     if let Err(e) = player.send(shared::message::ServerMessage::GameInfoUpdate(
                         self.id,
                         game_image.clone(),
@@ -259,18 +259,20 @@ impl Game {
                     while let Ok(msg) = player.try_recv() {
                         match msg {
                             ClientMessage::GameInfoRequest(game_id) => {
-                                if game_id != self.id{
+                                if game_id != self.id {
                                     //TODO: disconnect player and reset game state
                                     panic!();
                                 }
-                                if let Err(e) = player.send(
-                                    shared::message::ServerMessage::GameInfoUpdate(self.id, game_image.clone())    
-                                ){
+                                if let Err(e) =
+                                    player.send(shared::message::ServerMessage::GameInfoUpdate(
+                                        self.id,
+                                        game_image.clone(),
+                                    ))
+                                {
                                     error!("Failled to send game update to player ({player_id}) due to: {e}")
                                 }
                             }
                             ClientMessage::LeaveGameRequest => {
-
                                 if let Err(e) =
                                     player.send(shared::message::ServerMessage::GameLeave)
                                 {

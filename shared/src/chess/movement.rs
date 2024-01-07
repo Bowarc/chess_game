@@ -14,11 +14,9 @@ pub struct ChessMove {
     pub target: super::Position,
     pub color: super::Color,
     pub piece: super::Piece,
-
-    // castle: bool, 
+    // castle: bool,
     // eat: Option<super::Position>, // could be bool but the eaten piece is not at the target pos if en-passant, right ?
 }
-
 
 #[derive(Clone, Copy, Debug, serde::Deserialize, serde::Serialize, Hash, PartialEq, Eq)]
 #[serde(from = "(i8, i8)")]
@@ -39,7 +37,7 @@ pub struct RelativeMoveList {
 //     piece: super::Piece,
 //     origin: super::Position,
 //     target: super::Position,
-    
+
 // }
 
 impl From<(i8, i8)> for RelativeMove {
@@ -50,8 +48,6 @@ impl From<(i8, i8)> for RelativeMove {
         }
     }
 }
-
-
 
 // pub fn validate_move(board: &super::Board, mv: &AbsoluteMove) -> bool{
 //     false

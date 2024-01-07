@@ -14,7 +14,6 @@ pub enum ClientMessage {
 
     // Gaming time
     MakeMove(super::chess::ChessMove),
-    
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
@@ -35,11 +34,10 @@ pub enum ServerMessage {
     GameCreatefail(String),
 
     // Game time
-    MoveResponse{
+    MoveResponse {
         chess_move: super::chess::ChessMove,
         valid: bool,
-    }
-
+    },
 }
 
 impl networking::Message for ClientMessage {

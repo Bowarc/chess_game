@@ -19,14 +19,18 @@
       A B C D E F G H
     Because its setting the square D7
 */
-#[derive(Default, Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Deserialize, serde::Serialize,)]
+#[derive(
+    Default, Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Deserialize, serde::Serialize,
+)]
 pub struct Position {
     file: File, // x
     rank: Rank, // y
 }
 
 // X
-#[derive(Default, Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Deserialize, serde::Serialize,)]
+#[derive(
+    Default, Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Deserialize, serde::Serialize,
+)]
 pub enum File {
     #[default]
     A,
@@ -40,7 +44,9 @@ pub enum File {
 }
 
 // Y
-#[derive(Default, Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Deserialize, serde::Serialize,)]
+#[derive(
+    Default, Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Deserialize, serde::Serialize,
+)]
 pub enum Rank {
     #[default]
     One,

@@ -12,12 +12,11 @@ impl Player {
             shared::message::ClientMessage,
             shared::message::ServerMessage,
         >,
-
     ) -> Self {
         Self {
             name: format!("Player{}", client.id()),
             client,
-            color: None
+            color: None,
         }
     }
 
@@ -41,7 +40,8 @@ impl Player {
     pub fn send(
         &mut self,
         msg: shared::message::ServerMessage,
-    ) -> Result<(), std::boxed::Box<std::sync::mpsc::SendError<shared::message::ServerMessage>>>{
+    ) -> Result<(), std::boxed::Box<std::sync::mpsc::SendError<shared::message::ServerMessage>>>
+    {
         Ok(self.client.send(msg)?)
     }
 
@@ -52,6 +52,10 @@ impl Player {
 
 impl From<&Player> for shared::game::Player {
     fn from(server_player: &Player) -> Self {
-        shared::game::Player::new(server_player.id(), server_player.name(), server_player.color)
+        shared::game::Player::new(
+            server_player.id(),
+            server_player.name(),
+            server_player.color,
+        )
     }
 }

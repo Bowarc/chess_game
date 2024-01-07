@@ -58,11 +58,7 @@ impl Board {
                 return None;
             };
 
-            board.set(
-                piece,
-                super::Color::from_fen_char(p),
-                pos,
-            );
+            board.set(piece, super::Color::from_fen_char(p), pos);
             pos.move_right(1);
         }
 
@@ -83,33 +79,32 @@ impl Board {
         Some(board)
     }
 
-    pub fn next_to_play(&self) -> super::Color{
+    pub fn next_to_play(&self) -> super::Color {
         self.active_player
     }
-    
-    pub fn make_move(&mut self, mv: super::movement::ChessMove) ->  Result<(), ()>{
-        if mv.color != self.active_player{
-            return Err(())
+
+    pub fn make_move(&mut self, mv: super::movement::ChessMove) -> Result<(), ()> {
+        if mv.color != self.active_player {
+            return Err(());
         }
-        let color_bb = match mv.color{
-            super::Color::Black =>self.black_bb,
-            super::Color::White =>self.white_bb,
+        let color_bb = match mv.color {
+            super::Color::Black => self.black_bb,
+            super::Color::White => self.white_bb,
         };
 
         let bb = self.piece_bb.get(&mv.piece).unwrap() & color_bb;
 
-        if !bb.read(mv.origin){
+        if !bb.read(mv.origin) {
             // There is no given piece at that position
-            return Err(())
-        } 
+            return Err(());
+        }
 
         // Just overwrite the target pos for now
         self.unset(mv.piece, mv.color, mv.origin);
         self.set(mv.piece, mv.color, mv.target);
 
         Ok(())
-
-    }   
+    }
 
     fn set(&mut self, piece: super::Piece, color: super::Color, pos: super::Position) {
         let color_bb = match color {
@@ -135,15 +130,19 @@ impl Board {
         piece_bb.unset(pos);
     }
 
-    pub fn read(&self, pos: super::Position) -> Option<(super::Color, super::Piece)>{
-        if !(self.white_bb | self.black_bb).read(pos){
+    pub fn read(&self, pos: super::Position) -> Option<(super::Color, super::Piece)> {
+        if !(self.white_bb | self.black_bb).read(pos) {
             // Not in any board
-            return None
+            return None;
         }
 
-        let piece: Vec<&super::Piece> = self.piece_bb.iter().flat_map(|(p, bb)| if bb.read(pos){Some(p)}else{None}).collect();
+        let piece: Vec<&super::Piece> = self
+            .piece_bb
+            .iter()
+            .flat_map(|(p, bb)| if bb.read(pos) { Some(p) } else { None })
+            .collect();
 
-        if piece.is_empty(){
+        if piece.is_empty() {
             panic!("Could not query the piece for position: {pos:?} with board: {self:?}")
         }
 
@@ -151,18 +150,18 @@ impl Board {
 
         // We could assume that if it's not one it's the other, but i wanna make sure that i did not fuck up something in board sync
 
-        if self.white_bb.read(pos){
+        if self.white_bb.read(pos) {
             color = Some(super::Color::White);
         }
 
-        if self.black_bb.read(pos){
-            if color.is_some(){
+        if self.black_bb.read(pos) {
+            if color.is_some() {
                 panic!("The position {pos} for board {self:?} is black and white");
             }
             color = Some(super::Color::Black);
         }
 
-        Some((color.unwrap(), **piece.get(0).unwrap())) 
+        Some((color.unwrap(), **piece.get(0).unwrap()))
     }
 
     pub fn flip(&mut self) {
@@ -212,7 +211,7 @@ mod tests {
     }
 
     #[test]
-    fn flip(){
+    fn flip() {
         let mut b =
             Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap();
 

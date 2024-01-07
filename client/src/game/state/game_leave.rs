@@ -4,7 +4,7 @@ pub struct GameLeave {
 }
 
 impl GameLeave {
-    pub fn new(client: crate::game::Client,my_id: shared::id::Id,) -> Self {
+    pub fn new(client: crate::game::Client, my_id: shared::id::Id) -> Self {
         debug!("Creating GameLeave State");
         Self { client, my_id }
     }
