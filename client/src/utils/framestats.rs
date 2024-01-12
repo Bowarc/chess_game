@@ -6,7 +6,6 @@ pub struct FrameStats {
     draw_time: time::Stopwatch,
     frame_time: time::Stopwatch,
     render_log: crate::render::RenderLog,
-    // particles_log: (usize, usize), // number of sources, total number of particles
 }
 
 impl FrameStats {

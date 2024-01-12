@@ -1,4 +1,4 @@
-const NBR_OF_ELEMENTS: usize = 80;
+const NBR_OF_ELEMENTS: u64 = 80;
 
 pub struct Graph {
     id: crate::ui::Id,
@@ -48,7 +48,7 @@ impl Graph {
             .fold(std::f64::NEG_INFINITY, |max, &val| val.max(max))
             * 1.50;
 
-        while self.values.len() > NBR_OF_ELEMENTS {
+        while self.values.len() as u64 > NBR_OF_ELEMENTS {
             self.values.pop_front();
         }
     }

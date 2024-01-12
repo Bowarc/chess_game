@@ -2,7 +2,7 @@ pub struct TextEdit {
     id: crate::ui::Id,
     position: crate::ui::Position,
     width: crate::ui::Value,
-    rows: usize, // Number of rows
+    rows: u64, // Number of rows
     font_size: f64,
     size: crate::ui::Vector,
     state: crate::ui::State,
@@ -15,7 +15,7 @@ impl TextEdit {
         id: crate::ui::Id,
         position: crate::ui::Position,
         width: crate::ui::Value,
-        rows: usize,
+        rows: u64,
         font_size: f64,
         style: crate::ui::style::Bundle,
     ) -> Self {
@@ -154,7 +154,7 @@ impl super::TElement for TextEdit {
             },
             '\u{d}' | '\u{a}' /* New line caracterS */ => {
                 // I don't like having to check for both but i have to
-                let new_line_count = self.txt.matches('\u{a}').count() + self.txt.matches('\u{d}').count();
+                let new_line_count = (self.txt.matches('\u{a}').count() + self.txt.matches('\u{d}').count()) as u64;
 
                 // debug!("{new_line_count} | {}", self.rows -1);
                 if new_line_count < self.rows -1{

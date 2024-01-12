@@ -164,8 +164,8 @@ impl std::convert::From<ggez::mint::Vector2<f32>> for Point {
 // impl std::convert::From<Point> for vec2d::Coord {
 //     fn from(o: Point) -> vec2d::Coord {
 //         vec2d::Coord {
-//             x: o.x as usize,
-//             y: o.y as usize,
+//             x: o.x as u64,
+//             y: o.y as u64,
 //         }
 //     }
 // }
@@ -207,17 +207,17 @@ impl std::convert::From<Point> for (f64, f64) {
     }
 }
 
-impl std::convert::From<(usize, usize)> for Point {
-    fn from(other: (usize, usize)) -> Self {
+impl std::convert::From<(u64, u64)> for Point {
+    fn from(other: (u64, u64)) -> Self {
         Point {
             x: other.0 as f64,
             y: other.1 as f64,
         }
     }
 }
-impl std::convert::From<Point> for (usize, usize) {
+impl std::convert::From<Point> for (u64, u64) {
     fn from(other: Point) -> Self {
-        (other.x as usize, other.y as usize)
+        (other.x as u64, other.y as u64)
     }
 }
 

@@ -21,16 +21,16 @@ pub struct Vec2D<T> {
     size: maths::Vec2,
 }
 
-// we could use maths::Point but using usize is better for iteration
+// we could use maths::Point but using u64 is better for iteration
 /*
     Index rect vs position rect is a bit anoying so i'll assume taht every given rect is a position rect
 */
 #[derive(Debug, PartialEq)]
 pub struct Vec2DIterator {
-    start: (usize, usize),
-    end: (usize, usize),
+    start: (u64, u64),
+    end: (u64, u64),
 
-    current: (usize, usize),
+    current: (u64, u64),
 }
 
 impl<T: Clone + std::fmt::Debug> Vec2D<T> {
@@ -74,7 +74,7 @@ impl<T> Vec2D<T> {
     pub fn new_from_vec(base: Vec<T>, size: impl Into<maths::Vec2>) -> Option<Vec2D<T>> {
         let size = size.into();
 
-        if (size.x * size.y) as usize == base.len() {
+        if (size.x * size.y) as u64 == base.len() as u64 {
             Some(Self { elems: base, size })
         } else {
             None
@@ -86,10 +86,10 @@ impl<T> Vec2D<T> {
     pub fn size(&self) -> maths::Point {
         self.size
     }
-    pub fn index_from_point(&self, pt: impl Into<maths::Point>) -> usize {
+    pub fn index_from_point(&self, pt: impl Into<maths::Point>) -> u64 {
         let pt = pt.into();
 
-        (pt.y * self.size.x + pt.x) as usize
+        (pt.y * self.size.x + pt.x) as u64
     }
 
     pub fn contains_point(&self, pt: impl Into<maths::Point>) -> bool {
@@ -103,7 +103,7 @@ impl<T> Vec2D<T> {
         if self.contains_point(pt) {
             let index = self.index_from_point(pt);
 
-            Some(&self.elems[index])
+            Some(&self.elems[index as usize])
         } else {
             None
         }
@@ -112,7 +112,7 @@ impl<T> Vec2D<T> {
         let pt = maths::Point::floored(&pt.into());
         if self.contains_point(pt) {
             let index = self.index_from_point(pt);
-            Some(&mut self.elems[index])
+            Some(&mut self.elems[index as usize])
         } else {
             None
         }
@@ -128,7 +128,10 @@ impl<T> Vec2D<T> {
         if self.contains_point(pt) {
             let index = self.index_from_point(pt);
 
-            Ok(std::mem::replace(self.elems.get_mut(index).unwrap(), elem))
+            Ok(std::mem::replace(
+                self.elems.get_mut(index as usize).unwrap(),
+                elem,
+            ))
         } else {
             Err(IndexOutOfBoundsError)
         }
@@ -249,7 +252,7 @@ mod tests {
         let mut vec = Vec2D::new_from_element(0, maths::Vec2::new(10., 10.));
 
         vec.elems[1] = 1;
-        vec.elems[vec.size.y as usize] = 2;
+        vec.elems[vec.size.y as u64] = 2;
 
         assert_eq!(vec.get(maths::Point::new(1., 0.)), Some(&1));
         assert_eq!(vec.get(maths::Point::new(0., 1.)), Some(&2));

@@ -12,7 +12,7 @@ pub enum Layer {
 }
 
 impl Layer {
-    pub fn get(idx: usize) -> Option<Self> {
+    pub fn get(idx: u8) -> Option<Self> {
         match idx {
             0 => Some(Layer::FarBack),
             1 => Some(Layer::GameBackground),
@@ -26,7 +26,7 @@ impl Layer {
             _ => None,
         }
     }
-    pub fn idx(&self) -> usize {
+    pub fn idx(&self) -> u8 {
         match self {
             Layer::FarBack => 0,
             Layer::GameBackground => 1,

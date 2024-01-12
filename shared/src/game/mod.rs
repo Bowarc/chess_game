@@ -44,13 +44,13 @@ impl Game {
         self.id
     }
 
-    pub fn player_count(&self) -> usize {
+    pub fn player_count(&self) -> u64 {
         self.players
             .iter()
             .filter(|&player| player.is_some())
-            .count()
+            .count() as u64
     }
-    pub fn max_players(&self) -> usize {
+    pub fn max_players(&self) -> u64 {
         2
     }
 

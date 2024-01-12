@@ -104,7 +104,7 @@ macro_rules! IdImpl {
 }
 
 IdImpl! {
-    struct Id, usize, NonZeroUsize, AtomicUsize
+    struct Id, u64, NonZeroU64, AtomicU64
 }
 IdImpl! {
     struct IdU8, u8, NonZeroU8, AtomicU8
@@ -116,5 +116,5 @@ IdImpl! {
     struct IdU32, u32, NonZeroU32, AtomicU32
 }
 IdImpl! {
-    struct IdU64, u64, NonZeroU64, AtomicU64
+    struct IdUsize, usize, NonZeroUsize, AtomicUsize
 }

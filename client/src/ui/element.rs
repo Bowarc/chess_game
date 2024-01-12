@@ -148,7 +148,7 @@ impl Element {
         id: impl Into<super::Id>,
         position: impl Into<super::Position>, // Center
         width: impl Into<super::Value>,
-        rows: usize,
+        rows: u64,
         font_size: f64,
         style: super::style::Bundle,
     ) -> Self {

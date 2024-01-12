@@ -31,10 +31,10 @@ pub fn get_distance(pt1: Point, pt2: Point) -> f64 {
     ((pt1.x - pt2.x).powf(2.) + (pt1.y - pt2.y).powf(2.)).sqrt()
 }
 
-// pub fn get_map_index_from_pos(pos: Point) -> (usize, usize) {
+// pub fn get_map_index_from_pos(pos: Point) -> (u64, u64) {
 //     use crate::game::map::TILE_SIZE;
 
-//     ((pos.x / TILE_SIZE) as usize, (pos.y / TILE_SIZE) as usize)
+//     ((pos.x / TILE_SIZE) as u64, (pos.y / TILE_SIZE) as u64)
 
 //     // (0, 0)
 // }
