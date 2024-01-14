@@ -3,7 +3,7 @@ lazy_static::lazy_static! {
         let path = crate::file::Path::new(crate::file::FileSystem::Internal, "config/pieces_relative_moves.ron".to_string());
         let bytes = crate::file::bytes(path);
         let x = ron::de::from_bytes::<std::collections::HashMap<super::Piece, RelativeMoveList>>(&bytes).unwrap();
-        error!("{x:?}");
+        error!("Testing: {x:?}");
         x
     };
 }

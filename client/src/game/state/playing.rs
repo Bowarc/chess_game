@@ -78,41 +78,45 @@ impl super::StateMachine for Playing {
             panic!("")
         };
 
+        let my_color = players
+            .iter()
+            .flatten()
+            .flat_map(|p| {
+                if p.id == self.my_id {
+                    Some(p.color)
+                } else {
+                    None
+                }
+            })
+            .flatten()
+            .next()
+            .unwrap();
+
         // The game just got received
         if current_game_changed {
-            // Instanciate the ui
-            let color = players
-                .iter()
-                .flatten()
-                .flat_map(|p| {
-                    if p.id == self.my_id {
-                        Some(p.color)
-                    } else {
-                        None
-                    }
-                })
-                .flatten()
-                .next()
-                .unwrap();
+            // if self.ui.get_group(BOARD_UI_GROUP).is_none() {
+            create_board(&mut self.ui);
 
-            if self.ui.get_group(BOARD_UI_GROUP).is_none() {
-                create_board(&mut self.ui);
-
-                // How do i know what player i am
-                create_board_pieces(&mut self.ui, board, color)
-            }
+            create_board_pieces(&mut self.ui, board, my_color)
+            // }
         }
-
 
         self.ui.update(ggctx);
 
-        match get_current_move_delta(&mut self.current_drag, &mut self.current_game, &mut self.ui) {
+        match get_current_move_delta(&mut self.current_drag, &mut self.ui) {
             Ok(Some((start, end))) => {
-                debug!("{:?} -> {:? }", start, end);
-                debug!("")
+                if board.next_to_play() == my_color {
+                    debug!(
+                        "{} -> {}",
+                        shared::chess::Position::from_index(start.0 as u8, start.1 as u8).unwrap(),
+                        shared::chess::Position::from_index(end.0 as u8, end.1 as u8).unwrap(),
+                    );
+                } else {
+                    warn!("Wait your turn")
+                }
             }
             Ok(None) => {
-                // It do be like that sometimes
+                // No move detected this frame
             }
             Err(e) => {
                 error!("An error happened while tring to read the user's move: {e}")
@@ -139,11 +143,10 @@ impl super::StateMachine for Playing {
 #[allow(clippy::type_complexity)] // return type is flagged as complex
 fn get_current_move_delta(
     current_drag: &mut Option<crate::ui::Id>,
-    current_game: &mut crate::networking::Future<shared::game::Game>,
     ui: &mut crate::ui::UiManager,
 ) -> Result<Option<((i8, i8), (i8, i8))>, String> {
-    // Check that the board is received, we're using the asumpion that if a game is received and it's not the right one, the state machine changes
-    if current_game.inner().is_none() {
+    // Check if the ui is laoded
+    if ui.get_group(BOARD_UI_GROUP).is_none() {
         return Err(String::from("A current game is needed for this operation"));
     }
 
