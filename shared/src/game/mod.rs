@@ -1,8 +1,8 @@
 #[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game {
-    id: crate::id::Id,
-    players: [Option<Player>; 2],
-    state: State,
+    pub id: crate::id::Id,
+    pub players: [Option<Player>; 2],
+    pub state: State,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]

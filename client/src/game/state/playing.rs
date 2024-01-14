@@ -54,13 +54,34 @@ impl super::StateMachine for Playing {
 
         self.current_game.update(&mut self.client);
 
-        if self.current_game.changed() {
-            let Some(data) = self.current_game.inner() else {
-                // TODO: Good error handleing
-                panic!("")
-            };
-            let color = data
-                .players()
+        let current_game_changed = self.current_game.changed();
+        let Some(current_game) = self.current_game.inner_mut() else {
+            // The game data has not yet been received
+            return self.into();
+        };
+
+        // Check if the game state is the correct one
+        if !matches!(current_game.state(), &shared::game::State::Playing { .. }) {
+            return super::State::from_shared_state(
+                self.client,
+                self.current_game.inner().cloned().unwrap(),
+                self.my_id,
+            );
+        }
+
+        let shared::game::Game {
+            id,
+            players,
+            state: shared::game::State::Playing { board },
+        } = /*implicit &mut */ current_game
+        else {
+            panic!("")
+        };
+
+        // The game just got received
+        if current_game_changed {
+            // Instanciate the ui
+            let color = players
                 .iter()
                 .flatten()
                 .flat_map(|p| {
@@ -74,29 +95,21 @@ impl super::StateMachine for Playing {
                 .next()
                 .unwrap();
 
-            if let shared::game::State::Playing { board } =
-                self.current_game.inner().unwrap().state()
-            {
-                if self.ui.get_group(BOARD_UI_GROUP).is_none() {
-                    create_board(&mut self.ui);
+            if self.ui.get_group(BOARD_UI_GROUP).is_none() {
+                create_board(&mut self.ui);
 
-                    // How do i know what player i am
-                    create_board_pieces(&mut self.ui, board, color)
-                }
-            } else {
-                return super::State::from_shared_state(
-                    self.client,
-                    self.current_game.inner().cloned().unwrap(),
-                    self.my_id,
-                );
+                // How do i know what player i am
+                create_board_pieces(&mut self.ui, board, color)
             }
         }
+
 
         self.ui.update(ggctx);
 
         match get_current_move_delta(&mut self.current_drag, &mut self.current_game, &mut self.ui) {
             Ok(Some((start, end))) => {
-                debug!("{:?} -> {:? }", start, end)
+                debug!("{:?} -> {:? }", start, end);
+                debug!("")
             }
             Ok(None) => {
                 // It do be like that sometimes
