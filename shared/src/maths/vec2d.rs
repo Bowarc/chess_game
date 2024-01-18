@@ -252,7 +252,7 @@ mod tests {
         let mut vec = Vec2D::new_from_element(0, maths::Vec2::new(10., 10.));
 
         vec.elems[1] = 1;
-        vec.elems[vec.size.y as u64] = 2;
+        vec.elems[vec.size.y as usize] = 2;
 
         assert_eq!(vec.get(maths::Point::new(1., 0.)), Some(&1));
         assert_eq!(vec.get(maths::Point::new(0., 1.)), Some(&2));

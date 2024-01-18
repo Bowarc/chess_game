@@ -289,7 +289,7 @@ impl Game {
                             ClientMessage::MakeMove(chess_move) => {
                                 // Check validity
 
-                                if board.make_move(chess_move).is_err() {
+                                if board.make_move(&chess_move).is_err() {
                                     // If the move isn't good, tell the player and go next
                                     if let Err(e) =
                                         player.send(shared::message::ServerMessage::MoveResponse {
@@ -300,9 +300,20 @@ impl Game {
                                         // TODO Fix
                                         panic!("Could not send move upate to player: ({id}), idk what to do: {e}", id = player.id())
                                         // continue;
-                                    } else {
-                                        broad_update = true;
                                     }
+                                } else {
+                                    debug!("Move played: {chess_move:?}");
+                                    if let Err(e) =
+                                        player.send(shared::message::ServerMessage::MoveResponse {
+                                            chess_move,
+                                            valid: true,
+                                        })
+                                    {
+                                        // TODO Fix
+                                        panic!("Could not send move upate to player: ({id}), idk what to do: {e}", id = player.id())
+                                        // continue;
+                                    }
+                                    broad_update = true;
                                 }
                             }
                             _ => {
@@ -311,30 +322,30 @@ impl Game {
                         }
                     }
                 }
+            }
+            super::State::GameEnd { winner: _ } => {}
+        }
 
-                // Broadcast update
-                if broad_update {
-                    for player_opt in self.players.iter_mut() {
-                        let Some(player) = player_opt else {
-                            unimplemented!()
-                        };
+        // Broadcast update
+        if broad_update {
+            let updated_game_image = shared::game::Game::from(&*self);
+            for player_opt in self.players.iter_mut() {
+                let Some(player) = player_opt else {
+                    unimplemented!()
+                };
 
-                        if let Err(e) =
-                            player.send(ServerMessage::GameInfoUpdate(self.id, game_image.clone()))
-                        {
-                            error!(
-                                "Game {} failled to comunicate with player ({}): {e}",
-                                self.id,
-                                player.id()
-                            );
-                            self.set_state(super::State::PlayerDisconnected);
-                            return;
-                        }
-                    }
+                if let Err(e) =
+                    player.send(shared::message::ServerMessage::GameInfoUpdate(self.id, updated_game_image.clone()))
+                {
+                    error!(
+                        "Game {} failled to comunicate with player ({}): {e}",
+                        self.id,
+                        player.id()
+                    );
+                    self.set_state(super::State::PlayerDisconnected);
+                    return;
                 }
             }
-
-            super::State::GameEnd { winner: _ } => {}
         }
     }
 }

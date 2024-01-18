@@ -42,6 +42,7 @@ impl Playing {
 
 impl super::StateMachine for Playing {
     fn update(mut self, ggctx: &mut ggez::Context, _delta_time: f64) -> super::State {
+        self.client.received_msg_mut().clear();
         /* Heavy boilerplate, i don't like it but idk how to do it another way execpt macro but it's a bit overkill */
         if !self.client.is_connected() {
             warn!("Client has been disconnected");
@@ -52,7 +53,16 @@ impl super::StateMachine for Playing {
             return super::State::on_disconnect();
         }
 
+        let mut index = 0;
+        while let Some(msg) = self.client.received_msg().get(index).cloned(){
+            index +=1;
+            if let shared::message::ServerMessage::MoveResponse { chess_move, valid } = msg {
+                    debug!("Move {chess_move:?} validity: {valid}")
+            }
+        }
+
         self.current_game.update(&mut self.client);
+
 
         let current_game_changed = self.current_game.changed();
         let Some(current_game) = self.current_game.inner_mut() else {
@@ -104,16 +114,43 @@ impl super::StateMachine for Playing {
         self.ui.update(ggctx);
 
         match get_current_move_delta(&mut self.current_drag, &mut self.ui) {
-            Ok(Some((start, end))) => {
-                if board.next_to_play() == my_color {
-                    debug!(
-                        "{} -> {}",
-                        shared::chess::Position::from_index(start.0 as u8, start.1 as u8).unwrap(),
-                        shared::chess::Position::from_index(end.0 as u8, end.1 as u8).unwrap(),
-                    );
-                } else {
-                    warn!("Wait your turn")
+            Ok(Some((start, end))) => 'block :{
+                if board.next_to_play() != my_color{
+                    warn!("Wait your turn");
+                    break 'block; // This is so cool, thanks Mr. Crowley (RFC: label-break-value #2046)
                 }
+                // Build the chessmove
+                let start = shared::chess::Position::from_index(start.0 as u8, start.1 as u8).unwrap();
+                let end = shared::chess::Position::from_index(end.0 as u8, end.1 as u8).unwrap();
+                debug!(
+                    "{start} -> {end}",
+                );
+                let Some((scolor, spiece)) = board.read(start) else{
+                    warn!("{start} is an empty square");
+                    break 'block;
+                };
+
+                if start == end{
+                    warn!("start == end");
+                    break 'block;
+                }
+
+                // let Some((ecolor, epiece)) = board.read(start) else{
+                //     warn!("{end} is an empty square");
+                //     break 'block;
+                // };
+
+                if let Err(e) = self.client.send(
+                        shared::message::ClientMessage::MakeMove(shared::chess::ChessMove::new(start, end, spiece, scolor ))
+                    ){
+                    warn!("Could not send move request to server due to: {e}");
+                    break 'block;
+                }
+
+
+
+
+
             }
             Ok(None) => {
                 // No move detected this frame
@@ -155,7 +192,7 @@ fn get_current_move_delta(
         // debug!("{id}");
         // Id should then have a len of 2
         assert_eq!(id.len(), 2);
-        let (y, x) = id.split_at(1);
+        let (x, y) = id.split_at(1);
         (x.parse().unwrap(), y.parse().unwrap())
     };
 
@@ -259,7 +296,7 @@ fn create_board_pieces(
 
                 let id = format!("board_square_{i}x{j}");
 
-                debug!("Updating square with id: {id}");
+                // debug!("Updating square with id: {id}");
 
                 let button = ui.get_element(id);
 

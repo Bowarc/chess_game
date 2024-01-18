@@ -12,8 +12,8 @@ lazy_static::lazy_static! {
 pub struct ChessMove {
     pub origin: super::Position,
     pub target: super::Position,
-    pub color: super::Color,
     pub piece: super::Piece,
+    pub color: super::Color,
     // castle: bool,
     // eat: Option<super::Position>, // could be bool but the eaten piece is not at the target pos if en-passant, right ?
 }
@@ -39,6 +39,21 @@ pub struct RelativeMoveList {
 //     target: super::Position,
 
 // }
+impl ChessMove {
+    pub fn new(
+        origin: super::Position,
+        target: super::Position,
+        piece: super::Piece,
+        color: super::Color,
+    ) -> Self {
+        Self {
+            origin,
+            target,
+            color,
+            piece,
+        }
+    }
+}
 
 impl From<(i8, i8)> for RelativeMove {
     fn from(value: (i8, i8)) -> Self {

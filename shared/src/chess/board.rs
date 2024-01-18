@@ -1,8 +1,8 @@
 #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
 pub struct Board {
     active_player: super::Color,
-    white_bb: super::BitBoard,
-    black_bb: super::BitBoard,
+    pub white_bb: super::BitBoard,
+    pub black_bb: super::BitBoard,
 
     piece_bb: std::collections::HashMap<super::Piece, super::BitBoard>,
 }
@@ -83,7 +83,7 @@ impl Board {
         self.active_player
     }
 
-    pub fn make_move(&mut self, mv: super::movement::ChessMove) -> Result<(), ()> {
+    pub fn make_move(&mut self, mv: &super::movement::ChessMove) -> Result<(), ()> {
         if mv.color != self.active_player {
             return Err(());
         }
@@ -161,7 +161,7 @@ impl Board {
             color = Some(super::Color::Black);
         }
 
-        Some((color.unwrap(), **piece.get(0).unwrap()))
+        Some((color.unwrap(), **piece.first().unwrap()))
     }
 
     pub fn flip(&mut self) {
@@ -224,5 +224,20 @@ mod tests {
         display(&b);
 
         println!("{}", 554050781184u64.reverse_bits());
+    }
+    #[test]
+    fn play() {
+        use super::super::{
+            position::{File, Position, Rank},
+            ChessMove, Color, Piece,
+        };
+
+        let mut b = Board::default();
+        let s = Position::from_file_rank(File::A, Rank::Two);
+        let e = Position::from_file_rank(File::B, Rank::Three);
+        b.make_move(&ChessMove::new(s, e, Piece::Pawn, Color::White))
+            .unwrap();
+
+        println!("{}", b.white_bb | b.black_bb);
     }
 }
