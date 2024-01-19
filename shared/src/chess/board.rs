@@ -99,12 +99,12 @@ impl Board {
             return Err(());
         }
 
-
         // Just overwrite the target pos for now
         self.unset(mv.piece, mv.color, mv.origin);
         self.unset(mv.piece, !mv.color, mv.target); // Forgetting this causes a panic in the next read
         self.set(mv.piece, mv.color, mv.target);
 
+        self.active_player = !self.active_player;
         Ok(())
     }
 
