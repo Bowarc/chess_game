@@ -146,11 +146,6 @@ impl super::StateMachine for Playing {
                     warn!("Could not send move request to server due to: {e}");
                     break 'block;
                 }
-
-
-
-
-
             }
             Ok(None) => {
                 // No move detected this frame
@@ -287,6 +282,8 @@ fn create_board_pieces(
     }
 
     let _ = ui.remove_group(BOARD_SPRITE_UI_GROUP);
+
+    debug!("Creating pieces for the chess board, color: {color:?}");
 
     for j in 0..8 {
         for i in 0..8 {
