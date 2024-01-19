@@ -30,7 +30,7 @@ It's currently nowhere near finished
     - [x] Stores players and handle their disconnection cleanly
     - [x] Game creation & joining
     - [ ] Actual gameplay 
-        - [ ] Turns
+        - [x] Turns
         - [x] Move pieces
         - [x] Move validation (possible)
         - [ ] Move validation (legal)
