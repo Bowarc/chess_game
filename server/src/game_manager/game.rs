@@ -334,9 +334,10 @@ impl Game {
                     unimplemented!()
                 };
 
-                if let Err(e) =
-                    player.send(shared::message::ServerMessage::GameInfoUpdate(self.id, updated_game_image.clone()))
-                {
+                if let Err(e) = player.send(shared::message::ServerMessage::GameInfoUpdate(
+                    self.id,
+                    updated_game_image.clone(),
+                )) {
                     error!(
                         "Game {} failled to comunicate with player ({}): {e}",
                         self.id,

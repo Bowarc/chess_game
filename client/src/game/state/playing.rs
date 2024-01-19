@@ -264,16 +264,12 @@ fn get_current_move_delta(
     Ok(None)
 }
 
-fn create_board_pieces(
-    ui: &mut crate::ui::UiManager,
-    board: &shared::chess::Board,
-) {
+fn create_board_pieces(ui: &mut crate::ui::UiManager, board: &shared::chess::Board) {
     use crate::{
         assets::sprite::SpriteId,
         ui::{element::Element, element::TextBit, Style},
     };
     let _ = ui.remove_group(BOARD_SPRITE_UI_GROUP);
-
 
     for j in 0..8 {
         for i in 0..8 {
