@@ -101,7 +101,10 @@ impl Board {
 
         // Just overwrite the target pos for now
         self.unset(mv.piece, mv.color, mv.origin);
-        self.unset(mv.piece, !mv.color, mv.target); // Forgetting this causes a panic in the next read
+
+        if let Some((color, piece )) = self.read(mv.target){
+            self.unset(piece, color, mv.target); // Forgetting this causes a panic in the next read, aaand #46
+        }
         self.set(mv.piece, mv.color, mv.target);
 
         self.active_player = !self.active_player;
