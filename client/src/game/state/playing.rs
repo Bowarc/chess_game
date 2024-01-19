@@ -54,15 +54,14 @@ impl super::StateMachine for Playing {
         }
 
         let mut index = 0;
-        while let Some(msg) = self.client.received_msg().get(index).cloned(){
-            index +=1;
+        while let Some(msg) = self.client.received_msg().get(index).cloned() {
+            index += 1;
             if let shared::message::ServerMessage::MoveResponse { chess_move, valid } = msg {
-                    debug!("Move {chess_move:?} validity: {valid}")
+                debug!("Move {chess_move:?} validity: {valid}")
             }
         }
 
         self.current_game.update(&mut self.client);
-
 
         let current_game_changed = self.current_game.changed();
         let Some(current_game) = self.current_game.inner_mut() else {
@@ -105,32 +104,31 @@ impl super::StateMachine for Playing {
         // The game just got received
         if current_game_changed {
             // if self.ui.get_group(BOARD_UI_GROUP).is_none() {
-            create_board(&mut self.ui);
+            create_board(&mut self.ui, my_color);
 
-            create_board_pieces(&mut self.ui, board, my_color)
+            create_board_pieces(&mut self.ui, board)
             // }
         }
 
         self.ui.update(ggctx);
 
         match get_current_move_delta(&mut self.current_drag, &mut self.ui) {
-            Ok(Some((start, end))) => 'block :{
-                if board.next_to_play() != my_color{
+            Ok(Some((start, end))) => 'block: {
+                if board.next_to_play() != my_color {
                     warn!("Wait your turn");
                     break 'block; // This is so cool, thanks Mr. Crowley (RFC: label-break-value #2046)
                 }
                 // Build the chessmove
-                let start = shared::chess::Position::from_index(start.0 as u8, start.1 as u8).unwrap();
+                let start =
+                    shared::chess::Position::from_index(start.0 as u8, start.1 as u8).unwrap();
                 let end = shared::chess::Position::from_index(end.0 as u8, end.1 as u8).unwrap();
-                debug!(
-                    "{start} -> {end}",
-                );
-                let Some((scolor, spiece)) = board.read(start) else{
+                debug!("{start} -> {end}",);
+                let Some((scolor, spiece)) = board.read(start) else {
                     warn!("{start} is an empty square");
                     break 'block;
                 };
 
-                if start == end{
+                if start == end {
                     warn!("start == end");
                     break 'block;
                 }
@@ -140,9 +138,9 @@ impl super::StateMachine for Playing {
                 //     break 'block;
                 // };
 
-                if let Err(e) = self.client.send(
-                        shared::message::ClientMessage::MakeMove(shared::chess::ChessMove::new(start, end, spiece, scolor ))
-                    ){
+                if let Err(e) = self.client.send(shared::message::ClientMessage::MakeMove(
+                    shared::chess::ChessMove::new(start, end, spiece, scolor),
+                )) {
                     warn!("Could not send move request to server due to: {e}");
                     break 'block;
                 }
@@ -269,21 +267,13 @@ fn get_current_move_delta(
 fn create_board_pieces(
     ui: &mut crate::ui::UiManager,
     board: &shared::chess::Board,
-    color: shared::chess::Color,
 ) {
     use crate::{
         assets::sprite::SpriteId,
         ui::{element::Element, element::TextBit, Style},
     };
-    let mut board = board.clone();
-
-    if color == shared::chess::Color::Black {
-        board.flip()
-    }
-
     let _ = ui.remove_group(BOARD_SPRITE_UI_GROUP);
 
-    debug!("Creating pieces for the chess board, color: {color:?}");
 
     for j in 0..8 {
         for i in 0..8 {
@@ -315,7 +305,7 @@ fn create_board_pieces(
     }
 }
 
-fn create_board(ui: &mut crate::ui::UiManager) {
+fn create_board(ui: &mut crate::ui::UiManager, mycolor: shared::chess::Color) {
     use crate::{
         render::Color,
         ui::{element::Element, style, value, Style, Vector},
@@ -369,7 +359,10 @@ fn create_board(ui: &mut crate::ui::UiManager) {
                 + (square_size.y() + square_spacing) * j, // Then add the i times the size of a square + the spacing
             );
 
-            let id = format!("board_square_{i}x{}", 7 - j as u8); // This is nessesary due to the direction of the board vs the dierction of the nested loop
+            let id = match mycolor {
+                shared::chess::Color::Black => format!("board_square_{}x{j}", 7 - i as u8),
+                shared::chess::Color::White => format!("board_square_{i}x{}", 7 - j as u8),
+            }; // This is nessesary due to the direction of the board vs the dierction of the nested loop
 
             let el = Element::new_button(
                 id,
