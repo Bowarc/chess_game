@@ -99,8 +99,10 @@ impl Board {
             return Err(());
         }
 
+
         // Just overwrite the target pos for now
         self.unset(mv.piece, mv.color, mv.origin);
+        self.unset(mv.piece, !mv.color, mv.target); // Forgetting this causes a panic in the next read
         self.set(mv.piece, mv.color, mv.target);
 
         Ok(())
@@ -239,5 +241,19 @@ mod tests {
             .unwrap();
 
         println!("{}", b.white_bb | b.black_bb);
+    }
+
+    #[test]
+    fn show(){
+        use super::super::*;
+        let mut bb = BitBoard::from(35747322042318592);
+        let mut black = BitBoard::from(18446462598732840960);
+        let mut white = BitBoard::from(281474976775935);
+        println!("{}", bb & white);
+        println!("{}", bb & black);
+        bb.flip();
+
+        println!("{}", white);
+        println!("{}", black);
     }
 }
