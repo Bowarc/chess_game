@@ -171,6 +171,17 @@ impl Rank {
     }
 }
 
+impl std::ops::Sub<Position> for Position {
+    type Output = (i8, i8);
+
+    fn sub(self, other: Position) -> Self::Output {
+        (
+            self.file.to_index() as i8 - other.file.to_index() as i8,
+            self.rank.to_index() as i8 - other.rank.to_index() as i8,
+        )
+    }
+}
+
 impl std::ops::Add<u8> for File {
     type Output = File;
 

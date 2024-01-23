@@ -32,13 +32,6 @@ pub struct RelativeMoveList {
     specific: Vec<RelativeMove>,
 }
 
-// #[derive(Clone, Copy, Debug, serde::Deserialize, serde::Serialize, Hash, PartialEq, Eq)]
-// pub struct AbsoluteMove {
-//     piece: super::Piece,
-//     origin: super::Position,
-//     target: super::Position,
-
-// }
 impl ChessMove {
     pub fn new(
         origin: super::Position,
@@ -53,6 +46,60 @@ impl ChessMove {
             piece,
         }
     }
+    pub fn is_valid(&self, board: &super::Board) -> bool {
+        use super::Piece;
+
+        if board.next_to_play() != self.color {
+            // Wait your turn
+            trace!("Wait your turn");
+            return false;
+        }
+
+        if board.read(self.origin) != Some((self.color, self.piece)) {
+            trace!("The given origin doesn't contains the given piece");
+            return false;
+        }
+
+        if board
+            .read(self.target)
+            .map(|(color, _)| color == self.color)
+            == Some(true)
+        {
+            // Cannot eat teammate
+            trace!("Cannot eat teammate");
+            return false;
+        }
+
+        // Check if the piece can move like that
+        let move_delta = self.target - self.origin;
+
+        match self.piece {
+            Piece::King => {
+                if !matches!(move_delta, (-1..=1, -1..=1)){
+                    // Knings cannot move like that
+                    trace!("Kings cannot move this way: {move_delta:?}");
+                    return false;
+                }
+            },
+            Piece::Queen => {
+
+            },
+            Piece::Rook => {
+
+            },
+            Piece::Bishop => {
+
+            },
+            Piece::Knight => {
+
+            },
+            Piece::Pawn => {
+
+            },
+        }
+
+        false
+    }
 }
 
 impl From<(i8, i8)> for RelativeMove {
@@ -63,7 +110,3 @@ impl From<(i8, i8)> for RelativeMove {
         }
     }
 }
-
-// pub fn validate_move(board: &super::Board, mv: &AbsoluteMove) -> bool{
-//     false
-// }

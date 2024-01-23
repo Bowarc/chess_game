@@ -84,6 +84,7 @@ impl super::StateMachine for Playing {
             state: shared::game::State::Playing { board },
         } = /*implicit &mut */ current_game
         else {
+            // This should never occur as i check it just above
             panic!("")
         };
 

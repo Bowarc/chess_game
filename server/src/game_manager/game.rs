@@ -289,31 +289,23 @@ impl Game {
                             ClientMessage::MakeMove(chess_move) => {
                                 // Check validity
 
-                                if board.make_move(&chess_move).is_err() {
-                                    // If the move isn't good, tell the player and go next
-                                    if let Err(e) =
-                                        player.send(shared::message::ServerMessage::MoveResponse {
-                                            chess_move,
-                                            valid: false,
-                                        })
-                                    {
-                                        // TODO Fix
-                                        panic!("Could not send move upate to player: ({id}), idk what to do: {e}", id = player.id())
-                                        // continue;
-                                    }
-                                } else {
+                                let res = board.make_move(&chess_move);
+
+                                if res.is_ok(){
                                     debug!("Move played: {chess_move:?}");
-                                    if let Err(e) =
-                                        player.send(shared::message::ServerMessage::MoveResponse {
-                                            chess_move,
-                                            valid: true,
-                                        })
-                                    {
-                                        // TODO Fix
-                                        panic!("Could not send move upate to player: ({id}), idk what to do: {e}", id = player.id())
-                                        // continue;
-                                    }
                                     broad_update = true;
+                                }
+
+                                // Send validity to the player
+                                if let Err(e) =
+                                    player.send(shared::message::ServerMessage::MoveResponse {
+                                        chess_move,
+                                        valid: res.is_ok(),
+                                    })
+                                {
+                                    // TODO Fix
+                                    panic!("Could not send move upate to player: ({id}), idk what to do: {e}", id = player.id())
+                                    // continue;
                                 }
                             }
                             _ => {
