@@ -18,10 +18,10 @@ pub enum Piece {
 }
 
 impl Piece {
-    pub fn relative_moves(&self) -> super::movement::RelativeMoveList {
+    pub fn pseudo_legal_relative_moves(&self) -> &Vec<super::movement::RelativeChessMove> {
         let movelist = super::movement::RELATIVE_MOVES.get(self);
 
-        movelist.unwrap().clone()
+        movelist.unwrap()
     }
 
     pub fn from_fen_char(c: char) -> Option<Self> {
@@ -34,5 +34,12 @@ impl Piece {
             'p' => Some(Piece::Pawn),
             _ => None,
         }
+    }
+}
+
+
+impl std::fmt::Display for Piece{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
     }
 }

@@ -12,7 +12,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
     pub fn new(addr: std::net::SocketAddr) -> ggez::GameResult<Self> {
         let cfg = networking::proxy::ProxyConfig {
             addr,
-            run_tps: 10_000,
+            run_tps: 1_000,
             stat_cfg: networking::stats::StatConfig {
                 bps: networking::stats::config::BpsConfig { enabled: true },
                 rtt: networking::stats::config::RttConfig {

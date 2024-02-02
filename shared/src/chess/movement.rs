@@ -1,9 +1,9 @@
 lazy_static::lazy_static! {
-    pub static ref RELATIVE_MOVES: std::collections::HashMap<super::Piece, RelativeMoveList> = {
+    pub static ref RELATIVE_MOVES: std::collections::HashMap<super::Piece, Vec<RelativeChessMove>> = {
         let path = crate::file::Path::new(crate::file::FileSystem::Internal, "config/pieces_relative_moves.ron".to_string());
         let bytes = crate::file::bytes(path);
-        let x = ron::de::from_bytes::<std::collections::HashMap<super::Piece, RelativeMoveList>>(&bytes).unwrap();
-        error!("Testing: {x:?}");
+        let x = ron::de::from_bytes::<std::collections::HashMap<super::Piece, Vec<RelativeChessMove>>>(&bytes).unwrap();
+        info!("Loaded relative chess moves: {x:?}");
         x
     };
 }
@@ -20,16 +20,16 @@ pub struct ChessMove {
 
 #[derive(Clone, Copy, Debug, serde::Deserialize, serde::Serialize, Hash, PartialEq, Eq)]
 #[serde(from = "(i8, i8)")]
-pub struct RelativeMove {
-    x: i8,
-    y: i8,
+pub struct RelativeChessMove {
+    pub x: i8,
+    pub y: i8,
 }
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize, Hash, PartialEq, Eq)]
 pub struct RelativeMoveList {
-    normal: Vec<RelativeMove>,
-    eat: Vec<RelativeMove>,
-    specific: Vec<RelativeMove>,
+    normal: Vec<RelativeChessMove>,
+    eat: Vec<RelativeChessMove>,
+    specific: Vec<RelativeChessMove>,
 }
 
 impl ChessMove {
@@ -46,17 +46,15 @@ impl ChessMove {
             piece,
         }
     }
-    pub fn is_valid(&self, board: &super::Board) -> bool {
-        use super::Piece;
-
+    pub fn is_pseudo_legal(&self, board: &super::Board) -> bool {
         if board.next_to_play() != self.color {
             // Wait your turn
-            trace!("Wait your turn");
+            debug!("Wait your turn");
             return false;
         }
 
         if board.read(self.origin) != Some((self.color, self.piece)) {
-            trace!("The given origin doesn't contains the given piece");
+            debug!("The given origin doesn't contains the given piece");
             return false;
         }
 
@@ -66,47 +64,53 @@ impl ChessMove {
             == Some(true)
         {
             // Cannot eat teammate
-            trace!("Cannot eat teammate");
+            debug!("Cannot eat teammate");
             return false;
         }
 
         // Check if the piece can move like that
-        let move_delta = self.target - self.origin;
+        let relative_move = self.relative();
 
-        match self.piece {
-            Piece::King => {
-                if !matches!(move_delta, (-1..=1, -1..=1)){
-                    // Knings cannot move like that
-                    trace!("Kings cannot move this way: {move_delta:?}");
-                    return false;
-                }
-            },
-            Piece::Queen => {
-
-            },
-            Piece::Rook => {
-
-            },
-            Piece::Bishop => {
-
-            },
-            Piece::Knight => {
-
-            },
-            Piece::Pawn => {
-
-            },
+        if !self.piece
+            .pseudo_legal_relative_moves()
+            .contains(&relative_move)
+        {
+            // This piece cannot move like that
+            debug!(
+                "{piece} cannot move this way: {relative_move:?}",
+                piece = self.piece
+            );
+            return false;
         }
 
-        false
+        true
+    }
+
+    pub fn relative(&self) -> RelativeChessMove {
+        // I belive that we shoud reverse it if the player is black, as it's a perspective
+
+        let mut relative_mv = self.target - self.origin;
+
+        if self.color == super::Color::Black {
+            relative_mv.y *= -1;
+            relative_mv.x *= -1;
+        }
+
+        relative_mv
     }
 }
 
-impl From<(i8, i8)> for RelativeMove {
+impl From<(i8, i8)> for RelativeChessMove {
     fn from(value: (i8, i8)) -> Self {
         Self {
             x: value.0,
             y: value.1,
         }
+    }
+}
+
+impl From<RelativeChessMove> for (i8, i8) {
+    fn from(mv: RelativeChessMove) -> Self {
+        (mv.x, mv.y)
     }
 }

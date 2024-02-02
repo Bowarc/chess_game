@@ -44,7 +44,7 @@ impl Loader {
              *   3) Send back the file content
              */
 
-            match self.channel.try_recv() {
+            match self.channel.recv() {
                 Ok(request) => {
                     let bytes_opt = match request {
                         Request::Sound(id) => self.resolvers.get_sound(&id),

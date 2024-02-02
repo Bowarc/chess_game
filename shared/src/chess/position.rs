@@ -172,13 +172,13 @@ impl Rank {
 }
 
 impl std::ops::Sub<Position> for Position {
-    type Output = (i8, i8);
+    type Output = super::movement::RelativeChessMove;
 
     fn sub(self, other: Position) -> Self::Output {
-        (
-            self.file.to_index() as i8 - other.file.to_index() as i8,
-            self.rank.to_index() as i8 - other.rank.to_index() as i8,
-        )
+        super::movement::RelativeChessMove {
+            x: self.file.to_index() as i8 - other.file.to_index() as i8,
+            y: self.rank.to_index() as i8 - other.rank.to_index() as i8,
+        }
     }
 }
 

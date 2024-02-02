@@ -11,7 +11,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
     pub fn new(stream: std::net::TcpStream, addr: std::net::SocketAddr) -> Self {
         let cfg = networking::proxy::ProxyConfig {
             addr,
-            run_tps: 10_0000,
+            run_tps: 1_000,
             stat_cfg: networking::stats::StatConfig {
                 bps: networking::stats::config::BpsConfig { enabled: false },
                 rtt: networking::stats::config::RttConfig {

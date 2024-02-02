@@ -1,5 +1,6 @@
 const BOARD_UI_GROUP: &str = "board";
 const BOARD_SPRITE_UI_GROUP: &str = "board_sprite";
+const BOARD_INDICATOR_GROUP: &str = "indicator";
 
 pub struct Playing {
     ui: crate::ui::UiManager,
@@ -79,13 +80,13 @@ impl super::StateMachine for Playing {
         }
 
         let shared::game::Game {
-            id,
+            id: _,
             players,
             state: shared::game::State::Playing { board },
         } = /*implicit &mut */ current_game
         else {
             // This should never occur as i check it just above
-            panic!("")
+            panic!()
         };
 
         let my_color = players
@@ -112,6 +113,8 @@ impl super::StateMachine for Playing {
         }
 
         self.ui.update(ggctx);
+
+        display_move_indicator(&mut self.ui, board, my_color, self.current_drag.as_ref());
 
         match get_current_move_delta(&mut self.current_drag, &mut self.ui) {
             Ok(Some((start, end))) => 'block: {
@@ -170,6 +173,76 @@ impl super::StateMachine for Playing {
     }
 }
 
+
+fn display_move_indicator(
+    ui: &mut crate::ui::UiManager,
+    board: &shared::chess::Board,
+    color: shared::chess::Color,
+    current_drag: Option<&crate::ui::Id>,
+) {
+    if current_drag.is_none() {
+        let _ = ui.remove_group(BOARD_INDICATOR_GROUP);
+        return;
+    }
+
+    if ui.get_group(BOARD_INDICATOR_GROUP).is_some(){
+        return;
+    }
+
+    let pos_index = get_pos_from_id(current_drag.unwrap());
+
+    let pos = shared::chess::Position::from_index(pos_index.0 as u8, pos_index.1 as u8).unwrap();
+    let pos_index = (pos.file().to_index(), pos.rank().to_index());
+    let Some((p_color, piece)) = board.read(pos) else {
+        return;
+    };
+
+    let mvs = piece.pseudo_legal_relative_moves();
+
+    for mut mv in mvs.clone() {
+        if color == shared::chess::Color::Black{
+            mv.y *= -1;
+        }
+
+        if color != p_color{
+            mv.y *= -1;
+        }
+
+
+        let mv_pos = (pos_index.0 as i8 + mv.x, pos_index.1 as i8 + mv.y);
+        let id = format!("board_square_{}x{}", mv_pos.0, mv_pos.1); 
+        let Some(element) = ui.try_get_element(id) else{
+            warn!("Skipping {mv:?}");
+            continue;
+        };
+
+        let el_pos = element.get_pos_value();
+
+        let new_element = crate::ui::element::Element::new_text(
+            format!("Indicator{mv:?}"),
+            el_pos.clone(),
+            20.,
+            crate::ui::Style::default(),
+            vec![
+                crate::ui::element::TextBit::new_text("", None),
+            ],
+        );
+
+        ui.add_element(new_element, BOARD_INDICATOR_GROUP);
+
+    }   
+}
+
+// Returns the chess position (indexes) given by the current square
+fn get_pos_from_id(id: &crate::ui::Id) -> (i8, i8) {
+    let id = id.replace("board_square_", "").replace('x', "");
+    // debug!("{id}");
+    // Id should then have a len of 2
+    assert_eq!(id.len(), 2);
+    let (x, y) = id.split_at(1);
+    (x.parse().unwrap(), y.parse().unwrap())
+}
+
 /// Retrun delta if a move was played by the player this frame
 #[allow(clippy::type_complexity)] // return type is flagged as complex
 fn get_current_move_delta(
@@ -180,15 +253,6 @@ fn get_current_move_delta(
     if ui.get_group(BOARD_UI_GROUP).is_none() {
         return Err(String::from("A current game is needed for this operation"));
     }
-
-    let get_pos_from_id = |id: &crate::ui::Id| -> (i8, i8) {
-        let id = id.replace("board_square_", "").replace('x', "");
-        // debug!("{id}");
-        // Id should then have a len of 2
-        assert_eq!(id.len(), 2);
-        let (x, y) = id.split_at(1);
-        (x.parse().unwrap(), y.parse().unwrap())
-    };
 
     // Check if there is a current drag
     let Some(dragged_id) = &current_drag else {
@@ -328,9 +392,9 @@ fn create_board(ui: &mut crate::ui::UiManager, mycolor: shared::chess::Color) {
 
     let square_size = Vector::new(board_size.clone() / 8., board_size / 8.);
 
-    let style1 = build_style("#b88b4a");
+    let style1 = build_style("#e3c16f");
 
-    let style2 = build_style("#e3c16f");
+    let style2 = build_style("#b88b4a");
 
     let square_spacing = 0.;
 

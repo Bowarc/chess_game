@@ -291,7 +291,7 @@ impl Game {
 
                                 let res = board.make_move(&chess_move);
 
-                                if res.is_ok(){
+                                if res.is_ok() {
                                     debug!("Move played: {chess_move:?}");
                                     broad_update = true;
                                 }

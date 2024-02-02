@@ -79,14 +79,22 @@ impl Board {
         Some(board)
     }
 
+    /// Returns the next to play of this [`Board`].
     pub fn next_to_play(&self) -> super::Color {
         self.active_player
     }
 
     pub fn make_move(&mut self, mv: &super::movement::ChessMove) -> Result<(), ()> {
+        debug!("{:?}", mv.relative());
         if mv.color != self.active_player {
             return Err(());
         }
+
+        if !mv.is_pseudo_legal(self){
+            error!("Illegal move");
+            return Err(());
+        }
+
         let color_bb = match mv.color {
             super::Color::Black => self.black_bb,
             super::Color::White => self.white_bb,
