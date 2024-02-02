@@ -17,7 +17,12 @@ It's currently nowhere near finished
     - [x] Sprites
     - [x] Strong error resistance
 - [ ] Gameplay
-    - [ ] Can create, join and leave games
+    - [x] Can create a game
+    - [x] Can join a game
+    - [ ] Can leave a game
+    - [x] Can move pieces
+    - [x] Turns
+    - [x] Available moves indicator
     - [ ] General and private chats
     - [ ] Can play games vs other players
     - [ ] Can play games vs bots
