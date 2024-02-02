@@ -68,17 +68,9 @@ impl Loader {
                     }
                 }
                 Err(e) => {
-                    match e {
-                        std::sync::mpsc::TryRecvError::Empty => {
-                            // No requests were received,
-                            // It's normal, we can't expect a load request every tick
-                        }
-                        std::sync::mpsc::TryRecvError::Disconnected => {
-                            error!("The loader thread encountered an unexpected error: {e:?}");
+                    error!("The loader thread encountered an unexpected error: {e:?}");
 
-                            break;
-                        }
-                    }
+                    break;
                 }
             }
         }
