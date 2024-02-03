@@ -44,7 +44,7 @@ impl DrawParam {
 
     pub fn rect(mut self, rect: shared::maths::Rect) -> Self {
         self.pos = rect.aa_topleft();
-        self.size = Some(shared::maths::Vec2::new(rect.width(), rect.height()));
+        self.size = Some(rect.size());
         self
     }
     pub fn to_ggez_scaled(

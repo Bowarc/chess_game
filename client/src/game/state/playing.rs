@@ -347,13 +347,21 @@ fn create_board_pieces(ui: &mut crate::ui::UiManager, board: &shared::chess::Boa
 
                 let size = button.get_size_value();
 
-                let el = Element::new_text(
+                let el = Element::new_image(
                     format!("board_sprite_{i}x{j}"),
                     pos.clone(),
-                    size.x() * 0.8,
+                    size.clone() * 0.8,
                     Style::default(),
-                    vec![TextBit::new_img(sprite_id, None)],
+                    sprite_id,
                 );
+
+                // let el = Element::new_text(
+                //     format!("board_sprite_{i}x{j}"),
+                //     pos.clone(),
+                //     size.x() * 0.8,
+                //     Style::default(),
+                //     vec![TextBit::new_img(sprite_id, None)],
+                // );
 
                 ui.add_element(el, BOARD_SPRITE_UI_GROUP);
             }

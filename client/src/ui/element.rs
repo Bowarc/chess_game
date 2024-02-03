@@ -2,11 +2,13 @@ mod button;
 mod graph;
 mod text;
 mod text_edit;
+mod image;
 
 pub use button::Button;
 pub use graph::{Graph, GraphText};
 pub use text::{Text, TextBit};
 pub use text_edit::TextEdit;
+pub use image::Image;
 
 #[enum_dispatch::enum_dispatch(TElement)]
 pub enum Element {
@@ -14,6 +16,7 @@ pub enum Element {
     Graph,
     Text,
     TextEdit,
+    Image
 }
 
 #[enum_dispatch::enum_dispatch]
@@ -161,18 +164,36 @@ impl Element {
             style,
         ))
     }
+    pub fn new_image(
+        id: impl Into<super::Id>,
+        position: impl Into<super::Position>, // Center
+        size: impl Into<super::Vector>,
+        style: super::Style,
+        image: crate::assets::sprite::SpriteId,
+
+    ) -> Self {
+        Self::Image(image::Image::new(
+            id.into(),
+            position.into(),
+            size.into(),
+            style,
+            image,
+        ))
+    }
 }
 
 /// Getters
 impl Element {
     //Credit: Rust Programming discord: bruh![moment] (170999103482757120)
     // https://discord.com/channels/273534239310479360/1120124565591425034/1162574037633990736
+    // Could be done by a macro lmao
     pub fn try_inner<T: TElement>(&self) -> Option<&T> {
         match self {
             Self::Button(inner) => (inner as &dyn std::any::Any).downcast_ref(),
             Self::Graph(inner) => (inner as &dyn std::any::Any).downcast_ref(),
             Self::Text(inner) => (inner as &dyn std::any::Any).downcast_ref(),
             Self::TextEdit(inner) => (inner as &dyn std::any::Any).downcast_ref(),
+            Self::Image(inner) => (inner as &dyn std::any::Any).downcast_ref(),
         }
     }
     pub fn inner<T: TElement>(&self) -> &T {
@@ -185,6 +206,7 @@ impl Element {
             Self::Graph(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
             Self::Text(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
             Self::TextEdit(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
+            Self::Image(inner) => (inner as &mut dyn std::any::Any).downcast_mut(),
         }
     }
     pub fn inner_mut<T: TElement>(&mut self) -> &mut T {
@@ -197,6 +219,7 @@ impl Element {
             Self::Graph(inner) => inner,
             Self::Text(inner) => inner,
             Self::TextEdit(inner) => inner,
+            Self::Image(inner) => inner,
         }
     }
     pub fn inner_as_trait_mut(&mut self) -> &mut dyn TElement {
@@ -205,6 +228,7 @@ impl Element {
             Self::Graph(inner) => inner,
             Self::Text(inner) => inner,
             Self::TextEdit(inner) => inner,
+            Self::Image(inner) => inner,
         }
     }
 
