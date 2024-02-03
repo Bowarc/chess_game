@@ -90,7 +90,7 @@ impl Board {
             return Err(());
         }
 
-        if !mv.is_pseudo_legal(self){
+        if !mv.is_pseudo_legal(self) {
             error!("Illegal move");
             return Err(());
         }

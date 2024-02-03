@@ -6,7 +6,7 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
             Some(super::Style::new(
                 crate::render::Color::from_hex(&format!("{main_color}aa")),
                 None,
-                Some(super::style::BorderStyle::new(
+                Some(super::style::Border::new(
                     crate::render::Color::from_hex("#000000"),
                     5.,
                 )),
@@ -14,7 +14,7 @@ pub fn register_ui_elements(ui: &mut super::UiManager) {
             Some(super::Style::new(
                 crate::render::Color::from_hex(&format!("{main_color}55")),
                 None,
-                Some(super::style::BorderStyle::new(
+                Some(super::style::Border::new(
                     crate::render::Color::from_hex("#000000"),
                     5.,
                 )),

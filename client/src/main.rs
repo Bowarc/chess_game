@@ -42,11 +42,11 @@ impl Chess {
                 (200., 50.),
                 ui::Style::new(
                     render::Color::random_rgb(),
-                    Some(ui::style::BackgroundStyle::new(
+                    Some(ui::style::Background::new(
                         render::Color::from_rgba(23, 23, 23, 150),
                         Some(assets::sprite::SpriteId::MissingNo),
                     )),
-                    Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
+                    Some(ui::style::Border::new(render::Color::WHITE, 1.)),
                 ),
                 Some(
                     ui::element::GraphText::default()
@@ -67,7 +67,7 @@ impl Chess {
                 ui::Style::new(
                     render::Color::random_rgb(),
                     None,
-                    Some(ui::style::BorderStyle::new(render::Color::WHITE, 1.)),
+                    Some(ui::style::Border::new(render::Color::WHITE, 1.)),
                 ),
                 Some(
                     ui::element::GraphText::default()
@@ -91,9 +91,9 @@ impl Chess {
         //     20.,
         //     ui::Style::new(
         //         render::Color::WHITE,
-        //         // Some(ui::style::BackgroundStyle::new(render::Color::WHITE, Some(assets::sprite::SpriteId::MissingNo))),
+        //         // Some(ui::style::Background::new(render::Color::WHITE, Some(assets::sprite::SpriteId::MissingNo))),
         //         None,
-        //         Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
+        //         Some(ui::style::Border::new(render::Color::random_rgb(), 2.)),
         //     ),
         //     vec![
         //         ui::element::TextBit::new_text(
@@ -136,24 +136,24 @@ impl Chess {
         //     ui::style::Bundle::new(
         //         ui::Style::new(
         //             render::Color::default(),
-        //             Some(ui::style::BackgroundStyle::new(
+        //             Some(ui::style::Background::new(
         //                 render::Color::random_rgb(),
         //                 None,
         //             )),
-        //             Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+        //             Some(ui::style::Border::new(render::Color::random_rgb(), 1.)),
         //         ),
         //         Some(ui::Style::new(
         //             render::Color::random_rgb(),
-        //             Some(ui::style::BackgroundStyle::new(
+        //             Some(ui::style::Background::new(
         //                 render::Color::random_rgb(),
         //                 None,
         //             )),
-        //             Some(ui::style::BorderStyle::default()),
+        //             Some(ui::style::Border::default()),
         //         )),
         //         Some(ui::Style::new(
         //             render::Color::random_rgb(),
         //             None,
-        //             Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+        //             Some(ui::style::Border::new(render::Color::random_rgb(), 1.)),
         //         )),
         //     ),
         // ));
@@ -165,11 +165,11 @@ impl Chess {
                 20.,
                 ui::Style::new(
                     render::Color::random_rgb(),
-                    Some(ui::style::BackgroundStyle::new(
+                    Some(ui::style::Background::new(
                         render::Color::from_rgba(20, 20, 20, 100),
                         None,
                     )),
-                    Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 1.)),
+                    Some(ui::style::Border::new(render::Color::random_rgb(), 1.)),
                 ),
                 vec![ui::element::TextBit::new_text("".to_string(), None)],
             ),
@@ -195,11 +195,11 @@ impl Chess {
                     ui::Vector::new(50., 50.),
                     ui::Style::new(
                         render::Color::from_rgba(100, 100, 100, 100),
-                        Some(ui::style::BackgroundStyle::new(
+                        Some(ui::style::Background::new(
                             render::Color::from_rgb(100, 100, 100),
                             None,
                         )),
-                        Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
+                        Some(ui::style::Border::new(render::Color::random_rgb(), 2.)),
                     )
                     .into(),
                 );

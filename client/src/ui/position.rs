@@ -13,6 +13,7 @@ impl Position {
         let value = value.into();
         Self::Value(value)
     }
+
     pub fn new_anchor(anchor: super::Anchor, offset: impl Into<super::Vector>) -> Self {
         Self::Anchor {
             anchor,

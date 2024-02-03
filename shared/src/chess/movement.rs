@@ -71,7 +71,8 @@ impl ChessMove {
         // Check if the piece can move like that
         let relative_move = self.relative();
 
-        if !self.piece
+        if !self
+            .piece
             .pseudo_legal_relative_moves()
             .contains(&relative_move)
         {

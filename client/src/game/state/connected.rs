@@ -193,11 +193,11 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
 
     let card_style = ui::Style::new(
         render::Color::from_rgba(100, 100, 100, 100),
-        Some(ui::style::BackgroundStyle::new(
+        Some(ui::style::Background::new(
             render::Color::from_rgb(0, 0, 0),
             None,
         )),
-        Some(ui::style::BorderStyle::new(render::Color::random_rgb(), 2.)),
+        Some(ui::style::Border::new(render::Color::random_rgb(), 2.)),
     );
 
     for (i, game) in games.iter().enumerate() {

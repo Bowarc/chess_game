@@ -173,7 +173,6 @@ impl super::StateMachine for Playing {
     }
 }
 
-
 fn display_move_indicator(
     ui: &mut crate::ui::UiManager,
     board: &shared::chess::Board,
@@ -185,7 +184,7 @@ fn display_move_indicator(
         return;
     }
 
-    if ui.get_group(BOARD_INDICATOR_GROUP).is_some(){
+    if ui.get_group(BOARD_INDICATOR_GROUP).is_some() {
         return;
     }
 
@@ -200,18 +199,17 @@ fn display_move_indicator(
     let mvs = piece.pseudo_legal_relative_moves();
 
     for mut mv in mvs.clone() {
-        if color == shared::chess::Color::Black{
+        if color == shared::chess::Color::Black {
             mv.y *= -1;
         }
 
-        if color != p_color{
+        if color != p_color {
             mv.y *= -1;
         }
-
 
         let mv_pos = (pos_index.0 as i8 + mv.x, pos_index.1 as i8 + mv.y);
-        let id = format!("board_square_{}x{}", mv_pos.0, mv_pos.1); 
-        let Some(element) = ui.try_get_element(id) else{
+        let id = format!("board_square_{}x{}", mv_pos.0, mv_pos.1);
+        let Some(element) = ui.try_get_element(id) else {
             warn!("Skipping {mv:?}");
             continue;
         };
@@ -223,14 +221,11 @@ fn display_move_indicator(
             el_pos.clone(),
             20.,
             crate::ui::Style::default(),
-            vec![
-                crate::ui::element::TextBit::new_text("", None),
-            ],
+            vec![crate::ui::element::TextBit::new_text("", None)],
         );
 
         ui.add_element(new_element, BOARD_INDICATOR_GROUP);
-
-    }   
+    }
 }
 
 // Returns the chess position (indexes) given by the current square
@@ -377,12 +372,12 @@ fn create_board(ui: &mut crate::ui::UiManager, mycolor: shared::chess::Color) {
             Some(Style::new(
                 Color::from_hex(&format!("{main_color}aa")),
                 None,
-                Some(style::BorderStyle::new(Color::from_hex("#000000"), 5.)),
+                Some(style::Border::new(Color::from_hex("#000000"), 5.)),
             )),
             Some(Style::new(
                 Color::from_hex(&format!("{main_color}55")),
                 None,
-                Some(style::BorderStyle::new(Color::from_hex("#000000"), 5.)),
+                Some(style::Border::new(Color::from_hex("#000000"), 5.)),
             )),
         )
     };
