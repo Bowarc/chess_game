@@ -56,12 +56,12 @@ fn handle_server_message(
     }
 }
 
-fn game_state(
+// This is dogshit rn but it's for testing
+fn move_gen(
     client: &mut networking::Socket<shared::message::ServerMessage, shared::message::ClientMessage>,
-    mut game: shared::game::Game,
-    bot_id: shared::id::Id,
-) -> ! {
-    let bot_color = find_bot_color(&game, bot_id);
+    board: &shared::chess::Board,
+    bot_color: shared::chess::Color,
+) -> shared::chess::ChessMove {
     let all_pieces = [
         shared::chess::Piece::Pawn,
         shared::chess::Piece::Knight,
@@ -70,6 +70,84 @@ fn game_state(
         shared::chess::Piece::Queen,
         shared::chess::Piece::King,
     ];
+    'outer: loop {
+        let moving_piece = random::pick(&all_pieces);
+        let mut all_piece_position = Vec::new();
+        {
+            for file in 0..8 {
+                for rank in 0..8 {
+                    if board.read((file, rank).into()) == Some((bot_color, moving_piece)) {
+                        all_piece_position.push((file as i8, rank as i8))
+                    }
+                }
+            }
+        }
+        if all_piece_position.is_empty() {
+            debug!("No position for piece: {moving_piece}");
+            continue;
+        }
+        let moving_piece_pos = random::pick(&all_piece_position);
+
+        let possible_moves = moving_piece.pseudo_legal_relative_moves();
+
+        let mv = random::pick(possible_moves);
+
+        let bot_chess_move = shared::chess::ChessMove::new(
+            shared::chess::Position::from_index(moving_piece_pos.0 as u8, moving_piece_pos.1 as u8)
+                .unwrap(),
+            {
+                let mut target = moving_piece_pos;
+                match bot_color {
+                    chess::Color::Black => {
+                        target.0 -= mv.x;
+                        target.1 -= mv.y;
+                    }
+                    chess::Color::White => {
+                        target.0 += mv.x;
+                        target.1 += mv.y;
+                    }
+                }
+                let target = shared::chess::Position::from_index(target.0 as u8, target.1 as u8);
+                if target.is_none() {
+                    continue;
+                }
+                target.unwrap()
+            },
+            moving_piece,
+            bot_color,
+        );
+
+        client
+            .send(shared::message::ClientMessage::MakeMove(bot_chess_move))
+            .unwrap();
+
+        'inner: loop {
+            let Ok((_header, msg)) = client.try_recv() else {
+                continue 'inner;
+            };
+
+            if let shared::message::ServerMessage::MoveResponse { chess_move, valid } = msg {
+                assert_eq!(bot_chess_move, chess_move);
+                if valid {
+                    debug!("Moving {moving_piece}");
+                    break 'outer;
+                } else {
+                    warn!("Move wasn't right: {moving_piece}: {chess_move:?}");
+                    break;
+                }
+            }
+        }
+    }
+    panic!()
+}
+
+fn game_state(
+    client: &mut networking::Socket<shared::message::ServerMessage, shared::message::ClientMessage>,
+    mut game: shared::game::Game,
+    bot_id: shared::id::Id,
+) -> ! {
+    let bot_color = find_bot_color(&game, bot_id);
+
     debug!("Bot is ready");
     loop {
         error!("Frame");
@@ -88,81 +166,6 @@ fn game_state(
 
         if board.next_to_play() != bot_color {
             continue;
-        }
-
-
-        // This is dogshit rn but it's for testing
-        'outer: loop {
-            let moving_piece = random::pick(&all_pieces);
-            let mut all_piece_position = Vec::new();
-            {
-                for file in 0..8 {
-                    for rank in 0..8 {
-                        if board.read((file, rank).into()) == Some((bot_color, moving_piece)) {
-                            all_piece_position.push((file as i8, rank as i8))
-                        }
-                    }
-                }
-            }
-            if all_piece_position.is_empty() {
-                debug!("No position for piece: {moving_piece}");
-                continue;
-            }
-            let moving_piece_pos = random::pick(&all_piece_position);
-
-            let possible_moves = moving_piece.pseudo_legal_relative_moves();
-
-            let mv = random::pick(possible_moves);
-
-            let bot_chess_move = shared::chess::ChessMove::new(
-                shared::chess::Position::from_index(
-                    moving_piece_pos.0 as u8,
-                    moving_piece_pos.1 as u8,
-                )
-                .unwrap(),
-                {
-                    let mut target = moving_piece_pos;
-                    match bot_color {
-                        chess::Color::Black => {
-                            target.0 -= mv.x;
-                            target.1 -= mv.y;
-                        }
-                        chess::Color::White =>{
-                            target.0 += mv.x;
-                            target.1 += mv.y;
-                        },
-                    }
-                    let target =
-                        shared::chess::Position::from_index(target.0 as u8, target.1 as u8);
-                    if target.is_none() {
-                        continue;
-                    }
-                    target.unwrap()
-                },
-                moving_piece,
-                bot_color,
-            );
-
-            client
-                .send(shared::message::ClientMessage::MakeMove(bot_chess_move))
-                .unwrap();
-
-            'inner: loop {
-                let Ok((_header, msg)) = client.try_recv() else {
-                    continue 'inner;
-                };
-
-                if let shared::message::ServerMessage::MoveResponse { chess_move, valid } = msg {
-                    assert_eq!(bot_chess_move, chess_move);
-                    if valid {
-                        debug!("Moving {moving_piece} ");
-                        break 'outer;
-                    } else {
-                        warn!("Move wasn't right: {moving_piece}: {chess_move:?}");
-                        break;
-                    }
-                }
-            }
         }
     }
 }

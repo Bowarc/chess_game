@@ -185,23 +185,8 @@ impl Board {
         }
     }
 
-    pub fn pawns(&self) -> super::BitBoard {
-        *self.piece_bb.get(&super::Piece::Pawn).unwrap()
-    }
-    pub fn knights(&self) -> super::BitBoard {
-        *self.piece_bb.get(&super::Piece::Knight).unwrap()
-    }
-    pub fn bishops(&self) -> super::BitBoard {
-        *self.piece_bb.get(&super::Piece::Bishop).unwrap()
-    }
-    pub fn rooks(&self) -> super::BitBoard {
-        *self.piece_bb.get(&super::Piece::Rook).unwrap()
-    }
-    pub fn queens(&self) -> super::BitBoard {
-        *self.piece_bb.get(&super::Piece::Queen).unwrap()
-    }
-    pub fn kings(&self) -> super::BitBoard {
-        *self.piece_bb.get(&super::Piece::King).unwrap()
+    pub fn get_bb(&self, piece: super::Piece) -> super::BitBoard {
+        *self.piece_bb.get(&piece).unwrap()
     }
 }
 

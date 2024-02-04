@@ -196,9 +196,13 @@ fn display_move_indicator(
         return;
     };
 
+    debug!("Base pos: {pos_index:?}");
+
     let mvs = piece.pseudo_legal_relative_moves();
 
     for mut mv in mvs.clone() {
+        debug!("Adding mv: {mv:?}");
+
         if color == shared::chess::Color::Black {
             mv.y *= -1;
         }
@@ -207,8 +211,48 @@ fn display_move_indicator(
             mv.y *= -1;
         }
 
-        let mv_pos = (pos_index.0 as i8 + mv.x, pos_index.1 as i8 + mv.y);
-        let id = format!("board_square_{}x{}", mv_pos.0, mv_pos.1);
+        let temp = (pos_index.0 as i8 + mv.x, pos_index.1 as i8 + mv.y);
+        debug!("{temp:?}");
+
+        if temp.0 < 1 || temp.1 < 1 {
+            continue;
+        }
+
+        let Some(mv_pos) = shared::chess::Position::from_index(temp.0 as u8, temp.1 as u8) else {
+            continue;
+        };
+
+        let (color2, piece2) = board.read(pos_index.into()).unwrap();
+        assert_eq!(p_color, color2);
+        assert_eq!(piece, piece2);
+
+        let chess_move = shared::chess::ChessMove::new(pos_index.into(), mv_pos, piece, color);
+
+        let style = if chess_move.is_legal(board) {
+            crate::ui::Style::new(
+                crate::render::Color::from_rgb(0, 255, 0),
+                None,
+                Some(crate::ui::style::Border::new(
+                    crate::render::Color::from_rgb(0, 255, 0),
+                    5.,
+                )),
+            )
+        } else {
+            crate::ui::Style::new(
+                crate::render::Color::from_rgb(255, 0, 0),
+                None,
+                Some(crate::ui::style::Border::new(
+                    crate::render::Color::from_rgb(255, 0, 0),
+                    5.,
+                )),
+            )
+        };
+
+        let id = format!(
+            "board_square_{}x{}",
+            mv_pos.file().to_index(),
+            mv_pos.rank().to_index()
+        );
         let Some(element) = ui.try_get_element(id) else {
             warn!("Skipping {mv:?}");
             continue;
@@ -220,7 +264,7 @@ fn display_move_indicator(
             format!("Indicator{mv:?}"),
             el_pos.clone(),
             20.,
-            crate::ui::Style::default(),
+            style,
             vec![crate::ui::element::TextBit::new_text("", None)],
         );
 
