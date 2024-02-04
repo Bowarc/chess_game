@@ -1,14 +1,14 @@
 mod button;
 mod graph;
+mod image;
 mod text;
 mod text_edit;
-mod image;
 
 pub use button::Button;
 pub use graph::{Graph, GraphText};
+pub use image::Image;
 pub use text::{Text, TextBit};
 pub use text_edit::TextEdit;
-pub use image::Image;
 
 #[enum_dispatch::enum_dispatch(TElement)]
 pub enum Element {
@@ -16,7 +16,7 @@ pub enum Element {
     Graph,
     Text,
     TextEdit,
-    Image
+    Image,
 }
 
 #[enum_dispatch::enum_dispatch]
@@ -170,7 +170,6 @@ impl Element {
         size: impl Into<super::Vector>,
         style: super::Style,
         image: crate::assets::sprite::SpriteId,
-
     ) -> Self {
         Self::Image(image::Image::new(
             id.into(),

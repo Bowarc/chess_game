@@ -2,9 +2,7 @@ lazy_static::lazy_static! {
     pub static ref RELATIVE_MOVES: std::collections::HashMap<super::Piece, Vec<RelativeChessMove>> = {
         let path = crate::file::Path::new(crate::file::FileSystem::Internal, "config/pieces_relative_moves.ron".to_string());
         let bytes = crate::file::bytes(path);
-        let x = ron::de::from_bytes::<std::collections::HashMap<super::Piece, Vec<RelativeChessMove>>>(&bytes).unwrap();
-        info!("Loaded relative chess moves: {x:?}");
-        x
+        ron::de::from_bytes::<std::collections::HashMap<super::Piece, Vec<RelativeChessMove>>>(&bytes).unwrap()
     };
 }
 
@@ -23,13 +21,6 @@ pub struct ChessMove {
 pub struct RelativeChessMove {
     pub x: i8,
     pub y: i8,
-}
-
-#[derive(Clone, Debug, serde::Deserialize, serde::Serialize, Hash, PartialEq, Eq)]
-pub struct RelativeMoveList {
-    normal: Vec<RelativeChessMove>,
-    eat: Vec<RelativeChessMove>,
-    specific: Vec<RelativeChessMove>,
 }
 
 impl ChessMove {

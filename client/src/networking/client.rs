@@ -1,10 +1,6 @@
 pub struct Client<R: networking::Message, W: networking::Message> {
-    proxy: threading::Channel<networking::proxy::ProxyMessage<R>, W>,
+    controller: networking::proxy::ProxyController<R, W>,
     ip: std::net::SocketAddr,
-    running: std::sync::Arc<std::sync::atomic::AtomicBool>,
-    connected: std::sync::Arc<std::sync::atomic::AtomicBool>,
-    stats: triple_buffer::Output<networking::NetworkStats<R, W>>,
-    proxy_thread_handle: std::thread::JoinHandle<()>,
     received_msg: Vec<R>,
 }
 
@@ -24,21 +20,11 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
             auto_reconnect: true,
         };
 
-        let networking::proxy::ProxyOutput {
-            stats,
-            channel,
-            running,
-            connected,
-            thread_handle,
-        } = networking::Proxy::start_new(cfg, None);
+        let controller = networking::Proxy::start_new(cfg, None);
 
         Ok(Self {
-            proxy: channel,
+            controller,
             ip: addr,
-            running,
-            connected,
-            stats,
-            proxy_thread_handle: thread_handle,
             received_msg: Vec::new(),
         })
     }
@@ -48,7 +34,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
 
     pub fn stats(&mut self) -> &networking::NetworkStats<R, W> {
         // needs mutable as it updates before reading
-        self.stats.read()
+        self.controller.stats()
     }
     pub fn received_msg_mut(&mut self) -> &mut Vec<R> {
         &mut self.received_msg
@@ -63,7 +49,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
             return Err("Proxy is not running anymore".to_string());
         }
 
-        while let Ok(pmsg) = self.proxy.try_recv() {
+        while let Ok(pmsg) = self.controller.try_recv() {
             match pmsg {
                 networking::proxy::ProxyMessage::Forward(msg) => self.received_msg.push(msg),
                 networking::proxy::ProxyMessage::ConnectionResetError => {
@@ -81,18 +67,17 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
     }
 
     pub fn send(&mut self, msg: W) -> Result<(), std::sync::mpsc::SendError<W>> {
-        self.proxy.send(msg)
+        self.controller.send(msg)
     }
 
     pub fn is_connected(&self) -> bool {
-        self.connected.load(std::sync::atomic::Ordering::Relaxed)
+        self.controller.is_connected()
     }
     pub fn is_running(&self) -> bool {
-        self.running.load(std::sync::atomic::Ordering::Relaxed)
+        self.controller.is_running()
     }
 
     pub fn request_ping(&mut self) -> Result<(), std::sync::mpsc::SendError<W>> {
-        self.send(W::default_ping())?;
-        Ok(())
+        self.send(W::default_ping())
     }
 }

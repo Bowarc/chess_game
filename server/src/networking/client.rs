@@ -1,9 +1,6 @@
 pub struct Client<R: networking::Message, W: networking::Message> {
-    proxy: threading::Channel<networking::proxy::ProxyMessage<R>, W>,
+    controller: networking::proxy::ProxyController<R, W>,
     addr: std::net::SocketAddr,
-    running: std::sync::Arc<std::sync::atomic::AtomicBool>,
-    connected: std::sync::Arc<std::sync::atomic::AtomicBool>,
-    stats: triple_buffer::Output<networking::NetworkStats<R, W>>,
     id: shared::id::Id,
 }
 
@@ -25,20 +22,11 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
             auto_reconnect: false,
         };
 
-        let networking::proxy::ProxyOutput {
-            stats,
-            channel,
-            running,
-            connected,
-            thread_handle,
-        } = networking::Proxy::start_new(cfg, Some(stream));
+        let controller = networking::Proxy::start_new(cfg, Some(stream));
 
         Self {
-            proxy: channel,
+            controller,
             addr,
-            running,
-            connected,
-            stats,
             id: shared::id::Id::new(),
         }
     }
@@ -50,7 +38,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
     }
 
     pub fn try_recv(&mut self) -> Result<R, std::sync::mpsc::TryRecvError> {
-        match self.proxy.try_recv()? {
+        match self.controller.try_recv()? {
             networking::proxy::ProxyMessage::Forward(msg) => Ok(msg),
             networking::proxy::ProxyMessage::ConnectionResetError => {
                 Err(std::sync::mpsc::TryRecvError::Disconnected)
@@ -63,7 +51,7 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
         }
     }
     pub fn send(&mut self, msg: W) -> Result<(), std::sync::mpsc::SendError<W>> {
-        self.proxy.send(msg)
+        self.controller.send(msg)
     }
     pub fn update(&mut self) -> Result<(), shared::error::server::ServerError> {
         if !self.is_connected() {
@@ -87,9 +75,9 @@ impl<R: networking::Message + 'static, W: networking::Message + 'static> Client<
     }
 
     pub fn is_connected(&self) -> bool {
-        self.connected.load(std::sync::atomic::Ordering::Relaxed)
+        self.controller.is_connected()
     }
     pub fn is_running(&self) -> bool {
-        self.running.load(std::sync::atomic::Ordering::Relaxed)
+        self.controller.is_running()
     }
 }

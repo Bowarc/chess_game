@@ -31,7 +31,7 @@ impl Board {
             return None;
         }
 
-        let pieces = tokens.get(0).unwrap();
+        let pieces = tokens.first().unwrap();
         let active_player = tokens.get(1).unwrap();
         let _castles = tokens.get(2).unwrap();
         let _idk = tokens.get(3).unwrap();
@@ -184,6 +184,25 @@ impl Board {
             bb.flip();
         }
     }
+
+    pub fn pawns(&self) -> super::BitBoard {
+        *self.piece_bb.get(&super::Piece::Pawn).unwrap()
+    }
+    pub fn knights(&self) -> super::BitBoard {
+        *self.piece_bb.get(&super::Piece::Knight).unwrap()
+    }
+    pub fn bishops(&self) -> super::BitBoard {
+        *self.piece_bb.get(&super::Piece::Bishop).unwrap()
+    }
+    pub fn rooks(&self) -> super::BitBoard {
+        *self.piece_bb.get(&super::Piece::Rook).unwrap()
+    }
+    pub fn queens(&self) -> super::BitBoard {
+        *self.piece_bb.get(&super::Piece::Queen).unwrap()
+    }
+    pub fn kings(&self) -> super::BitBoard {
+        *self.piece_bb.get(&super::Piece::King).unwrap()
+    }
 }
 
 impl Default for Board {
@@ -191,14 +210,6 @@ impl Default for Board {
         Self::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap()
     }
 }
-
-// impl std::fmt::Display for Board {
-//     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-//         let mut s = String::new();
-
-//         write!(f, "{}", s)
-//     }
-// }
 
 #[cfg(test)]
 mod tests {

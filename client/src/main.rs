@@ -76,7 +76,7 @@ impl Chess {
                         .text(|val| -> String {
                             format!(
                                 "RTT: {}",
-                                time::format(std::time::Duration::from_secs_f64(val))
+                                time::format(std::time::Duration::from_secs_f64(val), 1)
                             )
                         })
                         .size(8.)

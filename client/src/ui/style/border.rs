@@ -18,7 +18,7 @@ impl Border {
     pub fn get_size_mut(&mut self) -> &mut f64 {
         &mut self.size
     }
-    
+
     pub fn get_size(&self) -> &f64 {
         &self.size
     }

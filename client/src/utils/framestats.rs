@@ -133,9 +133,9 @@ impl FrameStats {
             "Time mesurements:\n{SPACING}Fps        : {fps:.2}\n{SPACING}Frame time : {frame_time}\n{SPACING}Update time: {update_time}\n{SPACING}Draw time  : {draw_time}\n",
             // 1./ctx.time.delta().as_secs_f64(),
             fps = ctx.time.fps(), // ctx.time.fps(), the first one is updating A LOT but is accurate, the latter is averaged over last 100 frames
-            frame_time = time::format(self.frame_time()),
-            update_time = time::format(self.update_time()),
-            draw_time = time::format(self.draw_time()),
+            frame_time = time::format(self.frame_time(), 1),
+            update_time = time::format(self.update_time(), 1),
+            draw_time = time::format(self.draw_time(), 1),
         ))
         .color(ggez::graphics::Color::from_rgb(0, 150, 150))
     }
@@ -149,7 +149,7 @@ impl FrameStats {
     ) -> ggez::graphics::TextFragment {
         ggez::graphics::TextFragment::new(format!(
             "Networking:\n{SPACING}RTT: {rtt}\n{SPACING}I/O: {i}/{o}\n{SPACING}I/O (10s): {i10s}/{o10s}\n{SPACING}IOPS {ips}/{ops}",
-            rtt = time::format(network_stats.get_rtt()),
+            rtt = time::format(network_stats.get_rtt(), 1),
             i = mem::display_bytes(network_stats.total_received()),
             o = mem::display_bytes(network_stats.total_sent()),
             i10s = mem::display_bytes(network_stats.received_last_10_sec()),
