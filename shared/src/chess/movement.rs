@@ -116,7 +116,7 @@ impl ChessMove {
 
             error!("aaaaaaaaaaaaa {pos:?}");
 
-            if pos.0 < 1 || pos.0 > 7 || pos.1 < 1 || pos.1 > 7 {
+            if pos.0 < 0 || pos.0 > 7 || pos.1 < 0 || pos.1 > 7 {
                 return false;
             }
 

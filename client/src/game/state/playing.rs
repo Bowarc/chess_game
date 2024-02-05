@@ -214,7 +214,7 @@ fn display_move_indicator(
         let temp = (pos_index.0 as i8 + mv.x, pos_index.1 as i8 + mv.y);
         debug!("{temp:?}");
 
-        if temp.0 < 1 || temp.1 < 1 {
+        if temp.0 < 0 || temp.1 < 0 {
             continue;
         }
 
