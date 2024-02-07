@@ -84,6 +84,12 @@ impl ChessMove {
             return false;
         }
 
+
+        // Bypass for knight as the line of sight check is useless and the target check is in is_pseudo_legal
+        if self.piece == super::Piece::Knight{
+            return true;
+        }
+
         // let mut ok = true;
 
         // Check if the piece doens't go though another one
@@ -94,6 +100,9 @@ impl ChessMove {
         let origin = (self.origin.file().to_index(), self.origin.rank().to_index());
 
         let mut pos = origin;
+
+        let mv_color = self.color;
+        let opposite_color = !self.color;
 
         let delta = (
             match origin.0.cmp(&target.0) {
@@ -120,7 +129,11 @@ impl ChessMove {
                 return false;
             }
 
-            if board.read(pos.into()).is_some() {
+            if matches!(board.read(pos.into()), Some((opposite_color, _))) && pos == target {
+                return true;
+            }
+
+            if matches!(board.read(pos.into()), Some((mv_color, _))) {
                 return false;
             }
 
