@@ -61,7 +61,7 @@ fn move_gen(
     client: &mut networking::Socket<shared::message::ServerMessage, shared::message::ClientMessage>,
     board: &shared::chess::Board,
     bot_color: shared::chess::Color,
-) -> shared::chess::ChessMove {
+) {
     let all_pieces = [
         shared::chess::Piece::Pawn,
         shared::chess::Piece::Knight,
@@ -117,9 +117,13 @@ fn move_gen(
             bot_color,
         );
 
-        client
-            .send(shared::message::ClientMessage::MakeMove(bot_chess_move))
-            .unwrap();
+        if bot_chess_move.is_legal(board) {
+            client
+                .send(shared::message::ClientMessage::MakeMove(bot_chess_move))
+                .unwrap();
+        } else {
+            continue;
+        }
 
         'inner: loop {
             let Ok((_header, msg)) = client.try_recv() else {
@@ -138,7 +142,6 @@ fn move_gen(
             }
         }
     }
-    panic!()
 }
 
 fn game_state(
@@ -150,8 +153,7 @@ fn game_state(
 
     debug!("Bot is ready");
     loop {
-        error!("Frame");
-        std::thread::sleep(std::time::Duration::from_secs_f32(0.5));
+        // std::thread::sleep(std::time::Duration::from_secs_f32(0.5));
         if let Ok((_header, message)) = client.try_recv() {
             handle_server_message(message, client, &mut game)
         }
@@ -167,6 +169,7 @@ fn game_state(
         if board.next_to_play() != bot_color {
             continue;
         }
+        move_gen(client, board, bot_color);
     }
 }
 
