@@ -238,14 +238,15 @@ fn display_move_indicator(
                 )),
             )
         } else {
-            crate::ui::Style::new(
+            let _denied_indicator = crate::ui::Style::new(
                 crate::render::Color::from_rgb(255, 0, 0),
                 None,
                 Some(crate::ui::style::Border::new(
                     crate::render::Color::from_rgb(255, 0, 0),
                     5.,
                 )),
-            )
+            );
+            continue;
         };
 
         let id = format!(
