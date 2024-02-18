@@ -146,19 +146,19 @@ impl ChessMove {
 
                 // Who's turn is it ?
                 if board.next_to_play() != mv.color {
-                    // debug!("Wait your turn");
+                    debug!("Wait your turn");
                     return false;
                 }
 
                 // Are the infos right ?
                 if board.read(mv.origin) != Some((mv.color, mv.piece)) {
-                    // debug!("The given origin doesn't contains the given piece");
+                    debug!("The given origin doesn't contains the given piece");
                     return false;
                 }
 
                 // Does the target square is taken by a teammate
                 if board.read(mv.target).map(|(color, _)| color == mv.color) == Some(true) {
-                    // debug!("Cannot eat teammate");
+                    debug!("Cannot eat teammate");
                     return false;
                 }
 
@@ -192,17 +192,20 @@ impl ChessMove {
                         pos.0 = (pos.0 as i8 + delta.0) as u8;
                         pos.1 = (pos.1 as i8 + delta.1) as u8;
 
+                        #[allow(clippy::absurd_extreme_comparisons)]
+                        #[allow(unused_comparisons)]
                         if pos.0 < 0 || pos.0 > 7 || pos.1 < 0 || pos.1 > 7 {
                             return false;
                         }
 
-                        if matches!(board.read(pos.into()), Some((opposite_color, _)))
-                            && pos == target
-                        {
-                            break 'over;
-                        }
 
-                        if matches!(board.read(pos.into()), Some((mv_color, _))) {
+                        if let Some((read_color, _)) = board.read(pos.into()){
+                            // You can eat, but you can't go further
+                            if read_color != mv.color && pos == target{
+                                break 'over;
+                            }
+                            // You can't eat your allies
+                            debug!("You can't eat your allies");
                             return false;
                         }
 
@@ -217,6 +220,7 @@ impl ChessMove {
                     crate::chess::Piece::Pawn => {
                         // Pawns cannot eat in front of them
                         if board.read(mv.target).is_some() && mv.origin.file() == mv.target.file() {
+                            debug!("Pawns cannot eat in front of them");
                             return false;
                         }
                     }
@@ -228,6 +232,7 @@ impl ChessMove {
             .cloned()
             .collect::<Vec<ChessMove>>();
 
+        debug!("Returning: {out:#?}");
         Some(out)
     }
 

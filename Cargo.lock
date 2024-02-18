@@ -2471,6 +2471,7 @@ dependencies = [
  "ggez",
  "lazy_static",
  "log",
+ "logger",
  "networking",
  "ron",
  "rust-embed",
