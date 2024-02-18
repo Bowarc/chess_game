@@ -145,7 +145,7 @@ impl super::StateMachine for Playing {
                 // };
 
                 if let Err(e) = self.client.send(shared::message::ClientMessage::MakeMove(
-                    shared::chess::ChessMove::new(start, end, spiece, scolor),
+                    shared::chess::ChessMove::new(start, end, spiece, scolor, None),
                 )) {
                     warn!("Could not send move request to server due to: {e}");
                     break 'block;
@@ -203,7 +203,7 @@ fn display_move_indicator(
     debug!("Base pos: {pos_index:?}");
 
     // let mvs = piece.pseudo_legal_relative_moves();
-    let mvs = shared::chess::ChessMove::get_all_legals(piece, pos, board)
+    let mvs = shared::chess::movegen::all_legals(piece, pos, board)
         .unwrap()
         .iter()
         .map(|mv|{
@@ -211,8 +211,7 @@ fn display_move_indicator(
         })
         .collect::<Vec<shared::chess::RelativeChessMove>>();
 
-    for mut mv in mvs.clone() {
-
+    for mv in mvs.clone() {
         let temp = (pos_index.0 as i8 + mv.x, pos_index.1 as i8 + mv.y);
         debug!("{temp:?}");
 
@@ -228,7 +227,7 @@ fn display_move_indicator(
         assert_eq!(p_color, color2);
         assert_eq!(piece, piece2);
 
-        let chess_move = shared::chess::ChessMove::new(pos_index.into(), mv_pos, piece, color);
+        let chess_move = shared::chess::ChessMove::new(pos_index.into(), mv_pos, piece, color, None);
 
         let style = if chess_move.is_legal(board) {
             crate::ui::Style::new(

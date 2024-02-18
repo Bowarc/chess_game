@@ -1,7 +1,7 @@
 mod bitboard;
 mod board;
 mod color;
-mod movegen;
+pub mod movegen;
 mod movement;
 mod piece;
 mod position;

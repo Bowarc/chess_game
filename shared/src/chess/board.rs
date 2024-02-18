@@ -248,7 +248,7 @@ mod tests {
         let mut b = Board::default();
         let s = Position::from_file_rank(File::A, Rank::Two);
         let e = Position::from_file_rank(File::A, Rank::Three);
-        b.make_move(&ChessMove::new(s, e, Piece::Pawn, Color::White))
+        b.make_move(&ChessMove::new(s, e, Piece::Pawn, Color::White, None))
             .unwrap();
 
         println!("{}", b.white_bb | b.black_bb);

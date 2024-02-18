@@ -1,5 +1,14 @@
 #[derive(
-    Default, Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize,
+    Default,
+    Debug,
+    Clone,
+    Copy,
+    Hash,
+    PartialEq,
+    Eq,
+    serde::Serialize,
+    serde::Deserialize,
+    enum_variant_name::VariantName,
 )]
 pub enum Color {
     Black,
@@ -17,6 +26,12 @@ impl Color {
         } else {
             Color::Black
         }
+    }
+}
+
+impl std::fmt::Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.variant_name())
     }
 }
 
