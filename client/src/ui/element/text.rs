@@ -332,19 +332,73 @@ impl super::TElement for Text {
 }
 
 impl TextBit {
-    pub fn new_text(raw: impl Into<String>, color_opt: Option<crate::render::Color>) -> Self {
-        Self::Text {
-            raw: raw.into(),
-            color_opt,
+    // pub fn new_text(raw: impl Into<String>, color_opt: Option<crate::render::Color>) -> Self {
+    //     Self::Text {
+    //         raw: raw.into(),
+    //         color_opt,
+    //     }
+    // }
+    // pub fn new_img(
+    //     sprite_id: crate::assets::sprite::SpriteId,
+    //     color_opt: Option<crate::render::Color>,
+    // ) -> Self {
+    //     Self::Image {
+    //         sprite_id,
+    //         color_opt,
+    //     }
+    // }
+}
+
+impl From<&str> for TextBit {
+    fn from(value: &str) -> Self {
+        TextBit::Text {
+            raw: value.to_string(),
+            color_opt: None,
         }
     }
-    pub fn new_img(
-        sprite_id: crate::assets::sprite::SpriteId,
-        color_opt: Option<crate::render::Color>,
-    ) -> Self {
-        Self::Image {
-            sprite_id,
-            color_opt,
+}
+
+impl From<String> for TextBit {
+    fn from(value: String) -> Self {
+        TextBit::Text {
+            raw: value,
+            color_opt: None,
+        }
+    }
+}
+
+impl From<(&str, crate::render::Color)> for TextBit {
+    fn from(value: (&str, crate::render::Color)) -> Self {
+        TextBit::Text {
+            raw: value.0.to_string(),
+            color_opt: Some(value.1),
+        }
+    }
+}
+
+impl From<(String, crate::render::Color)> for TextBit {
+    fn from(value: (String, crate::render::Color)) -> Self {
+        TextBit::Text {
+            raw: value.0,
+            color_opt: Some(value.1),
+        }
+    }
+}
+
+impl From<crate::assets::sprite::SpriteId> for TextBit {
+    fn from(value: crate::assets::sprite::SpriteId) -> Self {
+        TextBit::Image {
+            sprite_id: value,
+            color_opt: None,
+        }
+    }
+}
+
+impl From<(crate::assets::sprite::SpriteId, crate::render::Color)> for TextBit {
+    fn from(value: (crate::assets::sprite::SpriteId, crate::render::Color)) -> Self {
+        TextBit::Image {
+            sprite_id: value.0,
+            color_opt: Some(value.1),
         }
     }
 }

@@ -1,4 +1,3 @@
-use shared::chess::RelativeChessMove;
 
 const BOARD_UI_GROUP: &str = "board";
 const BOARD_SPRITE_UI_GROUP: &str = "board_sprite";
@@ -262,12 +261,13 @@ fn display_move_indicator(
 
         let el_pos = element.get_pos_value();
 
+        // TODO: Replace this sht w/ a mesh
         let new_element = crate::ui::element::Element::new_text(
             format!("Indicator{mv:?}"),
             el_pos.clone(),
             20.,
             style,
-            vec![crate::ui::element::TextBit::new_text("", None)],
+            vec!["".into()],
         );
 
         ui.add_element(new_element, BOARD_INDICATOR_GROUP);
@@ -373,7 +373,7 @@ fn get_current_move_delta(
 fn create_board_pieces(ui: &mut crate::ui::UiManager, board: &shared::chess::Board) {
     use crate::{
         assets::sprite::SpriteId,
-        ui::{element::Element, element::TextBit, Style},
+        ui::{element::Element, Style},
     };
     let _ = ui.remove_group(BOARD_SPRITE_UI_GROUP);
 

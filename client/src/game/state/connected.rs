@@ -225,10 +225,11 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
                 card_pos.clone() - card_size.clone() * 0.4,
                 text_size.clone(),
                 ui::Style::new(render::Color::random_rgb(), None, None),
-                vec![ui::element::TextBit::new_text(
+                vec![(
                     format!("Game id: {}", game.id()),
-                    Some(render::Color::random_rgb()),
-                )],
+                    render::Color::random_rgb(),
+                )
+                    .into()],
             ),
             group_name,
         );
@@ -239,10 +240,11 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
                 card_pos.clone() + (card_size.w() * 0.4, 0. - card_size.h() * 0.4),
                 text_size,
                 ui::Style::new(render::Color::random_rgb(), None, None),
-                vec![ui::element::TextBit::new_text(
+                vec![(
                     format!("Players: {}/{}", game.player_count(), game.max_players()),
-                    Some(render::Color::random_rgb()),
-                )],
+                    render::Color::random_rgb(),
+                )
+                    .into()],
             ),
             group_name,
         );
@@ -266,10 +268,7 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
                 join_button_pos,
                 (button_size.w() + button_size.h()) * 0.2,
                 ui::Style::new(render::Color::default(), None, None),
-                vec![ui::element::TextBit::new_text(
-                    "Join".to_string(),
-                    Some(render::Color::random_rgb()),
-                )],
+                vec![("Join", render::Color::random_rgb()).into()],
             ),
             group_name,
         );
@@ -300,10 +299,7 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
             new_b_pos,
             new_b_size.w() * 0.1,
             ui::Style::new(render::Color::default(), None, None),
-            vec![ui::element::TextBit::new_text(
-                "Create new",
-                Some(render::Color::random_rgb()),
-            )],
+            vec![("Create new", render::Color::random_rgb()).into()],
         ),
         group_name,
     );
@@ -332,10 +328,10 @@ fn create_games_ui(ui_mgr: &mut crate::ui::UiManager, games: &[shared::game::Gam
             refresh_button_pos,
             refresh_button_size.w() * 0.25,
             ui::Style::new(render::Color::default(), None, None),
-            vec![ui::element::TextBit::new_text(
+            vec![(
                 "refresh",
-                Some(render::Color::random_rgb()),
-            )],
+                render::Color::random_rgb(),
+            ).into()],
         ),
         group_name,
     );

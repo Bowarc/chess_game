@@ -171,7 +171,7 @@ impl Chess {
                     )),
                     Some(ui::style::Border::new(render::Color::random_rgb(), 1.)),
                 ),
-                vec![ui::element::TextBit::new_text("".to_string(), None)],
+                vec!["".into()],
             ),
             "",
         );
@@ -264,8 +264,8 @@ impl ggez::event::EventHandler for Chess {
             .get_element("mouse pos text")
             .inner_mut::<ui::element::Text>()
             .replace_bits(vec![
-                ui::element::TextBit::new_text(format!("{:?}", ctx.mouse.position()), None),
-                ui::element::TextBit::new_img(assets::sprite::SpriteId::MissingNo, None),
+                format!("{:?}", ctx.mouse.position()).into(),
+                assets::sprite::SpriteId::MissingNo.into(),
             ]);
 
         self.asset_mgr.update(ctx);
