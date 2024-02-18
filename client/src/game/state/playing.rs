@@ -1,3 +1,5 @@
+use shared::chess::RelativeChessMove;
+
 const BOARD_UI_GROUP: &str = "board";
 const BOARD_SPRITE_UI_GROUP: &str = "board_sprite";
 const BOARD_INDICATOR_GROUP: &str = "indicator";
@@ -173,12 +175,14 @@ impl super::StateMachine for Playing {
     }
 }
 
+
 fn display_move_indicator(
     ui: &mut crate::ui::UiManager,
     board: &shared::chess::Board,
     color: shared::chess::Color,
     current_drag: Option<&crate::ui::Id>,
 ) {
+    // TODO: Clean this shit up
     if current_drag.is_none() {
         let _ = ui.remove_group(BOARD_INDICATOR_GROUP);
         return;
@@ -198,18 +202,16 @@ fn display_move_indicator(
 
     debug!("Base pos: {pos_index:?}");
 
-    let mvs = piece.pseudo_legal_relative_moves();
+    // let mvs = piece.pseudo_legal_relative_moves();
+    let mvs = shared::chess::ChessMove::get_all_legals(piece, pos, board)
+        .unwrap()
+        .iter()
+        .map(|mv|{
+            mv.target - mv.origin
+        })
+        .collect::<Vec<shared::chess::RelativeChessMove>>();
 
     for mut mv in mvs.clone() {
-        debug!("Adding mv: {mv:?}");
-
-        if color == shared::chess::Color::Black {
-            mv.y *= -1;
-        }
-
-        if color != p_color {
-            mv.y *= -1;
-        }
 
         let temp = (pos_index.0 as i8 + mv.x, pos_index.1 as i8 + mv.y);
         debug!("{temp:?}");
@@ -238,15 +240,15 @@ fn display_move_indicator(
                 )),
             )
         } else {
-            let _denied_indicator = crate::ui::Style::new(
+            crate::ui::Style::new(
                 crate::render::Color::from_rgb(255, 0, 0),
                 None,
                 Some(crate::ui::style::Border::new(
                     crate::render::Color::from_rgb(255, 0, 0),
                     5.,
                 )),
-            );
-            continue;
+            )
+            // continue;
         };
 
         let id = format!(
